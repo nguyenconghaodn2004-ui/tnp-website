@@ -1,0 +1,16 @@
+{
+  "name": "tnp-website",
+  "version": "1.0.0",
+  "description": "Website chính thức của Trúc Nguyên Phát – TNP, phân phối TV HXY và HIKERS",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["TNP", "Truc Nguyen Phat", "TV", "HXY", "HIKERS"],
+  "author": "Trúc Nguyên Phát – TNP",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
