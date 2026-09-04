@@ -83,7 +83,13 @@
    ════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
 body {
   font-family: var(--font);
@@ -91,7 +97,10 @@ body {
   line-height: 1.6;
   color: var(--text-primary);
   background: var(--bg-page);
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
+  position: relative;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -4261,6 +4270,13 @@ select.form-control { cursor: pointer; }
     --space-20: 36px;
   }
 
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    position: relative;
+    overscroll-behavior-x: none;
+  }
+
   .top-bar { display: none; }
 
   /* Header mobile layout */
@@ -4674,8 +4690,35 @@ select.form-control { cursor: pointer; }
 
   .form-row { grid-template-columns: 1fr; }
 
-  .float-btns { right: 8px; bottom: 12px; }
-  .back-top { right: 8px; bottom: 145px; }
+  /* Floating Buttons on mobile: neat, compact, cannot push layout */
+  .float-btns {
+    right: 12px;
+    bottom: 16px;
+    gap: 8px;
+    z-index: 800;
+  }
+  .float-btn {
+    width: 44px;
+    height: 44px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  }
+  .float-btn-phone {
+    font-size: 18px;
+  }
+  .float-btn-zalo .zalo-icon-badge {
+    font-size: 12px;
+  }
+  .float-tooltip {
+    display: none !important; /* Hide hover tooltip on touch devices to avoid horizontal overflow */
+  }
+  .back-top {
+    right: 12px;
+    bottom: 128px;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
 }
 
 /* ── 576px ── */

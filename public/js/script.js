@@ -880,8 +880,12 @@ const TNP = {
         const isActive = i === currentIndex;
         t.classList.toggle('active', isActive);
         if (isActive) {
-          // Auto scroll tab into view on mobile
-          t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          // Safely scroll only the tab bar horizontally without jumping page scroll
+          const parent = t.parentElement;
+          if (parent && parent.classList.contains('hero-tab-btns')) {
+            const scrollLeft = t.offsetLeft - (parent.clientWidth - t.clientWidth) / 2;
+            parent.scrollTo({ left: Math.max(0, scrollLeft), behavior: 'smooth' });
+          }
         }
       });
     };
