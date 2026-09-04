@@ -4507,18 +4507,21 @@ select.form-control { cursor: pointer; }
 
   /* General Page Hero on Mobile (Các trang con: ho-tro, lien-he, san-pham, thuong-hieu...) */
   .page-hero {
-    padding-top: 14px;
-    padding-bottom: 14px;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    text-align: left !important;
   }
   .page-hero-title {
-    font-size: 17px;
-    line-height: 1.25;
-    margin-bottom: 4px;
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 3px !important;
+    text-align: left !important;
   }
   .page-hero-desc {
-    font-size: 11px;
-    line-height: 1.4;
-    max-width: 100%;
+    font-size: 10px !important;
+    line-height: 1.35 !important;
+    max-width: 90% !important;
+    text-align: left !important;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -4527,51 +4530,75 @@ select.form-control { cursor: pointer; }
 
   /* Brand Hero & Actions on Mobile (tv-hxy, tv-hikers, thuong-hieu...) */
   .brand-hero {
-    padding-top: 14px;
-    padding-bottom: 16px;
+    padding-top: 10px !important;
+    padding-bottom: 12px !important;
     background-size: cover;
+    background-position: 85% center !important;
+  }
+  .brand-hero-content {
+    max-width: 58% !important;
+    text-align: left !important;
+    margin: 0 !important;
+    margin-right: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .brand-badge-pill {
+    font-size: 7.5px !important;
+    padding: 2px 5px !important;
+    margin-bottom: 2px !important;
+    align-self: flex-start !important;
   }
   .brand-hero-title {
-    font-size: 17px;
-    line-height: 1.25;
-    margin-bottom: 4px;
+    font-size: 13.5px !important;
+    line-height: 1.18 !important;
+    margin-bottom: 3px !important;
+    text-align: left !important;
   }
   .brand-hero-desc {
-    font-size: 11px;
-    line-height: 1.4;
-    margin-bottom: 10px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    display: none !important; /* Ẩn bớt chữ để thoáng banner */
   }
   .brand-hero-actions {
-    display: flex;
-    flex-direction: row;
-    gap: 6px;
-    width: 100%;
-    flex-wrap: nowrap;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    width: auto !important;
+    flex-wrap: wrap !important;
+    margin-top: 2px !important;
   }
   .brand-hero-actions .btn {
-    flex: 1;
-    justify-content: center;
-    padding: 6px 10px;
-    font-size: 11px;
-    white-space: nowrap;
+    flex: 0 0 auto !important;
+    justify-content: flex-start !important;
+    padding: 3px 7px !important;
+    font-size: 9px !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    min-height: auto !important;
+    line-height: 1.2 !important;
+  }
+  .brand-hero-actions .btn i {
+    font-size: 8.5px !important;
+    margin-right: 2px !important;
   }
   .brand-stats-row {
-    gap: 8px;
-    margin-top: 14px;
-    justify-content: space-between;
+    gap: 6px !important;
+    margin-top: 6px !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
   }
   .brand-stat-item {
-    padding: 8px;
+    padding: 4px 6px !important;
+    border-radius: 4px !important;
   }
   .brand-stat-item strong {
-    font-size: 15px;
+    font-size: 11px !important;
   }
   .brand-stat-item span {
-    font-size: 10px;
+    font-size: 8px !important;
   }
 
   /* CTA Banner Actions (Cuối các trang) */
@@ -4592,58 +4619,71 @@ select.form-control { cursor: pointer; }
     justify-content: center;
   }
 
-  /* Compact Cinematic Hero (Trang Chu - Neo gọn gàng 1 bên góc) */
+  /* Compact Cinematic Hero (Trang Chu - Neo chặt vào góc bên trái, thu gọn micro) */
   .hero-showcase.cinematic-hero {
-    min-height: 230px;
+    min-height: 220px !important;
     touch-action: pan-y;
   }
   .hero-slides {
-    min-height: 190px;
+    min-height: 185px !important;
     touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
   }
+  .hero-slide.cinematic-slide {
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    padding-top: 12px !important;
+    padding-left: 12px !important;
+  }
   .cinematic-bg {
-    background-position: right center; /* Canh hình ảnh sản phẩm TV sang bên phải để góc trái thoáng cho chữ */
-    background-size: cover;
+    background-position: 85% center !important; /* Dời hình ảnh TV sang phải để góc trái thông thoáng */
+    background-size: cover !important;
     filter: contrast(1.08) brightness(1.04);
   }
   .cinematic-overlay {
     background: linear-gradient(90deg, 
-      rgba(6, 9, 17, 0.75) 0%, 
-      rgba(6, 9, 17, 0.40) 50%, 
-      rgba(6, 9, 17, 0.05) 100%),
-      linear-gradient(180deg, transparent 60%, rgba(6, 9, 17, 0.85) 100%); /* Phủ nhẹ góc trái để chữ dễ đọc, để lộ 100% hình ảnh TV bên phải */
+      rgba(6, 9, 17, 0.85) 0%, 
+      rgba(6, 9, 17, 0.55) 45%, 
+      rgba(6, 9, 17, 0.05) 90%),
+      linear-gradient(180deg, transparent 60%, rgba(6, 9, 17, 0.90) 100%) !important;
   }
   .cinematic-content-wrap {
-    padding-block: 8px 4px;
-    max-width: 58%; /* Neo gọn gàng sang 1 bên góc trái, không che chiếm toàn màn hình */
-    text-align: left;
-    margin-left: 0;
-    margin-right: auto;
-    pointer-events: auto;
+    position: relative !important;
+    z-index: 5 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-right: auto !important;
+    max-width: 52% !important; /* Neo chặt sang 1 góc trái, chừa 48% phía phải cho hình TV */
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    pointer-events: auto !important;
   }
   .cinematic-badge {
-    padding: 2px 6px;
-    margin-bottom: 3px;
-    border-radius: 12px;
-    font-size: 8px;
-    display: inline-flex;
-    width: fit-content;
+    padding: 2px 5px !important;
+    margin-bottom: 2px !important;
+    border-radius: 10px !important;
+    font-size: 7.5px !important;
+    display: inline-flex !important;
+    align-self: flex-start !important;
+    width: fit-content !important;
   }
   .badge-dot {
-    width: 4px;
-    height: 4px;
+    width: 3.5px !important;
+    height: 3.5px !important;
   }
   .badge-text {
-    font-size: 7.5px;
-    letter-spacing: 0.02em;
+    font-size: 7px !important;
+    letter-spacing: 0.02em !important;
   }
   .cinematic-title {
-    font-size: 13.5px;
-    line-height: 1.2;
-    margin-bottom: 4px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+    font-size: 12.5px !important;
+    line-height: 1.18 !important;
+    margin-bottom: 3px !important;
+    text-align: left !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.95) !important;
   }
   .cinematic-desc {
     display: none !important; /* Ẩn chữ dài */
@@ -4652,141 +4692,169 @@ select.form-control { cursor: pointer; }
     display: none !important; /* Ẩn thông số rườm rà */
   }
   .cinematic-actions {
-    gap: 5px;
-    position: relative;
-    z-index: 5;
-    display: inline-flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    margin-top: 2px;
-    width: auto;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    margin: 3px 0 0 0 !important;
+    padding: 0 !important;
+    gap: 4px !important;
+    width: auto !important;
+    z-index: 10 !important;
   }
   .cinematic-actions .btn {
-    padding: 4px 8px;
-    font-size: 9.5px;
-    border-radius: 4px;
-    cursor: pointer;
-    touch-action: manipulation;
-    white-space: nowrap;
-    flex: 0 0 auto;
-    width: auto;
+    padding: 3px 7px !important;
+    font-size: 9px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-height: auto !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+  }
+  .cinematic-actions .btn i {
+    font-size: 8.5px !important;
+    margin-right: 2px !important;
   }
 
   .cinematic-controls {
-    padding-block: 3px 5px;
-    position: relative;
-    z-index: 20;
+    padding-block: 2px 4px !important;
+    position: relative !important;
+    z-index: 20 !important;
   }
   .hero-tab-btns {
-    gap: 4px;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    width: 100%;
-    padding-inline: 4px;
-    padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    padding-inline: 4px !important;
+    padding-bottom: 2px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
   }
   .hero-tab-btns::-webkit-scrollbar {
-    display: none;
+    display: none !important;
   }
   .hero-tab-btn {
-    padding: 2px 6px;
-    border-radius: 4px;
-    flex-shrink: 0;
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
-    background: rgba(255,255,255,.1);
-    border: 1px solid rgba(255,255,255,.2);
+    padding: 2px 5px !important;
+    border-radius: 4px !important;
+    flex-shrink: 0 !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    background: rgba(255,255,255,.1) !important;
+    border: 1px solid rgba(255,255,255,.2) !important;
   }
   .hero-tab-btn.active {
-    background: rgba(255,255,255,.22);
-    border-color: rgba(96,165,250,.7);
+    background: rgba(255,255,255,.22) !important;
+    border-color: rgba(96,165,250,.7) !important;
   }
   .tab-brand {
-    font-size: 7.5px;
-    padding: 1px 3px;
+    font-size: 7.5px !important;
+    padding: 1px 3px !important;
   }
   .tab-text strong {
-    font-size: 9px;
+    font-size: 8.5px !important;
   }
   .tab-text small {
-    display: none;
+    display: none !important;
   }
   .hero-arrow-btns {
-    display: none;
+    display: none !important;
   }
 
-  /* Compact Corporate Hero (Gioi Thieu & Tram Bao Hanh - Neo chữ sang 1 góc) */
+  /* Compact Corporate Hero (Gioi Thieu & Tram Bao Hanh - Neo chữ sang góc trái, nút siêu gọn) */
   .tnp-corporate-hero {
-    padding-top: 10px;
-    padding-bottom: 12px;
-    background-position: right center;
-    background-size: cover;
+    padding-top: 10px !important;
+    padding-bottom: 12px !important;
+    background-position: 85% center !important;
+    background-size: cover !important;
     filter: contrast(1.05);
   }
   .tnp-corporate-hero::before {
     background: linear-gradient(90deg, 
-      rgba(7, 14, 28, 0.78) 0%, 
-      rgba(7, 14, 28, 0.45) 55%, 
-      rgba(7, 14, 28, 0.10) 100%),
-      linear-gradient(180deg, transparent 60%, rgba(7, 14, 28, 0.90) 100%);
+      rgba(7, 14, 28, 0.85) 0%, 
+      rgba(7, 14, 28, 0.55) 50%, 
+      rgba(7, 14, 28, 0.10) 95%),
+      linear-gradient(180deg, transparent 60%, rgba(7, 14, 28, 0.90) 100%) !important;
   }
   .tnp-corporate-hero .breadcrumb {
-    margin-bottom: 3px;
-    font-size: 9px;
+    margin-bottom: 2px !important;
+    font-size: 8.5px !important;
   }
   .tnp-hero-grid {
-    max-width: 62% !important; /* Neo sang góc trái */
-    margin-left: 0;
-    margin-right: auto;
+    max-width: 55% !important; /* Neo sang góc trái */
+    margin: 0 !important;
+    margin-right: auto !important;
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
   }
   .tnp-hero-badge {
-    padding: 2px 5px;
-    font-size: 8px;
-    margin-bottom: 3px;
-    display: inline-flex;
-    width: fit-content;
+    padding: 2px 5px !important;
+    font-size: 7.5px !important;
+    margin-bottom: 2px !important;
+    display: inline-flex !important;
+    width: fit-content !important;
   }
   .tnp-hero-title {
-    font-size: 14.5px;
-    line-height: 1.2;
-    margin-bottom: 2px;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+    font-size: 13.5px !important;
+    line-height: 1.18 !important;
+    margin-bottom: 2px !important;
+    text-align: left !important;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9) !important;
   }
   .tnp-hero-company-name {
-    font-size: 8.5px;
-    margin-bottom: 3px;
+    font-size: 8px !important;
+    margin-bottom: 3px !important;
+    text-align: left !important;
   }
   .tnp-hero-desc {
     display: none !important; /* Ẩn chữ dài */
   }
   .tnp-hero-pills-row {
-    gap: 3px;
-    margin-bottom: 6px;
-    max-width: 100%;
+    gap: 3px !important;
+    margin-bottom: 4px !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
   }
   .tnp-pill-item {
-    font-size: 8.5px;
-    padding: 2px 4px;
-    border-radius: 3px;
+    font-size: 8px !important;
+    padding: 1.5px 3.5px !important;
+    border-radius: 3px !important;
   }
   .tnp-hero-actions {
-    gap: 4px;
-    flex-wrap: nowrap;
-    display: inline-flex;
-    width: auto;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    margin: 2px 0 0 0 !important;
+    width: auto !important;
   }
   .tnp-hero-actions .btn {
-    padding: 4px 8px;
-    font-size: 9.5px;
-    border-radius: 4px;
-    white-space: nowrap;
-    flex: 0 0 auto;
-    width: auto;
+    padding: 3px 7px !important;
+    font-size: 9px !important;
+    border-radius: 4px !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-height: auto !important;
+    line-height: 1.2 !important;
+  }
+  .tnp-hero-actions .btn i {
+    font-size: 8.5px !important;
+    margin-right: 2px !important;
   }
 
   /* Compact Sections & Grids */
@@ -5165,10 +5233,6 @@ select.form-control { cursor: pointer; }
   .stat-lbl { font-size: 10px; }
   .cta-banner-actions { flex-direction: column; align-items: stretch; }
   .modal-actions { flex-direction: column; }
-
-  .cinematic-title { font-size: 18px; }
-  .cinematic-actions { flex-direction: column; }
-  .cinematic-actions .btn { width: 100%; justify-content: center; }
 }
 
 /* ── 400px ── */
