@@ -877,7 +877,12 @@ const TNP = {
       });
 
       tabs.forEach((t, i) => {
-        t.classList.toggle('active', i === currentIndex);
+        const isActive = i === currentIndex;
+        t.classList.toggle('active', isActive);
+        if (isActive) {
+          // Auto scroll tab into view on mobile
+          t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
       });
     };
 
@@ -893,11 +898,14 @@ const TNP = {
       if (timer) clearInterval(timer);
     };
 
+    // Tab button clicks & touch
     tabs.forEach((tab, idx) => {
-      tab.addEventListener('click', () => {
+      const activate = (e) => {
+        e.preventDefault();
         showSlide(idx);
         startTimer();
-      });
+      };
+      tab.addEventListener('click', activate);
     });
 
     nextBtn?.addEventListener('click', () => {
@@ -912,6 +920,52 @@ const TNP = {
 
     banner.addEventListener('mouseenter', stopTimer);
     banner.addEventListener('mouseleave', startTimer);
+
+    // Touch swipe gesture support for mobile devices
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+    let isSwiping = false;
+
+    const onTouchStart = (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchEndX = touchStartX;
+      touchEndY = touchStartY;
+      isSwiping = true;
+      stopTimer();
+    };
+
+    const onTouchMove = (e) => {
+      if (!isSwiping || !e.touches || e.touches.length === 0) return;
+      touchEndX = e.touches[0].clientX;
+      touchEndY = e.touches[0].clientY;
+    };
+
+    const onTouchEnd = () => {
+      if (!isSwiping) return;
+      isSwiping = false;
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      // Threshold: horizontal swipe must be at least 35px and more horizontal than vertical
+      if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        if (deltaX < 0) {
+          next(); // swipe left -> next slide
+        } else {
+          prev(); // swipe right -> prev slide
+        }
+      }
+      startTimer();
+    };
+
+    // Attach touch listeners to slides area and banner
+    const slidesTrack = banner.querySelector('.hero-slides') || banner;
+    slidesTrack.addEventListener('touchstart', onTouchStart, { passive: true });
+    slidesTrack.addEventListener('touchmove', onTouchMove, { passive: true });
+    slidesTrack.addEventListener('touchend', onTouchEnd, { passive: true });
 
     startTimer();
   },
@@ -937,42 +991,60 @@ const TNP = {
     const overlay   = document.getElementById('mobile-overlay');
     const mobileMenu= document.getElementById('mobile-menu');
     const mobileClose=document.getElementById('mobile-close');
-    const toggleLinks= document.querySelectorAll('.mobile-nav-toggle');
 
     const open = () => {
       hamburger?.classList.add('open');
+      hamburger?.setAttribute('aria-expanded', 'true');
       overlay?.classList.add('open');
       mobileMenu?.classList.add('open');
       document.body.style.overflow = 'hidden';
     };
     const close = () => {
       hamburger?.classList.remove('open');
+      hamburger?.setAttribute('aria-expanded', 'false');
       overlay?.classList.remove('open');
       mobileMenu?.classList.remove('open');
       document.body.style.overflow = '';
     };
 
-    hamburger?.addEventListener('click', () => mobileMenu?.classList.contains('open') ? close() : open());
-    overlay?.addEventListener('click', close);
-    mobileClose?.addEventListener('click', close);
+    const toggleMenu = (e) => {
+      if (e) e.preventDefault();
+      if (mobileMenu?.classList.contains('open')) {
+        close();
+      } else {
+        open();
+      }
+    };
 
-    // Submenu toggles
-    toggleLinks.forEach(toggle => {
-      toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        const submenuId = toggle.dataset.target;
-        const submenu = document.getElementById(submenuId);
-        if (!submenu) return;
-        const isOpen = submenu.classList.contains('open');
-        document.querySelectorAll('.mobile-submenu.open').forEach(s => s.classList.remove('open'));
-        if (!isOpen) submenu.classList.add('open');
+    hamburger?.addEventListener('click', toggleMenu);
+    overlay?.addEventListener('click', (e) => { e.preventDefault(); close(); });
+    mobileClose?.addEventListener('click', (e) => { e.preventDefault(); close(); });
+
+    // Submenu toggles (using event delegation on mobileMenu for reliability)
+    if (mobileMenu) {
+      mobileMenu.addEventListener('click', (e) => {
+        const toggle = e.target.closest('.mobile-nav-toggle');
+        if (toggle) {
+          e.preventDefault();
+          const submenuId = toggle.dataset.target;
+          const submenu = document.getElementById(submenuId);
+          if (!submenu) return;
+          const isOpen = submenu.classList.contains('open');
+          document.querySelectorAll('.mobile-submenu.open').forEach(s => s.classList.remove('open'));
+          if (!isOpen) submenu.classList.add('open');
+          return;
+        }
+
+        const navLink = e.target.closest('.mobile-nav-link');
+        if (navLink && !navLink.classList.contains('mobile-nav-toggle')) {
+          close();
+        }
       });
-    });
+    }
 
-    // Close menu on nav link click
-    document.querySelectorAll('.mobile-nav-link:not(.mobile-nav-toggle)').forEach(link => {
-      link.addEventListener('click', close);
-    });
+    // Expose close & open methods globally for safety
+    this.openMobileMenu = open;
+    this.closeMobileMenu = close;
   },
 
   // ──────────────────────────────────────────
@@ -985,12 +1057,14 @@ const TNP = {
     const searchInput = document.getElementById('search-input');
     const searchResults=document.getElementById('search-results');
 
-    const openSearch = () => {
+    const openSearch = (e) => {
+      if (e) e.preventDefault();
       searchOverlay?.classList.add('open');
-      setTimeout(() => searchInput?.focus(), 100);
+      setTimeout(() => searchInput?.focus(), 120);
       document.body.style.overflow = 'hidden';
     };
-    const closeSearch = () => {
+    const closeSearch = (e) => {
+      if (e && e.preventDefault) e.preventDefault();
       searchOverlay?.classList.remove('open');
       document.body.style.overflow = '';
       if (searchInput) searchInput.value = '';
@@ -999,7 +1073,9 @@ const TNP = {
 
     searchBtn?.addEventListener('click', openSearch);
     searchClose?.addEventListener('click', closeSearch);
-    searchOverlay?.addEventListener('click', (e) => { if (e.target === searchOverlay) closeSearch(); });
+    searchOverlay?.addEventListener('click', (e) => {
+      if (e.target === searchOverlay) closeSearch(e);
+    });
 
     searchInput?.addEventListener('input', (e) => {
       clearTimeout(this.searchTimeout);
@@ -1007,8 +1083,11 @@ const TNP = {
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeSearch();
+      if (e.key === 'Escape') closeSearch(e);
     });
+
+    this.openSearch = openSearch;
+    this.closeSearch = closeSearch;
   },
 
   doSearch(query, container) {

@@ -4289,30 +4289,56 @@ select.form-control { cursor: pointer; }
 
   /* Header action buttons on mobile */
   .header-actions {
+    position: relative;
+    z-index: 920;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
     gap: 6px;
   }
   .header-search-btn {
-    width: 34px;
-    height: 34px;
-    font-size: 13px;
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
     border-radius: 8px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 925;
   }
   .hamburger {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
     padding: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 925;
   }
   .hamburger span {
-    width: 17px;
+    width: 18px;
+    height: 2px;
   }
 
   /* Compact Cinematic Hero (Trang Chu) */
   .hero-showcase.cinematic-hero {
     min-height: 390px;
+    touch-action: pan-y;
   }
   .hero-slides {
     min-height: 350px;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
   }
   .cinematic-bg {
     background-position: center center;
@@ -4327,6 +4353,7 @@ select.form-control { cursor: pointer; }
     padding-block: 18px 14px;
     max-width: 100%;
     text-align: left;
+    pointer-events: auto;
   }
   .cinematic-badge {
     padding: 3px 9px;
@@ -4371,35 +4398,57 @@ select.form-control { cursor: pointer; }
   }
   .cinematic-actions {
     gap: 8px;
+    position: relative;
+    z-index: 5;
   }
   .cinematic-actions .btn {
     padding: 7px 12px;
     font-size: 11.5px;
     border-radius: 7px;
+    cursor: pointer;
+    touch-action: manipulation;
   }
 
   .cinematic-controls {
-    padding-block: 6px;
+    padding-block: 8px;
+    position: relative;
+    z-index: 20;
   }
   .hero-tab-btns {
-    gap: 6px;
+    gap: 8px;
     overflow-x: auto;
     flex-wrap: nowrap;
     width: 100%;
-    padding-bottom: 2px;
+    padding-inline: 4px;
+    padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .hero-tab-btns::-webkit-scrollbar {
+    display: none;
   }
   .hero-tab-btn {
-    padding: 4px 8px;
-    border-radius: 7px;
+    padding: 6px 10px;
+    border-radius: 8px;
     flex-shrink: 0;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.15);
+  }
+  .hero-tab-btn.active {
+    background: rgba(255,255,255,.18);
+    border-color: rgba(96,165,250,.6);
   }
   .tab-brand {
-    font-size: 9px;
-    padding: 2px 5px;
+    font-size: 9.5px;
+    padding: 2px 6px;
   }
   .tab-text strong {
-    font-size: 10px;
+    font-size: 11px;
   }
   .tab-text small {
     display: none;
@@ -4597,14 +4646,19 @@ select.form-control { cursor: pointer; }
   /* Station Selection on Mobile */
   .station-search-bar { margin-bottom: 14px; }
   .station-search-input-wrap input { font-size: 12px; padding: 8px 12px 8px 34px; }
-  .station-region-pills { gap: 4px; }
-  .region-pill { font-size: 11px; padding: 4px 9px; }
+  .station-region-pills { gap: 6px; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .region-pill { font-size: 11px; padding: 6px 10px; flex-shrink: 0; touch-action: manipulation; }
+  .city-list-wrap { max-height: 240px; -webkit-overflow-scrolling: touch; }
+  .city-item-btn { padding: 9px 12px; touch-action: manipulation; cursor: pointer; }
   .station-detail-col { padding: 14px; border-radius: 12px; }
   .station-detail-header { padding-bottom: 10px; margin-bottom: 12px; }
   .detail-city-name { font-size: 17px; }
-  .station-card { padding: 10px; border-radius: 8px; margin-bottom: 8px; }
-  .station-title { font-size: 13px; }
-  .station-meta-row { font-size: 11.5px; gap: 6px; }
+  .selected-station-card { padding: 12px; border-radius: 10px; margin-bottom: 10px; }
+  .station-card-top-name { font-size: 14.5px; }
+  .station-card-action-btns .btn { padding: 6px 10px; font-size: 11px; touch-action: manipulation; }
+
+  .brand-filter-tabs { grid-template-columns: 1fr; gap: 8px; }
+  .brand-tab { padding: 10px 14px; touch-action: manipulation; }
 
   .why-grid { grid-template-columns: 1fr; gap: 10px; }
   .tech-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
