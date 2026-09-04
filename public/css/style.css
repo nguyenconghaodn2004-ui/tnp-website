@@ -1554,6 +1554,11 @@ input, select, textarea { font-family: inherit; }
   border-bottom: 1px solid rgba(255,255,255,.15);
 }
 
+/* Banner riêng biệt cho trang Về TNP (Giới Thiệu Doanh Nghiệp) */
+.tnp-corporate-hero.tnp-about-hero {
+  background: #0b1528 url('../images/banner_about_tnp.jpg') center center / cover no-repeat;
+}
+
 .tnp-corporate-hero::before {
   content: '';
   position: absolute;
