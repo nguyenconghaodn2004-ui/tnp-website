@@ -4449,7 +4449,7 @@ select.form-control { cursor: pointer; }
 /* ── 768px ── */
 @media (max-width: 768px) {
   :root { 
-    --header-h: 56px;
+    --header-h: 62px;
     --space-12: 24px;
     --space-16: 32px;
     --space-20: 36px;
@@ -4467,25 +4467,30 @@ select.form-control { cursor: pointer; }
   /* Header mobile layout */
   .header-inner {
     padding-inline: 12px;
-    gap: 8px;
+    gap: 10px;
+    height: 100%;
   }
   .site-logo {
-    gap: 8px;
-    max-width: calc(100% - 90px);
-    overflow: hidden;
+    gap: 10px;
+    max-width: calc(100% - 92px);
+    overflow: visible;
   }
   .logo-tnp-img {
-    height: 36px;
+    height: 46px; /* Tăng từ 36px lên 46px để logo to rõ ràng */
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,.15));
   }
   .logo-name {
-    font-size: 13px;
-    letter-spacing: 0;
+    font-size: 15.5px; /* Tăng từ 13px lên 15.5px */
+    letter-spacing: -0.01em;
+    font-weight: 900;
+    line-height: 1.15;
   }
   .logo-tagline {
-    font-size: 7.5px;
+    font-size: 8.5px; /* Tăng từ 7.5px lên 8.5px */
     letter-spacing: .02em;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
   }
 
   /* Header action buttons on mobile */
@@ -5501,13 +5506,13 @@ select.form-control { cursor: pointer; }
 /* ── 400px ── */
 @media (max-width: 400px) {
   .site-logo {
-    gap: 6px;
+    gap: 8px;
   }
   .logo-tnp-img {
-    height: 30px;
+    height: 40px; /* Tăng từ 30px lên 40px */
   }
   .logo-name {
-    font-size: 11px;
+    font-size: 14px; /* Tăng từ 11px lên 14px */
   }
   .logo-tagline {
     display: none;
