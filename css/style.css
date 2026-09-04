@@ -1520,6 +1520,302 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ════════════════════════════════════════
+   PREMIUM TNP CORPORATE & SERVICE HERO
+   ════════════════════════════════════════ */
+.tnp-corporate-hero {
+  position: relative;
+  background: 
+    radial-gradient(ellipse at 85% 25%, rgba(37,99,235,.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 15% 75%, rgba(220,38,38,.22) 0%, transparent 50%),
+    linear-gradient(140deg, #070e1e 0%, #0d1a33 45%, #102447 100%);
+  color: #fff;
+  padding-top: 36px;
+  padding-bottom: 64px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.tnp-corporate-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.tnp-corporate-hero .breadcrumb {
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 2;
+}
+.tnp-corporate-hero .breadcrumb a,
+.tnp-corporate-hero .breadcrumb span {
+  color: rgba(255,255,255,.75);
+}
+.tnp-corporate-hero .breadcrumb a:hover {
+  color: #60a5fa;
+}
+
+.tnp-hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr;
+  gap: 40px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Left Content */
+.tnp-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(37,99,235,.25);
+  border: 1px solid rgba(96,165,250,.4);
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #93c5fd;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  backdrop-filter: blur(8px);
+}
+.tnp-hero-badge i { color: #fbbf24; }
+
+.tnp-hero-title {
+  font-size: 38px;
+  line-height: 1.2;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -.02em;
+  margin-bottom: 8px;
+}
+.tnp-hero-company-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #60a5fa;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tnp-hero-company-name::before {
+  content: '';
+  width: 20px;
+  height: 2px;
+  background: #60a5fa;
+  display: inline-block;
+}
+
+.tnp-hero-desc {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: rgba(255,255,255,.82);
+  margin-bottom: 22px;
+  max-width: 580px;
+}
+
+/* Feature pills strip */
+.tnp-hero-pills-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+.tnp-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.tnp-pill-item i { color: #38bdf8; }
+
+.tnp-hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Right Side: Showcase Dashboard Glass Card */
+.tnp-hero-dashboard-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(30,41,59,.75) 0%, rgba(15,23,42,.85) 100%);
+  border: 1.5px solid rgba(96,165,250,.3);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 
+    0 20px 50px rgba(0,0,0,.5),
+    inset 0 1px 1px rgba(255,255,255,.2);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.tnp-hero-dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, rgba(37,99,235,.4) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dashboard-top-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  margin-bottom: 16px;
+}
+.live-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #4ade80;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+}
+.coverage-badge-pill {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.1);
+  color: #cbd5e1;
+}
+
+/* Center Logo Display */
+.dashboard-logo-center {
+  text-align: center;
+  padding: 6px 0 16px;
+}
+.dashboard-hero-logo {
+  max-height: 95px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 25px rgba(0,0,0,.6));
+  transition: transform .3s;
+}
+.dashboard-hero-logo:hover {
+  transform: scale(1.04);
+}
+.dashboard-brand-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .03em;
+  margin-top: 10px;
+}
+.dashboard-brand-tagline {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* 4-Stat Grid */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.dashboard-stat-box {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all .2s;
+}
+.dashboard-stat-box:hover {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(96,165,250,.3);
+  transform: translateY(-2px);
+}
+.stat-box-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.stat-box-icon.blue  { background: rgba(37,99,235,.3); color: #60a5fa; }
+.stat-box-icon.red   { background: rgba(220,38,38,.3);  color: #f87171; }
+.stat-box-icon.green { background: rgba(22,163,74,.3); color: #4ade80; }
+.stat-box-icon.amber { background: rgba(217,119,6,.3); color: #fbbf24; }
+
+.stat-box-val {
+  font-size: 17px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+}
+.stat-box-lbl {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Bottom corporate trust tag */
+.dashboard-trust-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+.trust-check-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #86efac;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .tnp-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .tnp-hero-title {
+    font-size: 28px;
+  }
+}
+
+/* ════════════════════════════════════════
    DEDICATED BRAND PAGES (TV-HXY & TV-HIKERS)
    ════════════════════════════════════════ */
 .brand-hero {

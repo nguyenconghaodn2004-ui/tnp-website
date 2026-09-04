@@ -5,9 +5,31 @@
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
+
+// Tự động nạp biến môi trường từ file .env (không cần cài thêm thư viện)
+const envPath = path.join(__dirname, '.env');
+if (fs.existsSync(envPath)) {
+  const envConfig = fs.readFileSync(envPath, 'utf-8');
+  envConfig.split(/\r?\n/).forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#')) {
+      const idx = trimmed.indexOf('=');
+      if (idx > 0) {
+        const key = trimmed.substring(0, idx).trim();
+        const value = trimmed.substring(idx + 1).trim();
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const DOMAIN = process.env.DOMAIN || 'tnpcare.vn';
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -47,12 +69,13 @@ const startServer = (port) => {
   const server = app.listen(port, () => {
     console.log('');
     console.log('  ╔══════════════════════════════════════════╗');
-    console.log('  ║      TRÚC NGUYÊN PHÁT – TNP SERVER       ║');
+    console.log('  ║      TRÚC NGUYÊN PHÁT – TNP CARE         ║');
     console.log('  ╠══════════════════════════════════════════╣');
-    console.log(`  ║  🟢 Server đang chạy tại:                ║`);
-    console.log(`  ║     http://localhost:${port}                 ║`);
+    console.log(`  ║  🌐 Tên miền:    ${DOMAIN.padEnd(23)} ║`);
+    console.log(`  ║  🟢 Cục bộ:      http://localhost:${String(port).padEnd(9)} ║`);
+    console.log(`  ║  🚀 Trực tuyến:  ${BASE_URL.padEnd(23)} ║`);
     console.log('  ║                                          ║');
-    console.log('  ║  Nhấn Ctrl+C để dừng server             ║');
+    console.log('  ║  Nhấn Ctrl+C để dừng server              ║');
     console.log('  ╚══════════════════════════════════════════╝');
     console.log('');
   });

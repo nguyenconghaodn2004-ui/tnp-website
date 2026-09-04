@@ -230,9 +230,20 @@
       });
     }
 
-    // Setup region tab listener
+    // Setup region tab listener & populate live station counts
+    const northCount = TNP_SERVICE_CENTERS.filter(s => s.region === 'north').length;
+    const centralCount = TNP_SERVICE_CENTERS.filter(s => s.region === 'central').length;
+    const southCount = TNP_SERVICE_CENTERS.filter(s => s.region === 'south').length;
+    const totalCount = TNP_SERVICE_CENTERS.length;
+
     const regionButtons = document.querySelectorAll(regionTabsSelector);
     regionButtons.forEach(btn => {
+      const reg = btn.dataset.region;
+      if (reg === 'all') btn.innerHTML = `<i class="fas fa-globe-asia"></i> Toàn Quốc (${totalCount} Trạm)`;
+      else if (reg === 'north') btn.innerHTML = `<i class="fas fa-landmark"></i> Miền Bắc (${northCount})`;
+      else if (reg === 'central') btn.innerHTML = `<i class="fas fa-mountain-sun"></i> Miền Trung (${centralCount})`;
+      else if (reg === 'south') btn.innerHTML = `<i class="fas fa-city"></i> Miền Nam (${southCount})`;
+
       btn.addEventListener('click', () => {
         regionButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
