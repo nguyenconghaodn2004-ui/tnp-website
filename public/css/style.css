@@ -5235,7 +5235,7 @@ select.form-control { cursor: pointer; }
     width: 100% !important;
   }
   .product-brand-badge { top: 6px !important; left: 6px !important; padding: 2px 6px !important; font-size: 8px !important; }
-  .product-new-badge { top: 6px !right: 6px !important; padding: 2px 5px !important; font-size: 8px !important; }
+  .product-new-badge { top: 6px !important; right: 6px !important; padding: 2px 5px !important; font-size: 8px !important; }
   .product-body { 
     padding: 8px !important; 
     flex: 1 !important;
