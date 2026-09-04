@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TNP Care Admin Portal | Quản Trị Hệ Thống</title>
+  <meta name="robots" content="noindex, nofollow">
+  <!-- Favicon / Logo -->
+  <link rel="icon" href="../images/logo_tnp_care.png" type="image/png">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Admin CSS -->
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<div class="admin-wrapper">
+  <!-- ══════════════════════════════════════════
+       SIDEBAR
+       ══════════════════════════════════════════ -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <img src="../images/logo_tnp_care.png" alt="TNP Care Logo" class="sidebar-logo">
+      <div class="sidebar-brand-text">
+        <span class="brand-title">TNP CARE</span>
+        <span class="brand-subtitle">Admin Portal</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Quản lý chung</div>
+      
+      <a class="nav-item active" data-tab="dashboard">
+        <i class="fas fa-chart-pie"></i>
+        <span>Tổng quan</span>
+      </a>
+
+      <a class="nav-item" data-tab="products">
+        <i class="fas fa-tv"></i>
+        <span>Sản phẩm TV</span>
+        <span class="nav-badge" id="badgeProductsCount">0</span>
+      </a>
+
+      <a class="nav-item" data-tab="stations">
+        <i class="fas fa-tools"></i>
+        <span>Trạm bảo hành</span>
+        <span class="nav-badge" id="badgeStationsCount">0</span>
+      </a>
+
+      <div class="nav-section-title">Hệ thống & Khách hàng</div>
+
+      <a class="nav-item" data-tab="contacts">
+        <i class="fas fa-envelope-open-text"></i>
+        <span>Yêu cầu liên hệ</span>
+      </a>
+
+      <a class="nav-item" data-tab="settings">
+        <i class="fas fa-sliders-h"></i>
+        <span>Cài đặt hệ thống</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar">AD</div>
+        <div class="user-meta">
+          <span class="user-name">Quản Trị Viên</span>
+          <span class="user-role">admin@tnpcare.vn</span>
+        </div>
+      </div>
+      <a href="../index.html" class="btn-sidebar-logout" title="Về trang chủ">
+        <i class="fas fa-sign-out-alt"></i>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════
+       MAIN CONTENT
+       ══════════════════════════════════════════ -->
+  <div class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="btn-toggle-sidebar" id="btnToggleSidebar" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="topbar-title-wrap">
+          <h1 class="topbar-page-title" id="pageTitle">Tổng quan hệ thống</h1>
+          <span class="topbar-breadcrumb">Trang quản trị / <span id="breadcrumbCurrent">Tổng quan</span></span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="topbar-status">
+          <span class="status-dot"></span>
+          <span>Hệ thống trực tuyến</span>
+        </div>
+        <a href="../index.html" target="_blank" class="btn-view-site">
+          <i class="fas fa-external-link-alt"></i> Xem Website
+        </a>
+      </div>
+    </header>
+
+    <!-- Admin Body Content -->
+    <main class="admin-content">
+
+      <!-- ── TAB: DASHBOARD ── -->
+      <section class="tab-panel active" id="tab-dashboard">
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon-wrap"><i class="fas fa-tv"></i></div>
+            <div class="stat-details">
+              <span class="stat-number" id="statTotalProducts">0</span>
+              <span class="stat-label">Tổng sản phẩm TV</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-purple">
+            <div class="stat-icon-wrap"><i class="fas fa-warehouse"></i></div>
+            <div class="stat-details">
+              <span class="stat-number" id="statTotalStations">0</span>
+              <span class="stat-label">Trạm bảo hành toàn quốc</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-green">
+            <div class="stat-icon-wrap"><i class="fas fa-tags"></i></div>
+            <div class="stat-details">
+              <span class="stat-number" id="statBrandRatio">0 / 0</span>
+              <span class="stat-label">HXY / HIKERS</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-amber">
+            <div class="stat-icon-wrap"><i class="fas fa-shield-alt"></i></div>
+            <div class="stat-details">
+              <span class="stat-number">63/63</span>
+              <span class="stat-label">Tỉnh thành phủ sóng</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Products Card -->
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-star"></i> Sản phẩm TV mới nhất</h2>
+            <div class="card-actions">
+              <button class="btn btn-primary btn-sm" onclick="switchTab('products')">
+                <i class="fas fa-list"></i> Xem tất cả
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">#</th>
+                    <th style="width: 70px;">Ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Thương hiệu</th>
+                    <th>Tấm nền</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardProductsBody">
+                  <!-- Dynamic content -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TAB: PRODUCTS ── -->
+      <section class="tab-panel" id="tab-products">
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-boxes"></i> Danh sách TV chính hãng (HXY & HIKERS)</h2>
+            <div class="card-actions">
+              <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Tìm kiếm TV, Model..." oninput="filterProducts(this.value)">
+              </div>
+              <button class="btn btn-primary" onclick="openAddProductModal()">
+                <i class="fas fa-plus-circle"></i> Thêm sản phẩm
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">STT</th>
+                    <th style="width: 70px;">Ảnh</th>
+                    <th>Tên sản phẩm & Model</th>
+                    <th>Thương hiệu</th>
+                    <th>Kích cỡ</th>
+                    <th>Bảo hành</th>
+                    <th style="width: 100px; text-align: center;">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TAB: STATIONS ── -->
+      <section class="tab-panel" id="tab-stations">
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-map-marker-alt"></i> Hệ thống trạm bảo hành toàn quốc (80-100 trạm)</h2>
+            <div class="card-actions">
+              <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Tìm theo tỉnh thành, tên trạm..." oninput="filterStations(this.value)">
+              </div>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">STT</th>
+                    <th>Tên trạm bảo hành</th>
+                    <th>Tỉnh / Thành phố</th>
+                    <th>Địa chỉ chi tiết</th>
+                    <th>Hotline</th>
+                    <th style="width: 80px; text-align: center;">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody id="stationsTableBody">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TAB: CONTACTS ── -->
+      <section class="tab-panel" id="tab-contacts">
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-headset"></i> Yêu cầu tư vấn & Liên hệ gần đây</h2>
+          </div>
+          <div class="card-body">
+            <div style="text-align: center; padding: 40px 20px; color: var(--adm-text-secondary);">
+              <i class="fas fa-inbox" style="font-size: 40px; color: var(--adm-text-muted); margin-bottom: 12px; display: block;"></i>
+              <p style="font-size: 15px; font-weight: 600;">Hệ thống đang sẵn sàng tiếp nhận yêu cầu liên hệ</p>
+              <p style="font-size: 13px; color: var(--adm-text-muted); margin-top: 4px;">Các yêu cầu từ form liên hệ và popup tư vấn sẽ được đồng bộ hiển thị tại đây.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TAB: SETTINGS ── -->
+      <section class="tab-panel" id="tab-settings">
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-cogs"></i> Thông tin doanh nghiệp & Hotline TNP Care</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Tên doanh nghiệp</label>
+                <input type="text" class="form-control" value="CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ TRÚC NGUYÊN PHÁT" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tên thương hiệu</label>
+                <input type="text" class="form-control" value="TNP CARE" readonly>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Hotline tổng đài bảo hành</label>
+                <input type="text" class="form-control" value="028 22 422 822">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Hotline tư vấn kinh doanh</label>
+                <input type="text" class="form-control" value="0913 692 161">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Địa chỉ trụ sở chính</label>
+              <input type="text" class="form-control" value="Số 27, Đường 16, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh">
+            </div>
+            <button class="btn btn-primary" onclick="showToast('Đã lưu cấu hình cài đặt!', 'success')">
+              <i class="fas fa-save"></i> Lưu thông tin
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA SẢN PHẨM
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="productModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title" id="productModalTitle">Thêm sản phẩm TV mới</h3>
+      <button class="modal-close" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form onsubmit="saveProductForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="prodId">
+        
+        <div class="form-group">
+          <label class="form-label">Tên sản phẩm TV *</label>
+          <input type="text" id="prodName" class="form-control" placeholder="VD: Smart TV HXY 55 inch 4K QLED" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Thương hiệu *</label>
+            <select id="prodBrand" class="form-control" required>
+              <option value="HXY">HXY</option>
+              <option value="HIKERS">HIKERS</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mã Model *</label>
+            <input type="text" id="prodModel" class="form-control" placeholder="VD: Q850, HK55A600A" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Kích cỡ màn hình (inch) *</label>
+            <input type="number" id="prodSize" class="form-control" value="55" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Độ phân giải</label>
+            <select id="prodResolution" class="form-control">
+              <option value="4K UHD">4K UHD (3840×2160)</option>
+              <option value="Full HD">Full HD (1920×1080)</option>
+              <option value="HD Ready">HD Ready (1366×768)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Công nghệ tấm nền</label>
+            <select id="prodPanel" class="form-control">
+              <option value="QLED Quantum Dot">QLED</option>
+              <option value="LED Direct">LED</option>
+              <option value="Mini LED">Mini LED</option>
+              <option value="OLED">OLED</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Link ảnh đại diện (URL)</label>
+            <input type="text" id="prodThumb" class="form-control" placeholder="https://... hoặc /images/products/...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Điểm nổi bật (mỗi dòng 1 ý)</label>
+          <textarea id="prodDesc" class="form-control" rows="3" placeholder="Tấm nền QLED sắc nét&#10;Hệ điều hành Google TV thông minh&#10;Bảo hành 24 tháng chính hãng"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu sản phẩm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Data sources -->
+<script src="../data/products.js"></script>
+<script src="../data/service_centers.js"></script>
+<!-- Admin Core JS -->
+<script src="./js/admin.js"></script>
+</body>
+</html>
