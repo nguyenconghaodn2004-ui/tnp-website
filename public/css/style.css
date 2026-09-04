@@ -4899,16 +4899,27 @@ select.form-control { cursor: pointer; }
     overflow: hidden;
   }
   .brand-media-preview {
-    padding: 6px;
-    border-radius: 6px;
-    margin-top: 4px;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+    margin-top: 6px !important;
+    background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%) !important;
+    border: 1px solid var(--border) !important;
+    text-align: center !important;
   }
   .brand-detail-tv-img {
-    height: 95px;
+    width: 100% !important;
+    max-width: 320px !important;
+    height: 180px !important; /* Tăng từ 95px lên 180px để thấy rõ nét sản phẩm TV */
+    object-fit: contain !important;
+    margin-inline: auto !important;
+    filter: drop-shadow(0 6px 16px rgba(0,0,0,.18)) !important;
+    display: block !important;
   }
   .brand-media-caption {
-    font-size: 9.5px;
-    margin-top: 3px;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    margin-top: 6px !important;
+    color: var(--text-secondary) !important;
   }
   .brand-features-grid {
     display: grid;
