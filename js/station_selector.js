@@ -136,7 +136,15 @@
       if (selectedCityTitle) selectedCityTitle.textContent = `Tỉnh / TP. ${pData.province}`;
       if (selectedCityCount) selectedCityCount.textContent = `${pData.stations.length} Trạm kỹ thuật`;
 
-      stationsListWrap.innerHTML = pData.stations.map((s, idx) => `
+      // Limit initial display on mobile / compact view to avoid stretching the page
+      const DEFAULT_LIMIT = 3;
+      const totalStations = pData.stations.length;
+      const isExpanded = !!expandedProvinces[provinceName];
+      const stationsToDisplay = (isExpanded || totalStations <= DEFAULT_LIMIT)
+        ? pData.stations
+        : pData.stations.slice(0, DEFAULT_LIMIT);
+
+      const cardsHtml = stationsToDisplay.map((s, idx) => `
         <div class="selected-station-card" id="station-card-${s.id}">
           <div class="station-card-top">
             <div>
@@ -173,13 +181,53 @@
           </div>
         </div>
       `).join('');
+
+      // Show more / Collapse button if more than DEFAULT_LIMIT
+      let toggleHtml = '';
+      if (totalStations > DEFAULT_LIMIT) {
+        if (!isExpanded) {
+          const remaining = totalStations - DEFAULT_LIMIT;
+          toggleHtml = `
+            <div class="station-toggle-wrap">
+              <button type="button" class="btn-station-toggle btn-station-more" 
+                      onclick="TNP_StationSelector.toggleShowMore('${provinceName}', true)">
+                <span>Xem thêm ${remaining} trạm khác tại ${provinceName}</span>
+                <i class="fas fa-chevron-down"></i>
+              </button>
+            </div>
+          `;
+        } else {
+          toggleHtml = `
+            <div class="station-toggle-wrap">
+              <button type="button" class="btn-station-toggle btn-station-less" 
+                      onclick="TNP_StationSelector.toggleShowMore('${provinceName}', false)">
+                <span>Thu gọn danh sách trạm (hiển thị ${DEFAULT_LIMIT} trạm)</span>
+                <i class="fas fa-chevron-up"></i>
+              </button>
+            </div>
+          `;
+        }
+      }
+
+      stationsListWrap.innerHTML = cardsHtml + toggleHtml;
     }
+
+    // State to remember user expand preference per province
+    const expandedProvinces = {};
 
     // Public method to select province
     window.TNP_StationSelector = {
       selectProvince(pName) {
         selectedProvinceName = pName;
         renderCityList();
+      },
+
+      toggleShowMore(pName, expand) {
+        expandedProvinces[pName] = !!expand;
+        renderStationsList(pName);
+        if (!expand && stationsListWrap) {
+          stationsListWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       },
 
       chooseStationForBooking(stationName, province) {
