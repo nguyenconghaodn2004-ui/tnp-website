@@ -83,6 +83,30 @@ app.get('/api/admin/contacts', (req, res) => {
   res.json({ success: true, data: contactsList });
 });
 
+// API Cập nhật trạng thái liên hệ (chờ liên hệ -> đang tư vấn -> hoàn tất -> hủy)
+app.put('/api/admin/contacts/:id', (req, res) => {
+  const { id } = req.params;
+  const { status, notes } = req.body;
+  const lead = contactsList.find(c => c.id === id);
+  if (!lead) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu tư vấn này.' });
+  }
+  if (status) lead.status = status;
+  if (notes !== undefined) lead.notes = notes;
+  res.json({ success: true, data: lead, message: 'Đã cập nhật trạng thái liên hệ!' });
+});
+
+// API Xóa yêu cầu liên hệ
+app.delete('/api/admin/contacts/:id', (req, res) => {
+  const { id } = req.params;
+  const idx = contactsList.findIndex(c => c.id === id);
+  if (idx === -1) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu tư vấn này.' });
+  }
+  contactsList.splice(idx, 1);
+  res.json({ success: true, message: 'Đã xóa yêu cầu tư vấn thành công.' });
+});
+
 // Handle form submissions (contact / consultation)
 app.post('/api/contact', (req, res) => {
   const { name, phone, product, message } = req.body;
@@ -97,7 +121,8 @@ app.post('/api/contact', (req, res) => {
     product: product || 'Tư vấn chung',
     message: message || '',
     time: new Date().toLocaleString('vi-VN'),
-    status: 'pending'
+    status: 'pending',
+    notes: ''
   };
 
   contactsList.unshift(newLead);

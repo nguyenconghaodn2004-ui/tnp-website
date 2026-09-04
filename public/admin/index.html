@@ -49,11 +49,18 @@
         <span class="nav-badge" id="badgeStationsCount">0</span>
       </a>
 
+      <a class="nav-item" data-tab="banners">
+        <i class="fas fa-images"></i>
+        <span>Banner & Hero</span>
+        <span class="nav-badge" id="badgeBannersCount">3</span>
+      </a>
+
       <div class="nav-section-title">Hệ thống & Khách hàng</div>
 
       <a class="nav-item" data-tab="contacts">
         <i class="fas fa-envelope-open-text"></i>
         <span>Yêu cầu liên hệ</span>
+        <span class="nav-badge" id="badgeContactsCount" style="background: #dc2626;">0</span>
       </a>
 
       <a class="nav-item" data-tab="settings">
@@ -247,12 +254,50 @@
         </div>
       </section>
 
+      <!-- ── TAB: BANNERS ── -->
+      <section class="tab-panel" id="tab-banners">
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-images"></i> Quản lý Banner Hero & Slide Trang Chủ</h2>
+            <div class="card-actions">
+              <button class="btn btn-primary" onclick="openAddBannerModal()">
+                <i class="fas fa-plus-circle"></i> Thêm Banner Mới
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">Thứ tự</th>
+                    <th style="width: 140px;">Hình ảnh</th>
+                    <th>Tiêu đề Slide</th>
+                    <th>Nhãn Badge</th>
+                    <th>Nút Xem</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 100px; text-align: center;">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="bannersTableBody">
+                  <!-- Injected via admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── TAB: CONTACTS ── -->
       <section class="tab-panel" id="tab-contacts">
         <div class="admin-card">
           <div class="card-header">
             <h2 class="card-title"><i class="fas fa-headset"></i> Yêu cầu tư vấn & Liên hệ từ khách hàng</h2>
             <div class="card-actions">
+              <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Tìm theo tên, SĐT..." oninput="filterContacts(this.value)">
+              </div>
               <button class="btn btn-secondary btn-sm" onclick="fetchContactsFromServer()">
                 <i class="fas fa-sync-alt"></i> Làm mới
               </button>
@@ -268,8 +313,9 @@
                     <th>Số điện thoại</th>
                     <th>Dòng TV quan tâm</th>
                     <th>Nội dung lời nhắn</th>
-                    <th>Thời gian</th>
+                    <th>Thời gian gửi</th>
                     <th>Trạng thái</th>
+                    <th style="width: 110px; text-align: center;">Xử lý</th>
                   </tr>
                 </thead>
                 <tbody id="contactsTableBody">
@@ -394,6 +440,109 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Hủy bỏ</button>
         <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu sản phẩm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA BANNER HERO
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="bannerModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 class="modal-title" id="bannerModalTitle">Thêm Banner Hero Mới</h3>
+      <button class="modal-close" onclick="closeBannerModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form onsubmit="saveBannerForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="bannerId">
+
+        <div class="form-group">
+          <label class="form-label">Tiêu đề chính của Banner *</label>
+          <input type="text" id="bannerTitle" class="form-control" placeholder="VD: Smart TV HXY 100 Inch - QLED Đỉnh Cao" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nhãn Badge góc trên</label>
+            <input type="text" id="bannerBadge" class="form-control" placeholder="VD: FLAGSHIP CINEMA">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thứ tự hiển thị</label>
+            <input type="number" id="bannerOrder" class="form-control" value="1" min="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Đường dẫn hình ảnh Banner (URL hoặc file nội bộ) *</label>
+          <input type="text" id="bannerImage" class="form-control" placeholder="./images/banner_hxy_100.jpg" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Đoạn mô tả ngắn</label>
+          <textarea id="bannerDesc" class="form-control" rows="2" placeholder="Màn hình vô cực 100 inch chuẩn rạp chiếu phim IMAX thế hệ mới..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Link nút bấm chính</label>
+            <input type="text" id="bannerLinkPrimary" class="form-control" placeholder="./tv-hxy.html">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trạng thái kích hoạt</label>
+            <select id="bannerActive" class="form-control">
+              <option value="true">Hiển thị trên trang chủ</option>
+              <option value="false">Tạm ẩn</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeBannerModal()">Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu Banner</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: XỬ LÝ LIÊN HỆ / TƯ VẤN (LEAD)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="leadModal">
+  <div class="modal-dialog" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Cập nhật yêu cầu tư vấn</h3>
+      <button class="modal-close" onclick="closeLeadModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form onsubmit="saveLeadStatus(event)">
+      <div class="modal-body">
+        <input type="hidden" id="leadId">
+        <div class="form-group">
+          <label class="form-label">Khách hàng</label>
+          <input type="text" id="leadCustomerName" class="form-control" readonly style="background: #f1f5f9;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số điện thoại</label>
+          <input type="text" id="leadCustomerPhone" class="form-control" readonly style="background: #f1f5f9;">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trạng thái xử lý *</label>
+          <select id="leadStatusSelect" class="form-control">
+            <option value="pending">Chờ liên hệ</option>
+            <option value="in_progress">Đang gọi tư vấn</option>
+            <option value="completed">Đã hoàn tất / Đã chốt đơn</option>
+            <option value="cancelled">Hủy / Không liên lạc được</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ghi chú của nhân viên CSKH</label>
+          <textarea id="leadNotes" class="form-control" rows="3" placeholder="VD: Đã gọi khách lúc 10h, khách quan tâm mẫu HXY 55 inch..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeLeadModal()">Đóng</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Cập nhật</button>
       </div>
     </form>
   </div>

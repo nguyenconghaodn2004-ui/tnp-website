@@ -11,10 +11,13 @@
 let currentTab = 'dashboard';
 let productsList = [];
 let serviceCentersList = [];
+let bannersList = [];
+let contactsList = [];
 
 // Storage keys
 const STORAGE_PRODUCTS_KEY = 'tnp_admin_products_override';
 const STORAGE_STATIONS_KEY = 'tnp_admin_stations_override';
+const STORAGE_BANNERS_KEY = 'tnp_admin_banners_override';
 
 // ══════════════════════════════════════════════
 //  AUTH GUARD
@@ -104,6 +107,7 @@ function switchTab(tabId) {
     dashboard: 'Tổng quan hệ thống',
     products: 'Quản lý Sản phẩm TV',
     stations: 'Quản lý Trạm bảo hành',
+    banners: 'Quản lý Banner & Hero Slide',
     contacts: 'Yêu cầu tư vấn & Liên hệ',
     settings: 'Cài đặt hệ thống'
   };
@@ -152,6 +156,53 @@ function loadData() {
   } else if (typeof TNP_SERVICE_CENTERS !== 'undefined') {
     serviceCentersList = [...TNP_SERVICE_CENTERS];
   }
+
+  // Load banners
+  const savedBanners = localStorage.getItem(STORAGE_BANNERS_KEY);
+  if (savedBanners) {
+    try {
+      bannersList = JSON.parse(savedBanners);
+    } catch (e) {
+      bannersList = getDefaultBanners();
+    }
+  } else {
+    bannersList = getDefaultBanners();
+  }
+}
+
+function getDefaultBanners() {
+  return [
+    {
+      id: 'banner-1',
+      title: 'Smart TV HXY 100 Inch - QLED Đỉnh Cao Rạp Phim Tại Gia',
+      badge: 'TV HXY VIỆT NAM · FLAGSHIP CINEMA',
+      image: './images/banner_hxy_100.jpg',
+      desc: 'Màn hình vô cực 100 inch chuẩn rạp chiếu phim IMAX thế hệ mới, tấm nền QLED 4K siêu sắc nét, 144Hz VRR.',
+      link: './tv-hxy.html',
+      order: 1,
+      active: true
+    },
+    {
+      id: 'banner-2',
+      title: 'HIKERS Mini LED 75 Inch - Đỉnh Cao Tương Phản 1000+ Dimming Zones',
+      badge: 'HIKERS VIỆT NAM · CÔNG NGHỆ MINI LED',
+      image: './images/banner_hikers_75.jpg',
+      desc: 'Công nghệ đèn nền Mini LED siêu sáng 1200 nit, dải màu 98% DCI-P3, âm thanh Dolby Atmos sống động.',
+      link: './tv-hikers.html',
+      order: 2,
+      active: true
+    },
+    {
+      id: 'banner-3',
+      title: 'Dịch Vụ Bảo Hành Smart TV Toàn Quốc - Chuẩn Mực & Uy Tín',
+      badge: 'TNP CARE · DỊCH VỤ TOÀN QUỐC',
+      image: './images/banner_tnp_care.jpg',
+      desc: 'Mạng lưới 80 - 100 trạm bảo hành phủ sóng 63 tỉnh thành, cam kết linh kiện chính hãng 100%.',
+      link: './tram-bao-hanh.html',
+      order: 3,
+      active: true
+    }
+  ];
 }
 
 function saveProducts() {
@@ -166,6 +217,12 @@ function saveStations() {
   renderAll();
 }
 
+function saveBanners() {
+  localStorage.setItem(STORAGE_BANNERS_KEY, JSON.stringify(bannersList));
+  showToast('Đã lưu danh sách Banner Hero thành công!', 'success');
+  renderAll();
+}
+
 // ══════════════════════════════════════════════
 //  RENDER FUNCTIONS
 // ══════════════════════════════════════════════
@@ -174,6 +231,7 @@ function renderAll() {
   renderRecentProducts();
   renderProductsTable();
   renderStationsTable();
+  renderBannersTable();
 }
 
 // ── Stats ──
@@ -441,8 +499,129 @@ function showToast(message, type = 'info') {
   }, 3000);
 }
 
+// ── Banners Table ──
+function renderBannersTable() {
+  const tbody = document.getElementById('bannersTableBody');
+  if (!tbody) return;
+
+  const badgeBanners = document.getElementById('badgeBannersCount');
+  if (badgeBanners) badgeBanners.textContent = bannersList.length;
+
+  if (bannersList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: var(--adm-text-muted);">Chưa có banner nào. Nhấn "Thêm Banner Mới" để tạo.</td></tr>`;
+    return;
+  }
+
+  // Sort by order
+  const sorted = [...bannersList].sort((a, b) => (a.order || 99) - (b.order || 99));
+
+  tbody.innerHTML = sorted.map((b, idx) => `
+    <tr>
+      <td style="font-weight: 700; color: var(--adm-accent);">#${b.order || idx + 1}</td>
+      <td>
+        <img src="${b.image || '../images/banner_hxy_100.jpg'}" 
+             alt="${b.title}" 
+             style="width: 120px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--adm-border);"
+             onerror="this.src='../images/banner_hxy_100.jpg'">
+      </td>
+      <td>
+        <strong>${b.title}</strong><br>
+        <small style="color: #64748b;">${b.desc ? b.desc.substring(0, 60) + '...' : ''}</small>
+      </td>
+      <td><span class="badge badge-brand-hxy">${b.badge || 'HERO'}</span></td>
+      <td><small>${b.link || '#'}</small></td>
+      <td>
+        <span class="badge ${b.active ? 'badge-success' : 'badge-secondary'}">
+          ${b.active ? 'Đang bật' : 'Tạm ẩn'}
+        </span>
+      </td>
+      <td>
+        <div class="action-btn-group">
+          <button class="btn-icon" title="Chỉnh sửa" onclick="openEditBannerModal('${b.id}')">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="btn-icon btn-icon-delete" title="Xóa" onclick="deleteBanner('${b.id}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openAddBannerModal() {
+  document.getElementById('bannerModalTitle').textContent = 'Thêm Banner Hero Mới';
+  document.getElementById('bannerId').value = 'banner-' + Date.now();
+  document.getElementById('bannerTitle').value = '';
+  document.getElementById('bannerBadge').value = 'TV HXY VIỆT NAM';
+  document.getElementById('bannerOrder').value = bannersList.length + 1;
+  document.getElementById('bannerImage').value = './images/banner_hxy_100.jpg';
+  document.getElementById('bannerDesc').value = '';
+  document.getElementById('bannerLinkPrimary').value = './tv-hxy.html';
+  document.getElementById('bannerActive').value = 'true';
+
+  document.getElementById('bannerModal').classList.add('open');
+}
+
+function openEditBannerModal(id) {
+  const b = bannersList.find(item => item.id === id);
+  if (!b) return;
+
+  document.getElementById('bannerModalTitle').textContent = 'Chỉnh sửa Banner Hero';
+  document.getElementById('bannerId').value = b.id;
+  document.getElementById('bannerTitle').value = b.title || '';
+  document.getElementById('bannerBadge').value = b.badge || '';
+  document.getElementById('bannerOrder').value = b.order || 1;
+  document.getElementById('bannerImage').value = b.image || '';
+  document.getElementById('bannerDesc').value = b.desc || '';
+  document.getElementById('bannerLinkPrimary').value = b.link || '';
+  document.getElementById('bannerActive').value = b.active !== false ? 'true' : 'false';
+
+  document.getElementById('bannerModal').classList.add('open');
+}
+
+function closeBannerModal() {
+  document.getElementById('bannerModal').classList.remove('open');
+}
+
+function saveBannerForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('bannerId').value;
+  const title = document.getElementById('bannerTitle').value.trim();
+  const badge = document.getElementById('bannerBadge').value.trim();
+  const order = parseInt(document.getElementById('bannerOrder').value) || 1;
+  const image = document.getElementById('bannerImage').value.trim();
+  const desc = document.getElementById('bannerDesc').value.trim();
+  const link = document.getElementById('bannerLinkPrimary').value.trim();
+  const active = document.getElementById('bannerActive').value === 'true';
+
+  if (!title || !image) {
+    alert('Vui lòng nhập tiêu đề và link ảnh banner.');
+    return;
+  }
+
+  const existingIdx = bannersList.findIndex(b => b.id === id);
+  const bannerObj = { id, title, badge, order, image, desc, link, active };
+
+  if (existingIdx >= 0) {
+    bannersList[existingIdx] = bannerObj;
+  } else {
+    bannersList.push(bannerObj);
+  }
+
+  closeBannerModal();
+  saveBanners();
+}
+
+function deleteBanner(id) {
+  if (confirm('Bạn có chắc chắn muốn xóa Banner này?')) {
+    bannersList = bannersList.filter(b => b.id !== id);
+    saveBanners();
+  }
+}
+
 // ══════════════════════════════════════════════
-//  CONTACTS & LEADS
+//  CONTACTS & LEADS MANAGEMENT
 // ══════════════════════════════════════════════
 async function fetchContactsFromServer() {
   const tbody = document.getElementById('contactsTableBody');
@@ -452,43 +631,160 @@ async function fetchContactsFromServer() {
     const res = await fetch('/api/admin/contacts');
     if (res.ok) {
       const json = await res.json();
-      if (json.data && json.data.length > 0) {
-        renderContactsTable(json.data);
+      if (json.data) {
+        contactsList = json.data;
+        renderContactsTable(contactsList);
         return;
       }
     }
   } catch (e) {
-    console.warn('Không thể tải contacts từ server, kiểm tra dữ liệu mẫu...');
+    console.warn('Không thể tải contacts từ server, hiển thị dữ liệu hiện thời...');
   }
 
-  // Nếu chưa có contact nào
-  tbody.innerHTML = `
-    <tr>
-      <td colspan="7" style="text-align: center; padding: 40px; color: var(--adm-text-muted);">
-        <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
-        Chưa có yêu cầu tư vấn mới nào từ khách hàng.
-      </td>
-    </tr>
-  `;
+  // Sample lead nếu trống hoàn toàn
+  if (contactsList.length === 0) {
+    contactsList = [
+      {
+        id: 'lead-sample-1',
+        name: 'Nguyễn Văn Hùng',
+        phone: '0908 123 456',
+        product: 'Smart TV HXY 100 Inch Cinema',
+        message: 'Tôi muốn tư vấn kích thước lắp phòng khách 40m2 và dịch vụ giao hàng tại TP.HCM',
+        time: new Date().toLocaleString('vi-VN'),
+        status: 'pending',
+        notes: ''
+      }
+    ];
+  }
+
+  renderContactsTable(contactsList);
+}
+
+function filterContacts(query) {
+  if (!query) {
+    renderContactsTable(contactsList);
+    return;
+  }
+  const q = query.toLowerCase();
+  const filtered = contactsList.filter(c => 
+    (c.name && c.name.toLowerCase().includes(q)) ||
+    (c.phone && c.phone.includes(q)) ||
+    (c.product && c.product.toLowerCase().includes(q))
+  );
+  renderContactsTable(filtered);
 }
 
 function renderContactsTable(leads) {
   const tbody = document.getElementById('contactsTableBody');
   if (!tbody) return;
 
-  tbody.innerHTML = leads.map((item, idx) => `
-    <tr>
-      <td>${idx + 1}</td>
-      <td><strong>${item.name || 'Khách hàng'}</strong></td>
-      <td>
-        <a href="tel:${item.phone}" style="color: var(--adm-accent); font-weight: 700; text-decoration: none;">
-          <i class="fas fa-phone-alt"></i> ${item.phone}
-        </a>
-      </td>
-      <td><span class="badge badge-brand-hxy">${item.product || 'Tư vấn'}</span></td>
-      <td><small>${item.message || 'Không có ghi chú'}</small></td>
-      <td><small style="color: #64748b;">${item.time || 'Vừa xong'}</small></td>
-      <td><span class="badge badge-warning">Chờ liên hệ</span></td>
-    </tr>
-  `).join('');
+  const badgeContacts = document.getElementById('badgeContactsCount');
+  const pendingCount = leads.filter(l => l.status === 'pending').length;
+  if (badgeContacts) badgeContacts.textContent = pendingCount;
+
+  if (leads.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 40px; color: var(--adm-text-muted);">
+          <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
+          Không tìm thấy yêu cầu liên hệ nào.
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  const statusMap = {
+    pending: { label: 'Chờ liên hệ', class: 'badge-warning' },
+    in_progress: { label: 'Đang tư vấn', class: 'badge-brand-hxy' },
+    completed: { label: 'Đã hoàn tất', class: 'badge-success' },
+    cancelled: { label: 'Đã hủy', class: 'badge-secondary' }
+  };
+
+  tbody.innerHTML = leads.map((item, idx) => {
+    const st = statusMap[item.status] || statusMap.pending;
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td><strong>${item.name || 'Khách hàng'}</strong></td>
+        <td>
+          <a href="tel:${item.phone}" style="color: var(--adm-accent); font-weight: 700; text-decoration: none;">
+            <i class="fas fa-phone-alt"></i> ${item.phone}
+          </a>
+        </td>
+        <td><span class="badge badge-brand-hxy">${item.product || 'Tư vấn chung'}</span></td>
+        <td>
+          <small>${item.message || 'Không có ghi chú'}</small>
+          ${item.notes ? `<div style="color: #0284c7; font-size: 11px; margin-top: 2px;"><strong>CSKH:</strong> ${item.notes}</div>` : ''}
+        </td>
+        <td><small style="color: #64748b;">${item.time || 'Vừa xong'}</small></td>
+        <td><span class="badge ${st.class}">${st.label}</span></td>
+        <td>
+          <div class="action-btn-group">
+            <button class="btn btn-secondary btn-sm" onclick="openLeadModal('${item.id}')" title="Cập nhật trạng thái">
+              <i class="fas fa-edit"></i> Xử lý
+            </button>
+            <button class="btn-icon btn-icon-delete" onclick="deleteLead('${item.id}')" title="Xóa yêu cầu">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openLeadModal(id) {
+  const lead = contactsList.find(c => c.id === id);
+  if (!lead) return;
+
+  document.getElementById('leadId').value = lead.id;
+  document.getElementById('leadCustomerName').value = lead.name || '';
+  document.getElementById('leadCustomerPhone').value = lead.phone || '';
+  document.getElementById('leadStatusSelect').value = lead.status || 'pending';
+  document.getElementById('leadNotes').value = lead.notes || '';
+
+  document.getElementById('leadModal').classList.add('open');
+}
+
+function closeLeadModal() {
+  document.getElementById('leadModal').classList.remove('open');
+}
+
+async function saveLeadStatus(e) {
+  e.preventDefault();
+  const id = document.getElementById('leadId').value;
+  const status = document.getElementById('leadStatusSelect').value;
+  const notes = document.getElementById('leadNotes').value.trim();
+
+  const lead = contactsList.find(c => c.id === id);
+  if (lead) {
+    lead.status = status;
+    lead.notes = notes;
+  }
+
+  try {
+    await fetch(`/api/admin/contacts/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, notes })
+    });
+  } catch (err) {}
+
+  closeLeadModal();
+  renderContactsTable(contactsList);
+  showToast('Đã cập nhật trạng thái tư vấn khách hàng!', 'success');
+}
+
+async function deleteLead(id) {
+  if (!confirm('Bạn có chắc chắn muốn xóa yêu cầu tư vấn này?')) return;
+
+  contactsList = contactsList.filter(c => c.id !== id);
+
+  try {
+    await fetch(`/api/admin/contacts/${id}`, { method: 'DELETE' });
+  } catch (err) {}
+
+  renderContactsTable(contactsList);
+  showToast('Đã xóa yêu cầu tư vấn thành công.', 'info');
 }
