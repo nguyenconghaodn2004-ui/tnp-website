@@ -4254,22 +4254,27 @@ select.form-control { cursor: pointer; }
 
 /* ── 768px ── */
 @media (max-width: 768px) {
-  :root { --header-h: 60px; }
+  :root { 
+    --header-h: 56px;
+    --space-12: 24px;
+    --space-16: 32px;
+    --space-20: 36px;
+  }
 
   .top-bar { display: none; }
 
   /* Header mobile layout */
   .header-inner {
     padding-inline: 12px;
-    gap: 10px;
+    gap: 8px;
   }
   .site-logo {
     gap: 8px;
-    max-width: calc(100% - 95px);
+    max-width: calc(100% - 90px);
     overflow: hidden;
   }
   .logo-tnp-img {
-    height: 38px;
+    height: 36px;
   }
   .logo-name {
     font-size: 13px;
@@ -4287,88 +4292,114 @@ select.form-control { cursor: pointer; }
     gap: 6px;
   }
   .header-search-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
+    width: 34px;
+    height: 34px;
+    font-size: 13px;
     border-radius: 8px;
   }
   .hamburger {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     border-radius: 8px;
     padding: 0;
   }
   .hamburger span {
-    width: 18px;
+    width: 17px;
   }
 
-  /* Cinematic Hero Mobile Optimization */
+  /* Compact Cinematic Hero (Trang Chu) */
   .hero-showcase.cinematic-hero {
-    min-height: 520px;
+    min-height: 390px;
   }
   .hero-slides {
-    min-height: 480px;
+    min-height: 350px;
+  }
+  .cinematic-bg {
+    background-position: center center;
+  }
+  .cinematic-overlay {
+    background: linear-gradient(180deg, 
+      rgba(6, 9, 17, 0.70) 0%, 
+      rgba(6, 9, 17, 0.88) 55%, 
+      rgba(6, 9, 17, 0.98) 100%);
   }
   .cinematic-content-wrap {
-    padding-block: 30px 20px;
+    padding-block: 18px 14px;
     max-width: 100%;
     text-align: left;
   }
   .cinematic-badge {
-    padding: 4px 12px;
-    margin-bottom: 12px;
+    padding: 3px 9px;
+    margin-bottom: 8px;
+    border-radius: 20px;
+  }
+  .badge-dot {
+    width: 6px;
+    height: 6px;
   }
   .badge-text {
-    font-size: 10px;
-    letter-spacing: 0.06em;
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
   }
   .cinematic-title {
-    font-size: 25px;
-    line-height: 1.22;
-    margin-bottom: 12px;
+    font-size: 19px;
+    line-height: 1.25;
+    margin-bottom: 6px;
   }
   .cinematic-desc {
-    font-size: 13.5px;
-    line-height: 1.6;
-    margin-bottom: 16px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    max-width: 100%;
+    color: rgba(226, 232, 240, 0.85);
   }
   .cinematic-specs-bar {
-    padding: 8px 12px;
-    gap: 8px;
-    margin-bottom: 20px;
-    border-radius: 10px;
+    padding: 6px 8px;
+    gap: 6px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .spec-item {
+    padding-inline: 4px;
   }
   .spec-val {
-    font-size: 13.5px;
+    font-size: 11.5px;
   }
   .spec-lbl {
-    font-size: 9.5px;
+    font-size: 8px;
   }
   .cinematic-actions {
-    gap: 10px;
+    gap: 8px;
   }
   .cinematic-actions .btn {
-    padding: 10px 18px;
-    font-size: 13px;
+    padding: 7px 12px;
+    font-size: 11.5px;
+    border-radius: 7px;
   }
 
   .cinematic-controls {
-    padding-block: 10px;
+    padding-block: 6px;
   }
   .hero-tab-btns {
     gap: 6px;
     overflow-x: auto;
     flex-wrap: nowrap;
     width: 100%;
-    padding-bottom: 4px;
+    padding-bottom: 2px;
     -webkit-overflow-scrolling: touch;
   }
   .hero-tab-btn {
-    padding: 6px 12px;
+    padding: 4px 8px;
+    border-radius: 7px;
     flex-shrink: 0;
   }
+  .tab-brand {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
   .tab-text strong {
-    font-size: 11px;
+    font-size: 10px;
   }
   .tab-text small {
     display: none;
@@ -4377,19 +4408,211 @@ select.form-control { cursor: pointer; }
     display: none;
   }
 
-  .section { padding-block: var(--space-12); }
-  .section-lg { padding-block: var(--space-16); }
-  .section-title { font-size: 24px; }
-  .cta-banner-title { font-size: 24px; }
+  /* Compact Corporate Hero (Gioi Thieu & Tram Bao Hanh) */
+  .tnp-corporate-hero {
+    padding-top: 20px;
+    padding-bottom: 28px;
+    background-position: center center;
+  }
+  .tnp-corporate-hero::before {
+    background: linear-gradient(180deg, 
+      rgba(7, 14, 28, 0.78) 0%, 
+      rgba(7, 14, 28, 0.92) 60%, 
+      rgba(7, 14, 28, 0.98) 100%);
+  }
+  .tnp-corporate-hero .breadcrumb {
+    margin-bottom: 10px;
+    font-size: 10.5px;
+  }
+  .tnp-hero-badge {
+    padding: 3px 8px;
+    font-size: 9.5px;
+    margin-bottom: 8px;
+  }
+  .tnp-hero-title {
+    font-size: 20px;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+  .tnp-hero-company-name {
+    font-size: 10.5px;
+    margin-bottom: 8px;
+  }
+  .tnp-hero-desc {
+    font-size: 11.5px;
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+  .tnp-hero-pills-row {
+    gap: 5px;
+    margin-bottom: 14px;
+  }
+  .tnp-pill-item {
+    font-size: 10.5px;
+    padding: 3px 7px;
+  }
+  .tnp-hero-actions {
+    gap: 6px;
+  }
+  .tnp-hero-actions .btn {
+    padding: 7px 12px;
+    font-size: 11.5px;
+  }
 
-  .brand-cards { grid-template-columns: 1fr; }
-  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .why-grid { grid-template-columns: 1fr; }
-  .tech-grid { grid-template-columns: repeat(2, 1fr); }
-  .support-grid { grid-template-columns: 1fr; }
+  /* Compact Sections & Grids */
+  .section { padding-block: 24px; }
+  .section-lg { padding-block: 30px; }
+  .section-sm { padding-block: 16px; }
+  .section-header { margin-bottom: 16px; }
+  .section-label { font-size: 9.5px; padding: 2px 8px; margin-bottom: 6px; }
+  .section-title { font-size: 18px; line-height: 1.25; }
+  .section-desc { font-size: 12px; line-height: 1.5; }
+  .cta-banner-title { font-size: 18px; }
 
-  .footer-grid { grid-template-columns: 1fr; gap: var(--space-6); }
-  .modal-body { grid-template-columns: 1fr; padding: var(--space-5); }
+  /* Brand Showcase Details on Mobile */
+  .brand-detail-box {
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .brand-detail-top {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+  }
+  .brand-badge-pill {
+    font-size: 9.5px;
+    padding: 3px 8px;
+    margin-bottom: 6px;
+  }
+  .brand-detail-heading {
+    font-size: 17px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .brand-detail-lead {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .brand-media-preview {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .brand-detail-tv-img {
+    height: 130px;
+  }
+  .brand-media-caption {
+    font-size: 10.5px;
+    margin-top: 6px;
+  }
+  .brand-features-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .brand-feat-card {
+    padding: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .brand-feat-card .feat-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .brand-feat-card h4 {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .brand-feat-card p {
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+  .brand-detail-footer {
+    gap: 10px;
+    padding-top: 12px;
+  }
+  .brand-models-preview {
+    gap: 4px;
+  }
+  .brand-models-preview .lbl {
+    font-size: 11px;
+    width: 100%;
+  }
+  .brand-models-preview .tag {
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+  .brand-btn-row {
+    width: 100%;
+    gap: 6px;
+  }
+  .brand-btn-row .btn {
+    flex: 1;
+    font-size: 11px;
+    padding: 6px 8px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Comparison Helper Table on Mobile */
+  .brand-compare-helper {
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .helper-header h3 {
+    font-size: 15px;
+  }
+  .helper-header p {
+    font-size: 11.5px;
+  }
+  .brand-comparison-table th, 
+  .brand-comparison-table td {
+    padding: 8px 10px;
+    font-size: 11.5px;
+  }
+
+  /* Compact Product Grid & Cards (2 columns on mobile) */
+  .brand-cards { grid-template-columns: 1fr; gap: 12px; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .product-card { border-radius: 10px; }
+  .product-thumb { aspect-ratio: 16/10; }
+  .product-brand-badge { top: 6px; left: 6px; padding: 2px 6px; font-size: 8.5px; }
+  .product-new-badge { top: 6px; right: 6px; padding: 2px 5px; font-size: 8px; }
+  .product-body { padding: 8px; }
+  .product-brand-label { font-size: 9.5px; margin-bottom: 2px; }
+  .product-name { font-size: 11.5px; line-height: 1.3; min-height: 30px; margin-bottom: 4px; }
+  .product-specs-row { gap: 3px; margin-bottom: 6px; }
+  .spec-pill { font-size: 9.5px; padding: 1px 5px; }
+  .product-meta-row { padding-top: 6px; }
+  .product-inquiry-label { font-size: 10.5px; }
+  .product-compare-wrap { display: none; } /* Hide bulky compare checkbox on 2-col mobile cards to keep layout clean */
+  .product-actions-row { gap: 4px; margin-top: 6px; }
+  .btn-card-detail, .btn-card-inquire { padding: 5px 6px; font-size: 10px; border-radius: 6px; }
+
+  /* Station Selection on Mobile */
+  .station-search-bar { margin-bottom: 14px; }
+  .station-search-input-wrap input { font-size: 12px; padding: 8px 12px 8px 34px; }
+  .station-region-pills { gap: 4px; }
+  .region-pill { font-size: 11px; padding: 4px 9px; }
+  .station-detail-col { padding: 14px; border-radius: 12px; }
+  .station-detail-header { padding-bottom: 10px; margin-bottom: 12px; }
+  .detail-city-name { font-size: 17px; }
+  .station-card { padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+  .station-title { font-size: 13px; }
+  .station-meta-row { font-size: 11.5px; gap: 6px; }
+
+  .why-grid { grid-template-columns: 1fr; gap: 10px; }
+  .tech-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .support-grid { grid-template-columns: 1fr; gap: 10px; }
+
+  .footer-grid { grid-template-columns: 1fr; gap: 20px; }
+  .footer-bottom { font-size: 11px; }
+  .modal-body { grid-template-columns: 1fr; padding: 12px; }
 
   .compare-bar .container { flex-direction: column; align-items: stretch; }
   .compare-slots { flex-direction: column; }
@@ -4397,23 +4620,23 @@ select.form-control { cursor: pointer; }
 
   .form-row { grid-template-columns: 1fr; }
 
-  .float-btns { right: 12px; bottom: 16px; }
-  .back-top { right: 12px; bottom: 170px; }
+  .float-btns { right: 8px; bottom: 12px; }
+  .back-top { right: 8px; bottom: 145px; }
 }
 
 /* ── 576px ── */
 @media (max-width: 576px) {
-  .hero-title { font-size: 26px; }
-  .hero-eyebrow, .section-label { font-size: 10px; }
-  .product-grid { grid-template-columns: 1fr; }
-  .tech-grid { grid-template-columns: 1fr; }
-  .brands-strip .container { gap: var(--space-4); }
-  .brands-list { gap: var(--space-4); }
-  .stats-bar-grid { grid-template-columns: 1fr 1fr; }
+  .hero-title { font-size: 20px; }
+  .hero-eyebrow, .section-label { font-size: 9px; }
+  .brands-strip .container { gap: 10px; }
+  .brands-list { gap: 10px; }
+  .stats-bar-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-num { font-size: 22px; }
+  .stat-lbl { font-size: 10px; }
   .cta-banner-actions { flex-direction: column; align-items: stretch; }
   .modal-actions { flex-direction: column; }
 
-  .cinematic-title { font-size: 22px; }
+  .cinematic-title { font-size: 18px; }
   .cinematic-actions { flex-direction: column; }
   .cinematic-actions .btn { width: 100%; justify-content: center; }
 }
@@ -4424,14 +4647,17 @@ select.form-control { cursor: pointer; }
     gap: 6px;
   }
   .logo-tnp-img {
-    height: 34px;
+    height: 30px;
   }
   .logo-name {
-    font-size: 12px;
+    font-size: 11px;
   }
   .logo-tagline {
     display: none;
   }
-  .product-filter { gap: var(--space-1); }
-  .filter-chip { padding: 6px 10px; font-size: 11.5px; }
+  .product-filter { gap: 4px; }
+  .filter-chip { padding: 4px 7px; font-size: 10.5px; }
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; } /* Giữ 2 cột gọn gàng ngay cả màn nhỏ */
+  .btn-card-detail, .btn-card-inquire { font-size: 9px; padding: 4px; }
 }
+
