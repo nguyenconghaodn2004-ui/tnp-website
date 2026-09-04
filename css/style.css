@@ -45,7 +45,7 @@
 
   /* Layout */
   --container:    1200px;
-  --header-h:     68px;
+  --header-h:     76px;
   --top-bar-h:    36px;
   --full-header:  calc(var(--top-bar-h) + var(--header-h));
 
@@ -376,16 +376,16 @@ input, select, textarea { font-family: inherit; }
 .site-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-shrink: 0;
   text-decoration: none;
 }
 .logo-img {
-  height: 48px;
+  height: 54px;
   width: auto;
 }
 .logo-tnp-img {
-  height: 48px;
+  height: 54px;
   width: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,.15));
@@ -394,10 +394,10 @@ input, select, textarea { font-family: inherit; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
 }
 .logo-name {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 900;
   letter-spacing: .01em;
   line-height: 1.1;
@@ -406,7 +406,7 @@ input, select, textarea { font-family: inherit; }
 .logo-tn { color: var(--tnp-blue); }
 .logo-p  { color: var(--tnp-red); }
 .logo-tagline {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
