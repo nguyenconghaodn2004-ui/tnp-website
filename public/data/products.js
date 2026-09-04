@@ -41,10 +41,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: false,
     isFeatured: false,
-    thumbnail: "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk32a500a-0.jpg",
+    thumbnail: "./images/products/thumb_ma-hk32a500a-0.jpg",
     images: [
-      "https://hikersvietnam.com/storage/uploads/noidung/ma-hk32a500a-0.jpg",
-      "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk32a500a-0.jpg"
+      "./images/products/ma-hk32a500a-0.jpg",
+      "./images/products/thumb_ma-hk32a500a-0.jpg"
     ],
     sourceUrl: "https://hikersvietnam.com/ma-hk32a500a",
     tags: ["HIKERS", "32 inch", "HD", "Google TV", "Phòng ngủ"],
@@ -96,10 +96,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: false,
     isFeatured: true,
-    thumbnail: "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk43a500fa-0.jpg",
+    thumbnail: "./images/products/thumb_ma-hk43a500fa-0.jpg",
     images: [
-      "https://hikersvietnam.com/storage/uploads/noidung/ma-hk43a500fa-0.jpg",
-      "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk43a500fa-0.jpg"
+      "./images/products/ma-hk43a500fa-0.jpg",
+      "./images/products/thumb_ma-hk43a500fa-0.jpg"
     ],
     sourceUrl: "https://hikersvietnam.com/ma-hk43a500fa",
     tags: ["HIKERS", "43 inch", "Full HD", "Google TV", "Bán chạy"],
@@ -151,10 +151,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: true,
     isFeatured: true,
-    thumbnail: "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk55a500ua-0.jpg",
+    thumbnail: "./images/products/thumb_ma-hk55a500ua-0.jpg",
     images: [
-      "https://hikersvietnam.com/storage/uploads/noidung/ma-hk55a500ua-0.jpg",
-      "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk55a500ua-0.jpg"
+      "./images/products/ma-hk55a500ua-0.jpg",
+      "./images/products/thumb_ma-hk55a500ua-0.jpg"
     ],
     sourceUrl: "https://hikersvietnam.com/ma-hk55a500ua",
     tags: ["HIKERS", "55 inch", "4K UHD", "Google TV", "Dolby Atmos", "Hot"],
@@ -206,10 +206,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: true,
     isFeatured: true,
-    thumbnail: "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk65a500ua-65-0.jpg",
+    thumbnail: "./images/products/thumb_ma-hk65a500ua-65-0.jpg",
     images: [
-      "https://hikersvietnam.com/storage/uploads/noidung/ma-hk65a500ua-65-0.jpg",
-      "https://hikersvietnam.com/storage/uploads/noidung/thumb/ma-hk65a500ua-65-0.jpg"
+      "./images/products/ma-hk65a500ua-65-0.jpg",
+      "./images/products/thumb_ma-hk65a500ua-65-0.jpg"
     ],
     sourceUrl: "https://hikersvietnam.com/ma-hk65a500ua-65",
     tags: ["HIKERS", "65 inch", "4K UHD", "Dolby Vision", "Màn hình lớn"],
@@ -261,10 +261,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: false,
     isFeatured: false,
-    thumbnail: "https://hikersvietnam.com/storage/uploads/noidung/thumb/dong-hk-m600-0.jpg",
+    thumbnail: "./images/products/thumb_dong-hk-m600-0.jpg",
     images: [
-      "https://hikersvietnam.com/storage/uploads/noidung/dong-hk-m600-0.jpg",
-      "https://hikersvietnam.com/storage/uploads/noidung/thumb/dong-hk-m600-0.jpg"
+      "./images/products/dong-hk-m600-0.jpg",
+      "./images/products/thumb_dong-hk-m600-0.jpg"
     ],
     sourceUrl: "https://hikersvietnam.com/dong-hk-m600",
     tags: ["HIKERS", "M600 Series", "50 inch", "QLED", "4K UHD"],
@@ -316,10 +316,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: true,
     isFeatured: true,
-    thumbnail: "https://hikersvietnam.com/storage/uploads/noidung/thumb/dong-hk-s700-0.jpg",
+    thumbnail: "./images/products/thumb_dong-hk-s700-0.jpg",
     images: [
-      "https://hikersvietnam.com/storage/uploads/noidung/dong-hk-s700-0.jpg",
-      "https://hikersvietnam.com/storage/uploads/noidung/thumb/dong-hk-s700-0.jpg"
+      "./images/products/dong-hk-s700-0.jpg",
+      "./images/products/thumb_dong-hk-s700-0.jpg"
     ],
     sourceUrl: "https://hikersvietnam.com/dong-hk-s700",
     tags: ["HIKERS", "S700 Flagship", "75 inch", "Mini LED", "144Hz", "Gaming"],
@@ -375,10 +375,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: true,
     isFeatured: true,
-    thumbnail: "https://hxy-vietnam.com/storage/uploads/noidung/thumb/hxy-oled-65-inch-b650-0.jpg",
+    thumbnail: "./images/products/thumb_hxy-oled-65-inch-b650-0.jpg",
     images: [
-      "https://hxy-vietnam.com/storage/uploads/noidung/hxy-oled-65-inch-b650-0.jpg",
-      "https://hxy-vietnam.com/storage/uploads/noidung/thumb/hxy-oled-65-inch-b650-0.jpg"
+      "./images/products/hxy-oled-65-inch-b650-0.jpg",
+      "./images/products/thumb_hxy-oled-65-inch-b650-0.jpg"
     ],
     sourceUrl: "https://hxy-vietnam.com/tv-hxy-4k-hdr-b650",
     tags: ["HXY", "B650", "65 inch", "4K HDR", "OLED", "Flagship"],
@@ -430,10 +430,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: false,
     isFeatured: true,
-    thumbnail: "https://hxy-vietnam.com/storage/uploads/noidung/thumb/tv-hxy-4k-hdr-p750-0.jpg",
+    thumbnail: "./images/products/thumb_tv-hxy-4k-hdr-p750-0.jpg",
     images: [
-      "https://hxy-vietnam.com/storage/uploads/noidung/tv-hxy-4k-hdr-p750-0.jpg",
-      "https://hxy-vietnam.com/storage/uploads/noidung/thumb/tv-hxy-4k-hdr-p750-0.jpg"
+      "./images/products/tv-hxy-4k-hdr-p750-0.jpg",
+      "./images/products/thumb_tv-hxy-4k-hdr-p750-0.jpg"
     ],
     sourceUrl: "https://hxy-vietnam.com/tv-hxy-4k-hdr-p750",
     tags: ["HXY", "P750", "55 inch", "4K HDR", "Google TV", "Bán chạy"],
@@ -485,10 +485,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: true,
     isFeatured: true,
-    thumbnail: "https://hxy-vietnam.com/storage/uploads/noidung/thumb/hxy-oled-75-inch-q850-0.jpg",
+    thumbnail: "./images/products/thumb_hxy-oled-75-inch-q850-0.jpg",
     images: [
-      "https://hxy-vietnam.com/storage/uploads/noidung/hxy-oled-75-inch-q850-0.jpg",
-      "https://hxy-vietnam.com/storage/uploads/noidung/thumb/hxy-oled-75-inch-q850-0.jpg"
+      "./images/products/hxy-oled-75-inch-q850-0.jpg",
+      "./images/products/thumb_hxy-oled-75-inch-q850-0.jpg"
     ],
     sourceUrl: "https://hxy-vietnam.com/tv-hxy-qled-q850",
     tags: ["HXY", "Q850", "75 inch", "QLED", "120Hz", "Dolby Atmos"],
@@ -540,10 +540,10 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: true,
     isFeatured: true,
-    thumbnail: "https://hxy-vietnam.com/storage/uploads/noidung/thumb/hxy-oled-100-inch-s950-1.jpg",
+    thumbnail: "./images/products/thumb_hxy-oled-100-inch-s950-1.jpg",
     images: [
-      "https://hxy-vietnam.com/storage/uploads/noidung/hxy-oled-100-inch-s950-1.jpg",
-      "https://hxy-vietnam.com/storage/uploads/noidung/hxy-oled-100-inch-s950-0.jpg"
+      "./images/products/hxy-oled-100-inch-s950-1.jpg",
+      "./images/products/hxy-oled-100-inch-s950-0.jpg"
     ],
     sourceUrl: "https://hxy-vietnam.com/tv-hxy-qled-s950",
     tags: ["HXY", "S950", "100 inch", "Ultra Large", "QLED", "144Hz", "Cinema"],
@@ -595,9 +595,9 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: false,
     isFeatured: false,
-    thumbnail: "https://hxy-vietnam.com/storage/uploads/noidung/thumb/tv-hxy-4k-hdr-p750-0.jpg",
+    thumbnail: "./images/products/thumb_tv-hxy-4k-hdr-p750-0.jpg",
     images: [
-      "https://hxy-vietnam.com/storage/uploads/noidung/tv-hxy-4k-hdr-p750-0.jpg"
+      "./images/products/tv-hxy-4k-hdr-p750-0.jpg"
     ],
     sourceUrl: "https://hxy-vietnam.com/tv-man-hinh-tv/",
     tags: ["HXY", "43 inch", "4K UHD", "Google TV", "Phòng ngủ"],
@@ -649,9 +649,9 @@ const products = [
     warranty: "24 tháng chính hãng",
     isNew: false,
     isFeatured: false,
-    thumbnail: "https://hxy-vietnam.com/storage/uploads/noidung/thumb/hxy-oled-65-inch-b650-0.jpg",
+    thumbnail: "./images/products/thumb_hxy-oled-65-inch-b650-0.jpg",
     images: [
-      "https://hxy-vietnam.com/storage/uploads/noidung/thumb/hxy-oled-65-inch-b650-0.jpg"
+      "./images/products/thumb_hxy-oled-65-inch-b650-0.jpg"
     ],
     sourceUrl: "https://hxy-vietnam.com/tv-man-hinh-tv/",
     tags: ["HXY", "32 inch", "HD", "Google TV", "Giá tốt"],
