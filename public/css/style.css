@@ -81,11 +81,18 @@
 /* ════════════════════════════════════════
    RESET & BASE
    ════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-box-sizing: border-box;
+}
 
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -102,13 +109,37 @@ body {
   overflow-x: hidden;
   position: relative;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-overflow-scrolling: touch;
 }
 
-a { text-decoration: none; color: inherit; }
+a {
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
 ul, ol { list-style: none; }
-img, video { max-width: 100%; height: auto; display: block; }
-button { cursor: pointer; font-family: inherit; border: none; background: none; }
-input, select, textarea { font-family: inherit; }
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  -ms-interpolation-mode: bicubic;
+}
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+input, select, textarea {
+  font-family: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
 
 /* ════════════════════════════════════════
    LAYOUT UTILITIES
@@ -759,6 +790,7 @@ input, select, textarea { font-family: inherit; }
   background: rgba(30, 58, 138, 0.35);
   border: 1px solid rgba(96, 165, 250, 0.35);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   margin-bottom: 20px;
 }
 .cinematic-badge.hikers-badge {
@@ -900,6 +932,7 @@ input, select, textarea { font-family: inherit; }
 .btn-glass {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #fff;
 }
@@ -4609,7 +4642,7 @@ select.form-control { cursor: pointer; }
     background-position: 85% center !important;
   }
   .brand-hero-content {
-    max-width: 58% !important;
+    max-width: 70% !important;
     text-align: left !important;
     margin: 0 !important;
     margin-right: auto !important;
@@ -4618,16 +4651,18 @@ select.form-control { cursor: pointer; }
     align-items: flex-start !important;
   }
   .brand-badge-pill {
-    font-size: 7.5px !important;
-    padding: 2px 5px !important;
-    margin-bottom: 2px !important;
+    font-size: 8.5px !important;
+    padding: 3px 7px !important;
+    margin-bottom: 4px !important;
     align-self: flex-start !important;
+    font-weight: 700 !important;
   }
   .brand-hero-title {
-    font-size: 13.5px !important;
-    line-height: 1.18 !important;
-    margin-bottom: 3px !important;
+    font-size: 15px !important;
+    line-height: 1.22 !important;
+    margin-bottom: 4px !important;
     text-align: left !important;
+    font-weight: 900 !important;
   }
   .brand-hero-desc {
     display: none !important; /* Ẩn bớt chữ để thoáng banner */
@@ -4636,26 +4671,27 @@ select.form-control { cursor: pointer; }
     display: flex !important;
     flex-direction: row !important;
     justify-content: flex-start !important;
-    align-items: flex-start !important;
-    gap: 4px !important;
+    align-items: center !important;
+    gap: 6px !important;
     width: auto !important;
     flex-wrap: wrap !important;
-    margin-top: 2px !important;
+    margin-top: 4px !important;
   }
   .brand-hero-actions .btn {
     flex: 0 0 auto !important;
     justify-content: flex-start !important;
-    padding: 3px 7px !important;
-    font-size: 9px !important;
-    border-radius: 4px !important;
+    padding: 5px 10px !important;
+    font-size: 10px !important;
+    border-radius: 6px !important;
     white-space: nowrap !important;
     width: auto !important;
     min-height: auto !important;
     line-height: 1.2 !important;
+    font-weight: 600 !important;
   }
   .brand-hero-actions .btn i {
-    font-size: 8.5px !important;
-    margin-right: 2px !important;
+    font-size: 9.5px !important;
+    margin-right: 3px !important;
   }
   .brand-stats-row {
     gap: 6px !important;
@@ -4692,34 +4728,35 @@ select.form-control { cursor: pointer; }
     justify-content: center;
   }
 
-  /* Compact Cinematic Hero (Trang Chu - Neo chặt vào góc bên trái, thu gọn micro) */
+  /* Compact Cinematic Hero (Trang Chu - Tối ưu tỷ lệ, text rõ nét, nút dễ chạm trên mọi điện thoại) */
   .hero-showcase.cinematic-hero {
-    min-height: 220px !important;
+    min-height: 240px !important;
     touch-action: pan-y;
   }
   .hero-slides {
-    min-height: 185px !important;
+    min-height: 200px !important;
     touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
   }
   .hero-slide.cinematic-slide {
-    align-items: flex-start !important;
+    align-items: center !important;
     justify-content: flex-start !important;
-    padding-top: 12px !important;
-    padding-left: 12px !important;
+    padding-top: 14px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
   }
   .cinematic-bg {
-    background-position: 85% center !important; /* Dời hình ảnh TV sang phải để góc trái thông thoáng */
+    background-position: 80% center !important;
     background-size: cover !important;
-    filter: contrast(1.08) brightness(1.04);
+    filter: contrast(1.05) brightness(1.02);
   }
   .cinematic-overlay {
     background: linear-gradient(90deg, 
-      rgba(6, 9, 17, 0.85) 0%, 
-      rgba(6, 9, 17, 0.55) 45%, 
-      rgba(6, 9, 17, 0.05) 90%),
-      linear-gradient(180deg, transparent 60%, rgba(6, 9, 17, 0.90) 100%) !important;
+      rgba(6, 9, 17, 0.88) 0%, 
+      rgba(6, 9, 17, 0.65) 50%, 
+      rgba(6, 9, 17, 0.15) 100%),
+      linear-gradient(180deg, transparent 60%, rgba(6, 9, 17, 0.92) 100%) !important;
   }
   .cinematic-content-wrap {
     position: relative !important;
@@ -4727,7 +4764,7 @@ select.form-control { cursor: pointer; }
     padding: 0 !important;
     margin: 0 !important;
     margin-right: auto !important;
-    max-width: 52% !important; /* Neo chặt sang 1 góc trái, chừa 48% phía phải cho hình TV */
+    max-width: 65% !important;
     text-align: left !important;
     display: flex !important;
     flex-direction: column !important;
@@ -4735,51 +4772,53 @@ select.form-control { cursor: pointer; }
     pointer-events: auto !important;
   }
   .cinematic-badge {
-    padding: 2px 5px !important;
-    margin-bottom: 2px !important;
-    border-radius: 10px !important;
-    font-size: 7.5px !important;
+    padding: 3px 8px !important;
+    margin-bottom: 4px !important;
+    border-radius: 12px !important;
+    font-size: 9px !important;
     display: inline-flex !important;
     align-self: flex-start !important;
     width: fit-content !important;
   }
   .badge-dot {
-    width: 3.5px !important;
-    height: 3.5px !important;
+    width: 4.5px !important;
+    height: 4.5px !important;
   }
   .badge-text {
-    font-size: 7px !important;
+    font-size: 8.5px !important;
     letter-spacing: 0.02em !important;
+    font-weight: 700 !important;
   }
   .cinematic-title {
-    font-size: 12.5px !important;
-    line-height: 1.18 !important;
-    margin-bottom: 3px !important;
+    font-size: 15px !important;
+    line-height: 1.22 !important;
+    margin-bottom: 6px !important;
     text-align: left !important;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.95) !important;
+    font-weight: 900 !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.95) !important;
   }
   .cinematic-desc {
-    display: none !important; /* Ẩn chữ dài */
+    display: none !important; /* Ẩn chữ dài để không che hình */
   }
   .cinematic-specs-bar {
-    display: none !important; /* Ẩn thông số rườm rà */
+    display: none !important;
   }
   .cinematic-actions {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: wrap !important;
     justify-content: flex-start !important;
-    align-items: flex-start !important;
-    margin: 3px 0 0 0 !important;
+    align-items: center !important;
+    margin: 4px 0 0 0 !important;
     padding: 0 !important;
-    gap: 4px !important;
+    gap: 6px !important;
     width: auto !important;
     z-index: 10 !important;
   }
   .cinematic-actions .btn {
-    padding: 3px 7px !important;
-    font-size: 9px !important;
-    border-radius: 4px !important;
+    padding: 5px 10px !important;
+    font-size: 10.5px !important;
+    border-radius: 6px !important;
     cursor: pointer !important;
     touch-action: manipulation !important;
     white-space: nowrap !important;
@@ -4788,24 +4827,25 @@ select.form-control { cursor: pointer; }
     min-height: auto !important;
     line-height: 1.2 !important;
     letter-spacing: 0 !important;
+    font-weight: 600 !important;
   }
   .cinematic-actions .btn i {
-    font-size: 8.5px !important;
-    margin-right: 2px !important;
+    font-size: 9.5px !important;
+    margin-right: 3px !important;
   }
 
   .cinematic-controls {
-    padding-block: 2px 4px !important;
+    padding-block: 4px 6px !important;
     position: relative !important;
     z-index: 20 !important;
   }
   .hero-tab-btns {
-    gap: 4px !important;
+    gap: 6px !important;
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
     width: 100% !important;
-    padding-inline: 4px !important;
-    padding-bottom: 2px !important;
+    padding-inline: 6px !important;
+    padding-bottom: 4px !important;
     -webkit-overflow-scrolling: touch !important;
     scrollbar-width: none !important;
   }
@@ -4813,27 +4853,28 @@ select.form-control { cursor: pointer; }
     display: none !important;
   }
   .hero-tab-btn {
-    padding: 2px 5px !important;
-    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
     flex-shrink: 0 !important;
     cursor: pointer !important;
     touch-action: manipulation !important;
     -webkit-tap-highlight-color: transparent !important;
     user-select: none !important;
     -webkit-user-select: none !important;
-    background: rgba(255,255,255,.1) !important;
-    border: 1px solid rgba(255,255,255,.2) !important;
+    background: rgba(255,255,255,.12) !important;
+    border: 1px solid rgba(255,255,255,.25) !important;
   }
   .hero-tab-btn.active {
-    background: rgba(255,255,255,.22) !important;
-    border-color: rgba(96,165,250,.7) !important;
+    background: rgba(255,255,255,.25) !important;
+    border-color: rgba(96,165,250,.9) !important;
   }
   .tab-brand {
-    font-size: 7.5px !important;
-    padding: 1px 3px !important;
+    font-size: 8.5px !important;
+    padding: 2px 4px !important;
+    font-weight: 700 !important;
   }
   .tab-text strong {
-    font-size: 8.5px !important;
+    font-size: 9.5px !important;
   }
   .tab-text small {
     display: none !important;
@@ -4862,7 +4903,7 @@ select.form-control { cursor: pointer; }
     font-size: 8.5px !important;
   }
   .tnp-hero-grid {
-    max-width: 55% !important; /* Neo sang góc trái */
+    max-width: 70% !important;
     margin: 0 !important;
     margin-right: auto !important;
     text-align: left !important;
@@ -4871,63 +4912,67 @@ select.form-control { cursor: pointer; }
     align-items: flex-start !important;
   }
   .tnp-hero-badge {
-    padding: 2px 5px !important;
-    font-size: 7.5px !important;
-    margin-bottom: 2px !important;
+    padding: 3px 7px !important;
+    font-size: 8.5px !important;
+    margin-bottom: 4px !important;
     display: inline-flex !important;
     width: fit-content !important;
+    font-weight: 700 !important;
   }
   .tnp-hero-title {
-    font-size: 13.5px !important;
-    line-height: 1.18 !important;
-    margin-bottom: 2px !important;
+    font-size: 15px !important;
+    line-height: 1.22 !important;
+    margin-bottom: 4px !important;
     text-align: left !important;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.9) !important;
+    font-weight: 900 !important;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9) !important;
   }
   .tnp-hero-company-name {
-    font-size: 8px !important;
-    margin-bottom: 3px !important;
+    font-size: 9px !important;
+    margin-bottom: 4px !important;
     text-align: left !important;
+    font-weight: 600 !important;
   }
   .tnp-hero-desc {
-    display: none !important; /* Ẩn chữ dài */
+    display: none !important; /* Ẩn chữ dài để không che ảnh nền */
   }
   .tnp-hero-pills-row {
-    gap: 3px !important;
-    margin-bottom: 4px !important;
+    gap: 4px !important;
+    margin-bottom: 6px !important;
     max-width: 100% !important;
     display: flex !important;
     flex-wrap: wrap !important;
     justify-content: flex-start !important;
   }
   .tnp-pill-item {
-    font-size: 8px !important;
-    padding: 1.5px 3.5px !important;
-    border-radius: 3px !important;
+    font-size: 8.5px !important;
+    padding: 2px 5px !important;
+    border-radius: 4px !important;
   }
   .tnp-hero-actions {
-    gap: 4px !important;
+    gap: 6px !important;
     flex-wrap: wrap !important;
     display: flex !important;
     flex-direction: row !important;
     justify-content: flex-start !important;
-    align-items: flex-start !important;
-    margin: 2px 0 0 0 !important;
+    align-items: center !important;
+    margin: 4px 0 0 0 !important;
     width: auto !important;
   }
   .tnp-hero-actions .btn {
-    padding: 3px 7px !important;
-    font-size: 9px !important;
-    border-radius: 4px !important;
+    padding: 5px 10px !important;
+    font-size: 10px !important;
+    border-radius: 6px !important;
     white-space: nowrap !important;
     flex: 0 0 auto !important;
     width: auto !important;
     min-height: auto !important;
     line-height: 1.2 !important;
+    font-weight: 600 !important;
   }
   .tnp-hero-actions .btn i {
-    font-size: 8.5px !important;
-    margin-right: 2px !important;
+    font-size: 9.5px !important;
+    margin-right: 3px !important;
   }
 
   /* Compact Sections & Grids */
