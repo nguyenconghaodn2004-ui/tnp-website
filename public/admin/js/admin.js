@@ -17,13 +17,55 @@ const STORAGE_PRODUCTS_KEY = 'tnp_admin_products_override';
 const STORAGE_STATIONS_KEY = 'tnp_admin_stations_override';
 
 // ══════════════════════════════════════════════
+//  AUTH GUARD
+// ══════════════════════════════════════════════
+function checkAdminAuth() {
+  const authData = localStorage.getItem('tnp_admin_auth');
+  if (!authData) {
+    window.location.href = './login.html';
+    return false;
+  }
+  try {
+    const auth = JSON.parse(authData);
+    if (!auth || !auth.token) {
+      window.location.href = './login.html';
+      return false;
+    }
+    // Update user display in sidebar
+    if (auth.user) {
+      const nameEl = document.getElementById('sidebarUserName');
+      const roleEl = document.getElementById('sidebarUserRole');
+      const avatarEl = document.getElementById('sidebarUserAvatar');
+      if (nameEl) nameEl.textContent = auth.user.name || 'Quản Trị Viên';
+      if (roleEl) roleEl.textContent = auth.user.email || 'admin@tnpcare.vn';
+      if (avatarEl && auth.user.name) {
+        avatarEl.textContent = auth.user.name.substring(0, 2).toUpperCase();
+      }
+    }
+    return true;
+  } catch (e) {
+    window.location.href = './login.html';
+    return false;
+  }
+}
+
+function handleAdminLogout() {
+  if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi trang quản trị?')) {
+    localStorage.removeItem('tnp_admin_auth');
+    window.location.href = './login.html';
+  }
+}
+
+// ══════════════════════════════════════════════
 //  INITIALIZATION
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  if (!checkAdminAuth()) return;
   initNavigation();
   initSidebarMobile();
   loadData();
   renderAll();
+  fetchContactsFromServer();
 });
 
 // ── Navigation tabs ──
@@ -397,4 +439,56 @@ function showToast(message, type = 'info') {
     toast.style.transition = 'all 0.3s ease';
     setTimeout(() => toast.remove(), 300);
   }, 3000);
+}
+
+// ══════════════════════════════════════════════
+//  CONTACTS & LEADS
+// ══════════════════════════════════════════════
+async function fetchContactsFromServer() {
+  const tbody = document.getElementById('contactsTableBody');
+  if (!tbody) return;
+
+  try {
+    const res = await fetch('/api/admin/contacts');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data && json.data.length > 0) {
+        renderContactsTable(json.data);
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn('Không thể tải contacts từ server, kiểm tra dữ liệu mẫu...');
+  }
+
+  // Nếu chưa có contact nào
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="7" style="text-align: center; padding: 40px; color: var(--adm-text-muted);">
+        <i class="fas fa-inbox" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
+        Chưa có yêu cầu tư vấn mới nào từ khách hàng.
+      </td>
+    </tr>
+  `;
+}
+
+function renderContactsTable(leads) {
+  const tbody = document.getElementById('contactsTableBody');
+  if (!tbody) return;
+
+  tbody.innerHTML = leads.map((item, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td><strong>${item.name || 'Khách hàng'}</strong></td>
+      <td>
+        <a href="tel:${item.phone}" style="color: var(--adm-accent); font-weight: 700; text-decoration: none;">
+          <i class="fas fa-phone-alt"></i> ${item.phone}
+        </a>
+      </td>
+      <td><span class="badge badge-brand-hxy">${item.product || 'Tư vấn'}</span></td>
+      <td><small>${item.message || 'Không có ghi chú'}</small></td>
+      <td><small style="color: #64748b;">${item.time || 'Vừa xong'}</small></td>
+      <td><span class="badge badge-warning">Chờ liên hệ</span></td>
+    </tr>
+  `).join('');
 }

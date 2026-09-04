@@ -64,15 +64,15 @@
 
     <div class="sidebar-footer">
       <div class="sidebar-user">
-        <div class="user-avatar">AD</div>
+        <div class="user-avatar" id="sidebarUserAvatar">AD</div>
         <div class="user-meta">
-          <span class="user-name">Quản Trị Viên</span>
-          <span class="user-role">admin@tnpcare.vn</span>
+          <span class="user-name" id="sidebarUserName">Quản Trị Viên</span>
+          <span class="user-role" id="sidebarUserRole">admin@tnpcare.vn</span>
         </div>
       </div>
-      <a href="../index.html" class="btn-sidebar-logout" title="Về trang chủ">
+      <button onclick="handleAdminLogout()" class="btn-sidebar-logout" title="Đăng xuất khỏi hệ thống">
         <i class="fas fa-sign-out-alt"></i>
-      </a>
+      </button>
     </div>
   </aside>
 
@@ -251,13 +251,31 @@
       <section class="tab-panel" id="tab-contacts">
         <div class="admin-card">
           <div class="card-header">
-            <h2 class="card-title"><i class="fas fa-headset"></i> Yêu cầu tư vấn & Liên hệ gần đây</h2>
+            <h2 class="card-title"><i class="fas fa-headset"></i> Yêu cầu tư vấn & Liên hệ từ khách hàng</h2>
+            <div class="card-actions">
+              <button class="btn btn-secondary btn-sm" onclick="fetchContactsFromServer()">
+                <i class="fas fa-sync-alt"></i> Làm mới
+              </button>
+            </div>
           </div>
-          <div class="card-body">
-            <div style="text-align: center; padding: 40px 20px; color: var(--adm-text-secondary);">
-              <i class="fas fa-inbox" style="font-size: 40px; color: var(--adm-text-muted); margin-bottom: 12px; display: block;"></i>
-              <p style="font-size: 15px; font-weight: 600;">Hệ thống đang sẵn sàng tiếp nhận yêu cầu liên hệ</p>
-              <p style="font-size: 13px; color: var(--adm-text-muted); margin-top: 4px;">Các yêu cầu từ form liên hệ và popup tư vấn sẽ được đồng bộ hiển thị tại đây.</p>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">STT</th>
+                    <th>Khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Dòng TV quan tâm</th>
+                    <th>Nội dung lời nhắn</th>
+                    <th>Thời gian</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="contactsTableBody">
+                  <!-- Injected via admin.js -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

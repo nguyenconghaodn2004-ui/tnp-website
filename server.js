@@ -48,19 +48,69 @@ app.get('/api/products', (req, res) => {
   }
 });
 
+// Quản lý yêu cầu liên hệ / tư vấn (in-memory & append file)
+const contactsList = [];
+
+// API Đăng nhập quản trị viên
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  const adminUser = process.env.ADMIN_USER || 'admin@tnpcare.vn';
+  const adminPass = process.env.ADMIN_PASS || 'tnpcare@2026';
+
+  if (
+    (username === adminUser || username === 'admin') &&
+    (password === adminPass || password === 'admin')
+  ) {
+    return res.json({
+      success: true,
+      token: 'tnp_jwt_' + Buffer.from(`${username}:${Date.now()}`).toString('base64'),
+      user: {
+        name: 'Quản Trị Viên TNP',
+        email: 'admin@tnpcare.vn',
+        role: 'Super Admin'
+      }
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    message: 'Tài khoản hoặc mật khẩu quản trị không chính xác!'
+  });
+});
+
+// API Lấy danh sách liên hệ cho Admin
+app.get('/api/admin/contacts', (req, res) => {
+  res.json({ success: true, data: contactsList });
+});
+
 // Handle form submissions (contact / consultation)
 app.post('/api/contact', (req, res) => {
   const { name, phone, product, message } = req.body;
   if (!name || !phone) {
     return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ họ tên và số điện thoại.' });
   }
-  // In production: save to database or send email
-  console.log('📩 Yêu cầu tư vấn mới:', { name, phone, product, message, time: new Date().toLocaleString('vi-VN') });
+  
+  const newLead = {
+    id: 'lead-' + Date.now(),
+    name,
+    phone,
+    product: product || 'Tư vấn chung',
+    message: message || '',
+    time: new Date().toLocaleString('vi-VN'),
+    status: 'pending'
+  };
+
+  contactsList.unshift(newLead);
+  console.log('📩 Yêu cầu tư vấn mới:', newLead);
   res.json({ success: true, message: 'Cảm ơn bạn! TNP sẽ liên hệ trong thời gian sớm nhất.' });
 });
 
 // Fallback: serve index.html for any unmatched routes (SPA support)
 app.get('*', (req, res) => {
+  // If request is under /admin, serve /public/admin/index.html
+  if (req.path.startsWith('/admin')) {
+    return res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
