@@ -4451,6 +4451,106 @@ select.form-control { cursor: pointer; }
     height: 2px;
   }
 
+  /* Universal Mobile Button Downsizing (Thu nhỏ tất cả các nút bấm trên di động) */
+  .btn {
+    padding: 8px 16px;
+    font-size: 12.5px;
+    border-radius: 8px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 11.5px;
+    border-radius: 6px;
+  }
+  .btn-lg {
+    padding: 9px 18px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+  .btn-xl {
+    padding: 10px 20px;
+    font-size: 13.5px;
+    border-radius: 8px;
+  }
+
+  /* General Page Hero on Mobile (Các trang con: ho-tro, lien-he, san-pham, thuong-hieu...) */
+  .page-hero {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+  .page-hero-title {
+    font-size: 20px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+  }
+  .page-hero-desc {
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 100%;
+  }
+
+  /* Brand Hero & Actions on Mobile (tv-hxy, tv-hikers, thuong-hieu...) */
+  .brand-hero {
+    padding-top: 20px;
+    padding-bottom: 28px;
+  }
+  .brand-hero-title {
+    font-size: 20px;
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .brand-hero-desc {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .brand-hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  .brand-hero-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 16px;
+    font-size: 13px;
+  }
+  .brand-stats-row {
+    gap: 8px;
+    margin-top: 14px;
+    justify-content: space-between;
+  }
+  .brand-stat-item {
+    padding: 8px;
+  }
+  .brand-stat-item strong {
+    font-size: 15px;
+  }
+  .brand-stat-item span {
+    font-size: 10px;
+  }
+
+  /* CTA Banner Actions (Cuối các trang) */
+  .cta-banner {
+    padding-block: 28px;
+  }
+  .cta-banner-actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 320px;
+    margin-inline: auto;
+  }
+  .cta-banner-actions .btn {
+    width: 100%;
+    padding: 9px 16px;
+    font-size: 13px;
+    justify-content: center;
+  }
+
   /* Compact Cinematic Hero (Trang Chu) */
   .hero-showcase.cinematic-hero {
     min-height: 390px;
@@ -4925,6 +5025,21 @@ select.form-control { cursor: pointer; }
   .why-grid { grid-template-columns: 1fr; gap: 10px; }
   .tech-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .support-grid { grid-template-columns: 1fr; gap: 10px; }
+  .support-card { padding: 14px; border-radius: 12px; }
+  .support-icon { width: 36px; height: 36px; font-size: 16px; margin-bottom: 8px; }
+  .support-name { font-size: 14.5px; margin-bottom: 4px; }
+  .support-desc { font-size: 12px; line-height: 1.5; }
+
+  .contact-form-card { padding: 18px 14px; border-radius: 14px; }
+  .contact-form-title { font-size: 17px; }
+  .contact-form-subtitle { font-size: 12px; margin-bottom: 14px; }
+  .contact-info-card { padding: 18px 14px; border-radius: 14px; }
+  .contact-info-title { font-size: 18px; }
+  .contact-info-desc { font-size: 12px; margin-bottom: 16px; }
+  .contact-item-row { gap: 10px; margin-bottom: 12px; }
+  .contact-item-icon { width: 32px; height: 32px; font-size: 13px; }
+  .contact-item-lbl { font-size: 11px; }
+  .contact-item-val { font-size: 12.5px; }
 
   .footer-grid { grid-template-columns: 1fr; gap: 20px; }
   .footer-bottom { font-size: 11px; }
@@ -4935,6 +5050,10 @@ select.form-control { cursor: pointer; }
   .compare-slot { max-width: 100%; }
 
   .form-row { grid-template-columns: 1fr; }
+  .form-group { margin-bottom: 12px; }
+  .form-label { font-size: 12.5px; margin-bottom: 4px; }
+  .form-control { padding: 9px 12px; font-size: 13px; border-radius: 6px; }
+  button[type="submit"].btn { width: 100%; padding: 10px 16px; font-size: 13px; }
 
   /* Floating Buttons on mobile: neat, compact, cannot push layout */
   .float-btns {
