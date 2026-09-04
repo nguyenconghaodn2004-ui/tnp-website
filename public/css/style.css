@@ -4954,6 +4954,39 @@ select.form-control { cursor: pointer; }
     color: rgba(255,255,255,.8) !important;
   }
 
+  /* Partner Badge Section on Mobile (Thu nhỏ đối tác bảo hành trên điện thoại) */
+  #doi-tac {
+    padding-block: 28px !important;
+  }
+  #doi-tac .section-header {
+    margin-bottom: 16px !important;
+  }
+  #doi-tac .section-badge {
+    font-size: 8.5px !important;
+    padding: 2px 8px !important;
+    margin-bottom: 4px !important;
+  }
+  #doi-tac .section-title {
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 4px !important;
+  }
+  #doi-tac .section-desc {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    max-width: 100% !important;
+  }
+  .partner-badges-wrap {
+    gap: 6px !important;
+    max-width: 100% !important;
+  }
+  .partner-badge {
+    padding: 5px 10px !important;
+    font-size: 10px !important;
+    border-radius: 6px !important;
+    letter-spacing: .02em !important;
+  }
+
   /* Brand Showcase Details on Mobile (Thu gọn trọn vẹn trong 1 màn hình) */
   .brand-detail-box {
     padding: 10px 12px;

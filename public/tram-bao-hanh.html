@@ -178,7 +178,7 @@
         <p class="section-desc" style="color:rgba(255,255,255,.75);">Trúc Nguyên Phát vinh dự là đối tác kỹ thuật, dịch vụ bảo hành bảo trì uy tín cho các tập đoàn điện tử, điện gia dụng và thương hiệu TV hàng đầu:</p>
       </div>
 
-      <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:980px;margin-inline:auto;">
+      <div class="partner-badges-wrap" style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:980px;margin-inline:auto;">
         <div class="partner-badge">MIDEA</div>
         <div class="partner-badge">PANASONIC</div>
         <div class="partner-badge">DAIKIN</div>
@@ -357,6 +357,41 @@
       background: linear-gradient(135deg, rgba(37,99,235,.4) 0%, rgba(220,38,38,.4) 100%);
       border-color: rgba(255,255,255,.4);
       color: #fbbf24;
+    }
+
+    /* Mobile Optimization for Partner Section */
+    @media (max-width: 768px) {
+      #doi-tac {
+        padding-block: 28px !important;
+      }
+      #doi-tac .section-header {
+        margin-bottom: 16px !important;
+      }
+      #doi-tac .section-badge {
+        font-size: 8.5px !important;
+        padding: 2px 8px !important;
+        margin-bottom: 4px !important;
+      }
+      #doi-tac .section-title {
+        font-size: 16px !important;
+        line-height: 1.25 !important;
+        margin-bottom: 4px !important;
+      }
+      #doi-tac .section-desc {
+        font-size: 11px !important;
+        line-height: 1.4 !important;
+        max-width: 100% !important;
+      }
+      .partner-badges-wrap {
+        gap: 6px !important;
+        max-width: 100% !important;
+      }
+      .partner-badge {
+        padding: 5px 10px !important;
+        font-size: 10px !important;
+        border-radius: 6px !important;
+        letter-spacing: .02em !important;
+      }
     }
     .sc-card {
       background: #fff;
