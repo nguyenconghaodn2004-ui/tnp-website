@@ -2709,6 +2709,36 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ════════════════════════════════════════
+   ABOUT PAGE (VỀ TNP) RESPONSIVE STYLES
+   ════════════════════════════════════════ */
+.about-company-overview-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.about-philosophy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .about-company-overview-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .about-philosophy-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .about-capabilities-card {
+    padding: 20px !important;
+  }
+}
+
+/* ════════════════════════════════════════
    PRODUCTS
    ════════════════════════════════════════ */
 .products-section { background: #fff; }
