@@ -2175,39 +2175,40 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ════════════════════════════════════════
-   STATS BAR
+   STATS BAR (Gọn gàng, thanh lịch trên cả web lớn & điện thoại)
    ════════════════════════════════════════ */
 .stats-bar {
   background: var(--tnp-blue);
-  padding-block: var(--space-10);
+  padding-block: 22px; /* Thu gọn từ 40px xuống 22px */
 }
 .stats-bar-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  align-items: center;
 }
 .stat-block {
   text-align: center;
-  padding: var(--space-4);
-  border-right: 1px solid rgba(255,255,255,.12);
+  padding: 8px 16px;
+  border-right: 1px solid rgba(255,255,255,.14);
   transition: background var(--t-base);
 }
 .stat-block:last-child { border-right: none; }
 .stat-block:hover { background: rgba(255,255,255,.05); }
 .stat-num {
-  font-size: 44px;
+  font-size: 28px; /* Thu nhỏ từ 44px xuống 28px */
   font-weight: 900;
   color: #fff;
-  line-height: 1;
-  margin-bottom: 6px;
+  line-height: 1.1;
+  margin-bottom: 3px;
   display: block;
 }
-.stat-num sup { font-size: 20px; vertical-align: super; color: #fbbf24; }
-.stat-num sub { font-size: 20px; color: #fbbf24; }
+.stat-num sup { font-size: 15px; vertical-align: super; color: #fbbf24; }
+.stat-num sub { font-size: 15px; color: #fbbf24; }
 .stat-lbl {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
-  color: rgba(255,255,255,.7);
-  letter-spacing: .04em;
+  color: rgba(255,255,255,.8);
+  letter-spacing: .02em;
 }
 
 /* Home Service Centers Preview */
@@ -4921,6 +4922,38 @@ select.form-control { cursor: pointer; }
   .section-desc { font-size: 11.5px; line-height: 1.45; }
   .cta-banner-title { font-size: 17px; }
 
+  /* Compact Stats Bar on Mobile (Gọn gàng, vừa vặn trên điện thoại) */
+  .stats-bar {
+    padding-block: 12px !important;
+  }
+  .stats-bar-grid {
+    grid-template-columns: repeat(4, 1fr) !important; /* 4 chỉ số dàn đều 1 hàng ngang tinh gọn */
+    gap: 0 !important;
+  }
+  .stat-block {
+    padding: 4px 6px !important;
+    border-bottom: none !important;
+    border-right: 1px solid rgba(255,255,255,.14) !important;
+  }
+  .stat-block:last-child {
+    border-right: none !important;
+  }
+  .stat-num {
+    font-size: 17px !important; /* Thu gọn từ 44px xuống 17px */
+    font-weight: 800 !important;
+    line-height: 1.15 !important;
+    margin-bottom: 2px !important;
+  }
+  .stat-num sup, .stat-num sub {
+    font-size: 10px !important;
+  }
+  .stat-lbl {
+    font-size: 9px !important; /* Cỡ chữ nhã nhặn, vừa mắt */
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+    color: rgba(255,255,255,.8) !important;
+  }
+
   /* Brand Showcase Details on Mobile (Thu gọn trọn vẹn trong 1 màn hình) */
   .brand-detail-box {
     padding: 10px 12px;
@@ -5550,9 +5583,10 @@ select.form-control { cursor: pointer; }
   .hero-eyebrow, .section-label { font-size: 9px; }
   .brands-strip .container { gap: 10px; }
   .brands-list { gap: 10px; }
-  .stats-bar-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat-num { font-size: 22px; }
-  .stat-lbl { font-size: 10px; }
+  .stats-bar-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 0 !important; }
+  .stat-block { padding: 3px 4px !important; }
+  .stat-num { font-size: 15px !important; }
+  .stat-lbl { font-size: 8px !important; }
   .cta-banner-actions { flex-direction: column; align-items: stretch; }
   .modal-actions { flex-direction: column; }
 }
