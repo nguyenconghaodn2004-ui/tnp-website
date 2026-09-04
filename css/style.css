@@ -4254,18 +4254,136 @@ select.form-control { cursor: pointer; }
 
 /* ── 768px ── */
 @media (max-width: 768px) {
-  :root { --header-h: 58px; }
+  :root { --header-h: 60px; }
 
   .top-bar { display: none; }
 
+  /* Header mobile layout */
+  .header-inner {
+    padding-inline: 12px;
+    gap: 10px;
+  }
+  .site-logo {
+    gap: 8px;
+    max-width: calc(100% - 95px);
+    overflow: hidden;
+  }
+  .logo-tnp-img {
+    height: 38px;
+  }
+  .logo-name {
+    font-size: 13px;
+    letter-spacing: 0;
+  }
+  .logo-tagline {
+    font-size: 7.5px;
+    letter-spacing: .02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Header action buttons on mobile */
+  .header-actions {
+    gap: 6px;
+  }
+  .header-search-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+  .hamburger {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    padding: 0;
+  }
+  .hamburger span {
+    width: 18px;
+  }
+
+  /* Cinematic Hero Mobile Optimization */
+  .hero-showcase.cinematic-hero {
+    min-height: 520px;
+  }
+  .hero-slides {
+    min-height: 480px;
+  }
+  .cinematic-content-wrap {
+    padding-block: 30px 20px;
+    max-width: 100%;
+    text-align: left;
+  }
+  .cinematic-badge {
+    padding: 4px 12px;
+    margin-bottom: 12px;
+  }
+  .badge-text {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+  .cinematic-title {
+    font-size: 25px;
+    line-height: 1.22;
+    margin-bottom: 12px;
+  }
+  .cinematic-desc {
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .cinematic-specs-bar {
+    padding: 8px 12px;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+  .spec-val {
+    font-size: 13.5px;
+  }
+  .spec-lbl {
+    font-size: 9.5px;
+  }
+  .cinematic-actions {
+    gap: 10px;
+  }
+  .cinematic-actions .btn {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+
+  .cinematic-controls {
+    padding-block: 10px;
+  }
+  .hero-tab-btns {
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    width: 100%;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .hero-tab-btn {
+    padding: 6px 12px;
+    flex-shrink: 0;
+  }
+  .tab-text strong {
+    font-size: 11px;
+  }
+  .tab-text small {
+    display: none;
+  }
+  .hero-arrow-btns {
+    display: none;
+  }
+
   .section { padding-block: var(--space-12); }
   .section-lg { padding-block: var(--space-16); }
-  .section-title { font-size: 26px; }
-  .hero-title { font-size: 34px; }
-  .cta-banner-title { font-size: 26px; }
+  .section-title { font-size: 24px; }
+  .cta-banner-title { font-size: 24px; }
 
   .brand-cards { grid-template-columns: 1fr; }
-  .product-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-4); }
+  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .why-grid { grid-template-columns: 1fr; }
   .tech-grid { grid-template-columns: repeat(2, 1fr); }
   .support-grid { grid-template-columns: 1fr; }
@@ -4279,26 +4397,41 @@ select.form-control { cursor: pointer; }
 
   .form-row { grid-template-columns: 1fr; }
 
-  .float-btns { right: var(--space-4); bottom: var(--space-5); }
-  .back-top { right: var(--space-4); bottom: calc(var(--space-5) + 170px); }
+  .float-btns { right: 12px; bottom: 16px; }
+  .back-top { right: 12px; bottom: 170px; }
 }
 
 /* ── 576px ── */
 @media (max-width: 576px) {
-  .hero-title { font-size: 28px; }
+  .hero-title { font-size: 26px; }
   .hero-eyebrow, .section-label { font-size: 10px; }
   .product-grid { grid-template-columns: 1fr; }
-  .tech-grid { grid-template-columns: 1fr 1fr; }
-  .brands-strip .container { gap: var(--space-5); }
-  .brands-list { gap: var(--space-5); }
+  .tech-grid { grid-template-columns: 1fr; }
+  .brands-strip .container { gap: var(--space-4); }
+  .brands-list { gap: var(--space-4); }
   .stats-bar-grid { grid-template-columns: 1fr 1fr; }
-  .cta-banner-actions { flex-direction: column; align-items: center; }
+  .cta-banner-actions { flex-direction: column; align-items: stretch; }
   .modal-actions { flex-direction: column; }
+
+  .cinematic-title { font-size: 22px; }
+  .cinematic-actions { flex-direction: column; }
+  .cinematic-actions .btn { width: 100%; justify-content: center; }
 }
 
 /* ── 400px ── */
 @media (max-width: 400px) {
+  .site-logo {
+    gap: 6px;
+  }
+  .logo-tnp-img {
+    height: 34px;
+  }
+  .logo-name {
+    font-size: 12px;
+  }
+  .logo-tagline {
+    display: none;
+  }
   .product-filter { gap: var(--space-1); }
-  .filter-chip { padding: 6px 12px; font-size: 12px; }
-  .tech-grid { grid-template-columns: 1fr; }
+  .filter-chip { padding: 6px 10px; font-size: 11.5px; }
 }
