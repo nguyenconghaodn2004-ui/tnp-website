@@ -916,6 +916,8 @@ input, select, textarea { font-family: inherit; }
   .spec-divider {
     display: none;
   }
+}
+
 .hero-controls-inner {
   display: flex;
   align-items: center;
