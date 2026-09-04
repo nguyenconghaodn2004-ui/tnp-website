@@ -709,26 +709,29 @@ input, select, textarea { font-family: inherit; }
   inset: 0;
   background: linear-gradient(90deg, 
     rgba(6, 9, 17, 0.96) 0%, 
-    rgba(6, 9, 17, 0.85) 38%, 
-    rgba(6, 9, 17, 0.45) 70%, 
-    rgba(6, 9, 17, 0.15) 100%),
-    linear-gradient(0deg, rgba(6, 9, 17, 0.95) 0%, transparent 25%);
+    rgba(6, 9, 17, 0.90) 32%, 
+    rgba(6, 9, 17, 0.65) 48%, 
+    rgba(6, 9, 17, 0.15) 65%, 
+    transparent 100%),
+    linear-gradient(0deg, rgba(6, 9, 17, 0.85) 0%, transparent 20%);
   z-index: 2;
 }
 .cinematic-overlay.care-overlay {
   background: linear-gradient(90deg, 
     rgba(6, 9, 17, 0.96) 0%, 
-    rgba(6, 9, 17, 0.82) 45%, 
-    rgba(6, 9, 17, 0.3) 80%, 
+    rgba(6, 9, 17, 0.88) 32%, 
+    rgba(6, 9, 17, 0.55) 50%, 
+    rgba(6, 9, 17, 0.1) 68%, 
     transparent 100%),
-    linear-gradient(0deg, rgba(6, 9, 17, 0.9) 0%, transparent 20%);
+    linear-gradient(0deg, rgba(6, 9, 17, 0.85) 0%, transparent 20%);
 }
 
 .cinematic-content-wrap {
   position: relative;
   z-index: 3;
-  padding-block: 60px 40px;
-  max-width: 680px;
+  padding-block: 50px 36px;
+  max-width: 540px;
+  margin-left: 0;
 }
 
 /* Badge Flagship */
@@ -777,13 +780,13 @@ input, select, textarea { font-family: inherit; }
 
 /* Titles */
 .cinematic-title {
-  font-size: clamp(32px, 4.2vw, 54px);
+  font-size: clamp(28px, 3.2vw, 44px);
   font-weight: 900;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
   color: #ffffff;
-  margin-bottom: 18px;
-  text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+  margin-bottom: 16px;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.7);
 }
 .highlight-cyan {
   background: linear-gradient(135deg, #38bdf8 0%, #60a5fa 100%);
@@ -805,25 +808,25 @@ input, select, textarea { font-family: inherit; }
 }
 
 .cinematic-desc {
-  font-size: 16px;
+  font-size: 15px;
   color: rgba(226, 232, 240, 0.88);
-  line-height: 1.7;
-  margin-bottom: 28px;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-  max-width: 580px;
+  line-height: 1.65;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.6);
+  max-width: 480px;
 }
 
 /* Specs Bar (Sony/Samsung aesthetic) */
 .cinematic-specs-bar {
   display: flex;
   align-items: center;
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
-  padding: 14px 20px;
-  margin-bottom: 32px;
+  padding: 10px 16px;
+  margin-bottom: 26px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
   width: fit-content;
   max-width: 100%;
