@@ -5188,8 +5188,120 @@ select.form-control { cursor: pointer; }
   .contact-item-lbl { font-size: 11px; }
   .contact-item-val { font-size: 12.5px; }
 
-  .footer-grid { grid-template-columns: 1fr; gap: 20px; }
-  .footer-bottom { font-size: 11px; }
+  /* Footer Mobile Optimization (Thu gọn, tinh gọn để không bị kéo dài trang) */
+  .site-footer {
+    padding-top: 24px !important;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 14px 12px !important;
+    margin-bottom: 18px !important;
+  }
+  .footer-brand-col {
+    grid-column: 1 / -1 !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    margin-bottom: 4px !important;
+  }
+  .footer-logo-row {
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+  }
+  .footer-tnp-logo-img {
+    height: 32px !important;
+    padding: 2px 6px !important;
+  }
+  .footer-logo-name {
+    font-size: 15px !important;
+  }
+  .footer-tagline-text {
+    font-size: 8.5px !important;
+    letter-spacing: 0.05em !important;
+    margin-bottom: 6px !important;
+  }
+  .footer-desc {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+    margin-bottom: 8px !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .footer-company-meta {
+    gap: 4px !important;
+    font-size: 11px !important;
+    margin-top: 6px !important;
+    line-height: 1.4 !important;
+  }
+  .footer-company-meta div i {
+    width: 14px !important;
+    font-size: 10.5px !important;
+    margin-right: 4px !important;
+  }
+  .footer-col-title {
+    font-size: 11px !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 4px !important;
+    letter-spacing: 0.04em !important;
+  }
+  .footer-links {
+    gap: 5px !important;
+  }
+  .footer-link {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    gap: 4px !important;
+  }
+  .footer-link::before {
+    font-size: 11px !important;
+  }
+  .footer-grid > div:last-child {
+    grid-column: 1 / -1 !important; /* Cột hỗ trợ khách hàng & hotline trải ngang gọn gàng */
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+  }
+  .footer-grid > div:last-child .footer-links {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .footer-grid > div:last-child .footer-links a[href^="tel"] {
+    width: 100% !important;
+    font-size: 14px !important;
+    margin-bottom: 4px !important;
+  }
+  .footer-grid > div:last-child > div[style*="margin-top"] {
+    margin-top: 8px !important;
+  }
+  .footer-grid > div:last-child > div[style*="margin-top"] p {
+    font-size: 10px !important;
+    line-height: 1.4 !important;
+  }
+  .footer-bottom {
+    padding-block: 12px !important;
+    font-size: 10px !important;
+  }
+  .footer-bottom .container {
+    gap: 8px !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+  .footer-copyright {
+    font-size: 10px !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+  }
+  .footer-brands-row {
+    gap: 4px !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+  .footer-brand-tag {
+    padding: 2px 8px !important;
+    font-size: 9.5px !important;
+  }
   .modal-body { grid-template-columns: 1fr; padding: 12px; }
 
   .compare-bar .container { flex-direction: column; align-items: stretch; }
