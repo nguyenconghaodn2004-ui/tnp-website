@@ -427,6 +427,8 @@ function renderModals() {
 //  INJECT INTO PAGE
 // ══════════════════════════════════════════════
 function injectComponents() {
+  if (window.__tnp_components_injected) return;
+  
   const headerEl = document.getElementById('header-placeholder') || document.getElementById('header-root');
   if (headerEl) {
     headerEl.outerHTML = renderHeader();
@@ -441,6 +443,8 @@ function injectComponents() {
   if (modalsEl) {
     modalsEl.outerHTML = renderModals();
   }
+
+  window.__tnp_components_injected = true;
 }
 
 // Run as soon as DOM is interactive

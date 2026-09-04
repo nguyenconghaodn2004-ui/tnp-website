@@ -554,9 +554,14 @@ input, select, textarea { font-family: inherit; }
   background: rgba(0,0,0,.5);
   z-index: 950;
   opacity: 0;
+  pointer-events: none;
   transition: opacity var(--t-base);
 }
-.mobile-overlay.open { opacity: 1; }
+.mobile-overlay.open {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .mobile-menu {
   position: fixed;
@@ -4233,7 +4238,6 @@ select.form-control { cursor: pointer; }
 @media (max-width: 1024px) {
   .main-nav, .header-actions .btn { display: none; }
   .hamburger { display: flex; }
-  .mobile-overlay { display: block; }
 
   .hero .container { grid-template-columns: 1fr; text-align: center; }
   .hero-desc { margin-inline: auto; }
