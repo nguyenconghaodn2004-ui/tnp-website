@@ -13,11 +13,13 @@ let productsList = [];
 let serviceCentersList = [];
 let bannersList = [];
 let contactsList = [];
+let articlesList = [];
 
 // Storage keys
 const STORAGE_PRODUCTS_KEY = 'tnp_admin_products_override';
 const STORAGE_STATIONS_KEY = 'tnp_admin_stations_override';
 const STORAGE_BANNERS_KEY = 'tnp_admin_banners_override';
+const STORAGE_ARTICLES_KEY = 'tnp_admin_articles_override';
 
 // ══════════════════════════════════════════════
 //  AUTH GUARD
@@ -108,6 +110,7 @@ function switchTab(tabId) {
     products: 'Quản lý Sản phẩm TV',
     stations: 'Quản lý Trạm bảo hành',
     banners: 'Quản lý Banner & Hero Slide',
+    articles: 'Quản lý Bài viết & Hướng dẫn kỹ thuật',
     contacts: 'Yêu cầu tư vấn & Liên hệ',
     settings: 'Cài đặt hệ thống'
   };
@@ -168,6 +171,18 @@ function loadData() {
   } else {
     bannersList = getDefaultBanners();
   }
+
+  // Load articles
+  const savedArticles = localStorage.getItem(STORAGE_ARTICLES_KEY);
+  if (savedArticles) {
+    try {
+      articlesList = JSON.parse(savedArticles);
+    } catch (e) {
+      articlesList = getDefaultArticles();
+    }
+  } else {
+    articlesList = getDefaultArticles();
+  }
 }
 
 function getDefaultBanners() {
@@ -205,6 +220,35 @@ function getDefaultBanners() {
   ];
 }
 
+function getDefaultArticles() {
+  return [
+    {
+      id: 'art-1',
+      title: 'Khoảng Cách Xem Tivi Chuẩn Khoa Học Bảo Vệ Mắt Cho Gia Đình',
+      category: 'support',
+      categoryLabel: 'Hướng dẫn & Hỗ trợ',
+      author: 'Chuyên gia Kỹ thuật TNP',
+      date: '04/09/2026',
+      thumbnail: './images/banner_tnp_care.jpg',
+      summary: 'Bảng tra cứu kích thước màn hình TV 32 - 100 inch và khoảng cách ngồi xem tối ưu giúp bảo vệ thị lực và trải nghiệm điện ảnh chân thực.',
+      content: 'Việc lựa chọn khoảng cách xem TV phù hợp không chỉ mang lại trải nghiệm hình ảnh tốt nhất mà còn bảo vệ mắt cho cả gia đình...',
+      status: 'published'
+    },
+    {
+      id: 'art-2',
+      title: 'Công Nghệ QLED & Mini LED Trên Smart TV HXY - Đỉnh Cao Điện Ảnh',
+      category: 'tech',
+      categoryLabel: 'Công nghệ & Đổi mới',
+      author: 'Ban Công Nghệ TNP',
+      date: '03/09/2026',
+      thumbnail: './images/banner_hxy_100.jpg',
+      summary: 'Khám phá sự khác biệt vượt bậc của 1000+ vùng làm mờ cục bộ (Local Dimming) và độ sáng 1200 nit trên dòng Flagship Cinema.',
+      content: 'Tấm nền QLED kết hợp hạt lượng tử ánh sáng mang lại phổ màu đạt 98% chuẩn rạp chiếu phim DCI-P3...',
+      status: 'published'
+    }
+  ];
+}
+
 function saveProducts() {
   localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(productsList));
   showToast('Đã lưu dữ liệu sản phẩm thành công!', 'success');
@@ -223,6 +267,12 @@ function saveBanners() {
   renderAll();
 }
 
+function saveArticles() {
+  localStorage.setItem(STORAGE_ARTICLES_KEY, JSON.stringify(articlesList));
+  showToast('Đã lưu danh sách bài viết thành công!', 'success');
+  renderAll();
+}
+
 // ══════════════════════════════════════════════
 //  RENDER FUNCTIONS
 // ══════════════════════════════════════════════
@@ -232,6 +282,7 @@ function renderAll() {
   renderProductsTable();
   renderStationsTable();
   renderBannersTable();
+  renderArticlesTable();
 }
 
 // ── Stats ──
@@ -787,4 +838,242 @@ async function deleteLead(id) {
 
   renderContactsTable(contactsList);
   showToast('Đã xóa yêu cầu tư vấn thành công.', 'info');
+}
+
+// ══════════════════════════════════════════════
+//  PHẦN 3: BÀI VIẾT (ARTICLES) & TẢI ẢNH (UPLOADS)
+// ══════════════════════════════════════════════
+
+// ── Articles Table ──
+function renderArticlesTable(filterQuery = '') {
+  const tbody = document.getElementById('articlesTableBody');
+  if (!tbody) return;
+
+  const badgeArticles = document.getElementById('badgeArticlesCount');
+  if (badgeArticles) badgeArticles.textContent = articlesList.length;
+
+  let filtered = articlesList;
+  if (filterQuery) {
+    const q = filterQuery.toLowerCase();
+    filtered = filtered.filter(a => 
+      (a.title && a.title.toLowerCase().includes(q)) ||
+      (a.summary && a.summary.toLowerCase().includes(q)) ||
+      (a.categoryLabel && a.categoryLabel.toLowerCase().includes(q))
+    );
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 30px; color: var(--adm-text-muted);">Không tìm thấy bài viết nào.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((a, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td>
+        <img src="${a.thumbnail || '../images/banner_tnp_care.jpg'}" 
+             alt="${a.title}" 
+             style="width: 70px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--adm-border);"
+             onerror="this.src='../images/banner_tnp_care.jpg'">
+      </td>
+      <td>
+        <strong>${a.title}</strong><br>
+        <small style="color: #64748b;">${a.summary ? a.summary.substring(0, 50) + '...' : ''}</small>
+      </td>
+      <td><span class="badge badge-secondary">${a.categoryLabel || a.category}</span></td>
+      <td><small>${a.date || 'Hôm nay'}</small></td>
+      <td>
+        <span class="badge ${a.status === 'published' ? 'badge-success' : 'badge-warning'}">
+          ${a.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
+        </span>
+      </td>
+      <td>
+        <div class="action-btn-group">
+          <button class="btn-icon" title="Chỉnh sửa bài" onclick="openEditArticleModal('${a.id}')">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button class="btn-icon btn-icon-delete" title="Xóa bài" onclick="deleteArticle('${a.id}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterArticles(query) {
+  renderArticlesTable(query);
+}
+
+function openAddArticleModal() {
+  document.getElementById('articleModalTitle').textContent = 'Viết bài mới';
+  document.getElementById('artId').value = 'art-' + Date.now();
+  document.getElementById('artTitle').value = '';
+  document.getElementById('artCategory').value = 'support';
+  document.getElementById('artStatus').value = 'published';
+  document.getElementById('artThumbnail').value = './images/banner_tnp_care.jpg';
+  document.getElementById('artSummary').value = '';
+  document.getElementById('artContent').value = '';
+
+  const preview = document.getElementById('artThumbPreview');
+  if (preview) preview.style.display = 'none';
+
+  document.getElementById('articleModal').classList.add('open');
+}
+
+function openEditArticleModal(id) {
+  const a = articlesList.find(item => item.id === id);
+  if (!a) return;
+
+  document.getElementById('articleModalTitle').textContent = 'Chỉnh sửa bài viết';
+  document.getElementById('artId').value = a.id;
+  document.getElementById('artTitle').value = a.title || '';
+  document.getElementById('artCategory').value = a.category || 'support';
+  document.getElementById('artStatus').value = a.status || 'published';
+  document.getElementById('artThumbnail').value = a.thumbnail || '';
+  document.getElementById('artSummary').value = a.summary || '';
+  document.getElementById('artContent').value = a.content || '';
+
+  const preview = document.getElementById('artThumbPreview');
+  if (preview && a.thumbnail) {
+    preview.style.display = 'block';
+    preview.querySelector('img').src = a.thumbnail;
+  }
+
+  document.getElementById('articleModal').classList.add('open');
+}
+
+function closeArticleModal() {
+  document.getElementById('articleModal').classList.remove('open');
+}
+
+async function saveArticleForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('artId').value;
+  const title = document.getElementById('artTitle').value.trim();
+  const category = document.getElementById('artCategory').value;
+  const categoryLabels = {
+    support: 'Hướng dẫn & Hỗ trợ',
+    tech: 'Công nghệ & Đổi mới',
+    news: 'Tin tức TNP'
+  };
+  const categoryLabel = categoryLabels[category] || 'Tin tức';
+  const status = document.getElementById('artStatus').value;
+  const thumbnail = document.getElementById('artThumbnail').value.trim();
+  const summary = document.getElementById('artSummary').value.trim();
+  const content = document.getElementById('artContent').value.trim();
+
+  if (!title) {
+    alert('Vui lòng nhập tiêu đề bài viết.');
+    return;
+  }
+
+  const existingIdx = articlesList.findIndex(a => a.id === id);
+  const articleObj = {
+    id,
+    title,
+    category,
+    categoryLabel,
+    author: 'Admin TNP',
+    date: new Date().toLocaleDateString('vi-VN'),
+    thumbnail: thumbnail || './images/banner_tnp_care.jpg',
+    summary,
+    content,
+    status
+  };
+
+  if (existingIdx >= 0) {
+    articlesList[existingIdx] = articleObj;
+  } else {
+    articlesList.unshift(articleObj);
+  }
+
+  // Gửi API backend nếu server đang chạy
+  try {
+    await fetch('/api/admin/articles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(articleObj)
+    });
+  } catch (err) {}
+
+  closeArticleModal();
+  saveArticles();
+}
+
+async function deleteArticle(id) {
+  if (!confirm('Bạn có chắc chắn muốn xóa bài viết này?')) return;
+
+  articlesList = articlesList.filter(a => a.id !== id);
+
+  try {
+    await fetch(`/api/admin/articles/${id}`, { method: 'DELETE' });
+  } catch (err) {}
+
+  saveArticles();
+}
+
+// ── HÀM TẢI ẢNH TRỰC TIẾP TỪ MÁY TÍNH LÊN SERVER ──
+async function handleDirectImageUpload(event, inputTargetId, previewTargetId) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    alert('Vui lòng chọn một file hình ảnh hợp lệ (jpg, png, webp).');
+    return;
+  }
+
+  // Giới hạn 15MB
+  if (file.size > 15 * 1024 * 1024) {
+    alert('Dung lượng ảnh quá lớn! Vui lòng chọn ảnh dưới 15MB.');
+    return;
+  }
+
+  showToast('Đang tải ảnh lên...', 'info');
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const base64Data = e.target.result;
+
+    try {
+      const response = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: file.name,
+          dataUrl: base64Data
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success && data.url) {
+        document.getElementById(inputTargetId).value = data.url;
+
+        // Cập nhật preview nếu có
+        const previewContainer = document.getElementById(previewTargetId);
+        if (previewContainer) {
+          previewContainer.style.display = 'block';
+          const img = previewContainer.querySelector('img');
+          if (img) img.src = data.url;
+        }
+
+        showToast('Tải ảnh lên máy chủ thành công!', 'success');
+      } else {
+        throw new Error(data.message || 'Lỗi lưu file');
+      }
+    } catch (err) {
+      // Fallback lưu cục bộ base64 trực tiếp vào ô input nếu server chưa chạy
+      document.getElementById(inputTargetId).value = base64Data;
+      const previewContainer = document.getElementById(previewTargetId);
+      if (previewContainer) {
+        previewContainer.style.display = 'block';
+        const img = previewContainer.querySelector('img');
+        if (img) img.src = base64Data;
+      }
+      showToast('Đã lưu ảnh cục bộ thành công!', 'success');
+    }
+  };
+
+  reader.readAsDataURL(file);
 }

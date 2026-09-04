@@ -34,9 +34,9 @@ const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Parse JSON and URL-encoded bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Parse JSON and URL-encoded bodies (cho phép tải ảnh Base64 lên tới 25MB)
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // Serve product data as API endpoint
 app.get('/api/products', (req, res) => {
@@ -128,6 +128,129 @@ app.post('/api/contact', (req, res) => {
   contactsList.unshift(newLead);
   console.log('📩 Yêu cầu tư vấn mới:', newLead);
   res.json({ success: true, message: 'Cảm ơn bạn! TNP sẽ liên hệ trong thời gian sớm nhất.' });
+});
+
+// ══════════════════════════════════════════════
+//  PHẦN 3: API UPLOAD MEDIA & BÀI VIẾT (ARTICLES)
+// ══════════════════════════════════════════════
+const articlesList = [
+  {
+    id: 'art-1',
+    title: 'Khoảng Cách Xem Tivi Chuẩn Khoa Học Bảo Vệ Mắt Cho Gia Đình',
+    category: 'support',
+    categoryLabel: 'Hướng dẫn & Hỗ trợ',
+    author: 'Chuyên gia Kỹ thuật TNP',
+    date: '04/09/2026',
+    thumbnail: './images/banner_tnp_care.jpg',
+    summary: 'Bảng tra cứu kích thước màn hình TV 32 - 100 inch và khoảng cách ngồi xem tối ưu giúp bảo vệ thị lực và trải nghiệm điện ảnh chân thực.',
+    content: 'Việc lựa chọn khoảng cách xem TV phù hợp không chỉ mang lại trải nghiệm hình ảnh tốt nhất mà còn bảo vệ mắt cho cả gia đình...',
+    status: 'published'
+  },
+  {
+    id: 'art-2',
+    title: 'Công Nghệ QLED & Mini LED Trên Smart TV HXY - Đỉnh Cao Điện Ảnh',
+    category: 'tech',
+    categoryLabel: 'Công nghệ & Đổi mới',
+    author: 'Ban Công Nghệ TNP',
+    date: '03/09/2026',
+    thumbnail: './images/banner_hxy_100.jpg',
+    summary: 'Khám phá sự khác biệt vượt bậc của 1000+ vùng làm mờ cục bộ (Local Dimming) và độ sáng 1200 nit trên dòng Flagship Cinema.',
+    content: 'Tấm nền QLED kết hợp hạt lượng tử ánh sáng mang lại phổ màu đạt 98% chuẩn rạp chiếu phim DCI-P3...',
+    status: 'published'
+  }
+];
+
+// 1. API Tải ảnh lên máy chủ (Upload Base64 image)
+app.post('/api/admin/upload', (req, res) => {
+  const { filename, dataUrl } = req.body;
+  if (!dataUrl) {
+    return res.status(400).json({ success: false, message: 'Không có dữ liệu ảnh tải lên.' });
+  }
+
+  try {
+    const matches = dataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ success: false, message: 'Định dạng dữ liệu ảnh không hợp lệ.' });
+    }
+
+    const ext = matches[1].split('/')[1] || 'jpg';
+    const cleanExt = ext === 'jpeg' ? 'jpg' : ext;
+    const cleanName = (filename ? filename.replace(/[^a-zA-Z0-9_\-\.]/g, '') : 'img')
+      .replace(/\.[^/.]+$/, '');
+    const generatedFilename = `${Date.now()}_${cleanName}.${cleanExt}`;
+
+    const uploadDir = path.join(__dirname, 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const buffer = Buffer.from(matches[2], 'base64');
+    const targetPath = path.join(uploadDir, generatedFilename);
+    fs.writeFileSync(targetPath, buffer);
+
+    // Đồng bộ sang thư mục gốc uploads/ nếu có
+    const rootUploadDir = path.join(__dirname, 'uploads');
+    if (fs.existsSync(rootUploadDir)) {
+      fs.writeFileSync(path.join(rootUploadDir, generatedFilename), buffer);
+    }
+
+    const publicUrl = `./uploads/${generatedFilename}`;
+    console.log('📸 Tải ảnh thành công:', publicUrl);
+
+    res.json({
+      success: true,
+      url: publicUrl,
+      filename: generatedFilename,
+      message: 'Tải ảnh lên thành công!'
+    });
+  } catch (err) {
+    console.error('❌ Lỗi upload ảnh:', err);
+    res.status(500).json({ success: false, message: 'Lỗi trong quá trình lưu file ảnh.' });
+  }
+});
+
+// 2. API Quản lý Bài viết / Tin tức
+app.get('/api/admin/articles', (req, res) => {
+  res.json({ success: true, data: articlesList });
+});
+
+app.post('/api/admin/articles', (req, res) => {
+  const { id, title, category, categoryLabel, thumbnail, summary, content, status } = req.body;
+  if (!title) {
+    return res.status(400).json({ success: false, message: 'Vui lòng nhập tiêu đề bài viết.' });
+  }
+
+  const existingIdx = articlesList.findIndex(a => a.id === id);
+  const articleObj = {
+    id: id || 'art-' + Date.now(),
+    title,
+    category: category || 'news',
+    categoryLabel: categoryLabel || 'Tin tức',
+    author: 'Admin TNP',
+    date: new Date().toLocaleDateString('vi-VN'),
+    thumbnail: thumbnail || './images/banner_tnp_care.jpg',
+    summary: summary || '',
+    content: content || '',
+    status: status || 'published'
+  };
+
+  if (existingIdx >= 0) {
+    articlesList[existingIdx] = { ...articlesList[existingIdx], ...articleObj };
+  } else {
+    articlesList.unshift(articleObj);
+  }
+
+  res.json({ success: true, data: articleObj, message: 'Đã lưu bài viết thành công!' });
+});
+
+app.delete('/api/admin/articles/:id', (req, res) => {
+  const { id } = req.params;
+  const idx = articlesList.findIndex(a => a.id === id);
+  if (idx === -1) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy bài viết.' });
+  }
+  articlesList.splice(idx, 1);
+  res.json({ success: true, message: 'Đã xóa bài viết thành công.' });
 });
 
 // Fallback: serve index.html for any unmatched routes (SPA support)

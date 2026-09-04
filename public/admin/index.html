@@ -55,6 +55,12 @@
         <span class="nav-badge" id="badgeBannersCount">3</span>
       </a>
 
+      <a class="nav-item" data-tab="articles">
+        <i class="fas fa-newspaper"></i>
+        <span>Bài viết & Hỗ trợ</span>
+        <span class="nav-badge" id="badgeArticlesCount">2</span>
+      </a>
+
       <div class="nav-section-title">Hệ thống & Khách hàng</div>
 
       <a class="nav-item" data-tab="contacts">
@@ -288,6 +294,44 @@
         </div>
       </section>
 
+      <!-- ── TAB: ARTICLES ── -->
+      <section class="tab-panel" id="tab-articles">
+        <div class="admin-card">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-newspaper"></i> Quản lý Bài viết & Hướng dẫn kỹ thuật</h2>
+            <div class="card-actions">
+              <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Tìm kiếm bài viết..." oninput="filterArticles(this.value)">
+              </div>
+              <button class="btn btn-primary" onclick="openAddArticleModal()">
+                <i class="fas fa-plus-circle"></i> Viết bài mới
+              </button>
+            </div>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">STT</th>
+                    <th style="width: 90px;">Ảnh</th>
+                    <th>Tiêu đề bài viết</th>
+                    <th>Chuyên mục</th>
+                    <th>Ngày đăng</th>
+                    <th>Trạng thái</th>
+                    <th style="width: 100px; text-align: center;">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="articlesTableBody">
+                  <!-- Injected via admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── TAB: CONTACTS ── -->
       <section class="tab-panel" id="tab-contacts">
         <div class="admin-card">
@@ -427,8 +471,17 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Link ảnh đại diện (URL)</label>
-            <input type="text" id="prodThumb" class="form-control" placeholder="https://... hoặc /images/products/...">
+            <label class="form-label">Ảnh đại diện TV</label>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="prodThumb" class="form-control" placeholder="./images/products/... hoặc link URL">
+              <label class="btn btn-secondary" style="white-space: nowrap; cursor: pointer; padding: 8px 12px;" title="Tải ảnh từ máy tính">
+                <i class="fas fa-upload"></i> Tải ảnh
+                <input type="file" accept="image/*" style="display: none;" onchange="handleDirectImageUpload(event, 'prodThumb', 'prodThumbPreview')">
+              </label>
+            </div>
+            <div id="prodThumbPreview" style="margin-top: 6px; display: none;">
+              <img src="" style="height: 48px; border-radius: 6px; border: 1px solid var(--adm-border); object-fit: contain;">
+            </div>
           </div>
         </div>
 
@@ -475,8 +528,17 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Đường dẫn hình ảnh Banner (URL hoặc file nội bộ) *</label>
-          <input type="text" id="bannerImage" class="form-control" placeholder="./images/banner_hxy_100.jpg" required>
+          <label class="form-label">Hình ảnh Banner Hero *</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="bannerImage" class="form-control" placeholder="./images/banner_hxy_100.jpg" required>
+            <label class="btn btn-secondary" style="white-space: nowrap; cursor: pointer; padding: 8px 12px;" title="Tải ảnh từ máy tính">
+              <i class="fas fa-upload"></i> Tải ảnh
+              <input type="file" accept="image/*" style="display: none;" onchange="handleDirectImageUpload(event, 'bannerImage', 'bannerImagePreview')">
+            </label>
+          </div>
+          <div id="bannerImagePreview" style="margin-top: 6px; display: none;">
+            <img src="" style="height: 60px; border-radius: 6px; border: 1px solid var(--adm-border); object-fit: cover;">
+          </div>
         </div>
 
         <div class="form-group">
@@ -543,6 +605,74 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeLeadModal()">Đóng</button>
         <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Cập nhật</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA BÀI VIẾT (ARTICLE)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="articleModal">
+  <div class="modal-dialog" style="max-width: 700px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="articleModalTitle">Viết bài mới</h3>
+      <button class="modal-close" onclick="closeArticleModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <form onsubmit="saveArticleForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="artId">
+
+        <div class="form-group">
+          <label class="form-label">Tiêu đề bài viết *</label>
+          <input type="text" id="artTitle" class="form-control" placeholder="VD: Hướng dẫn vệ sinh và bảo quản Smart TV..." required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Chuyên mục *</label>
+            <select id="artCategory" class="form-control">
+              <option value="support">Hướng dẫn & Hỗ trợ kỹ thuật</option>
+              <option value="tech">Công nghệ & Đổi mới</option>
+              <option value="news">Tin tức hoạt động TNP</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trạng thái bài viết</label>
+            <select id="artStatus" class="form-control">
+              <option value="published">Đã xuất bản</option>
+              <option value="draft">Bản nháp</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Ảnh đại diện bài viết</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="artThumbnail" class="form-control" placeholder="./images/... hoặc URL">
+            <label class="btn btn-secondary" style="white-space: nowrap; cursor: pointer; padding: 8px 12px;">
+              <i class="fas fa-upload"></i> Tải ảnh
+              <input type="file" accept="image/*" style="display: none;" onchange="handleDirectImageUpload(event, 'artThumbnail', 'artThumbPreview')">
+            </label>
+          </div>
+          <div id="artThumbPreview" style="margin-top: 6px; display: none;">
+            <img src="" style="height: 60px; border-radius: 6px; border: 1px solid var(--adm-border); object-fit: cover;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tóm tắt ngắn gọn</label>
+          <textarea id="artSummary" class="form-control" rows="2" placeholder="Tóm tắt nội dung chính để hiển thị trên thẻ bài viết..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nội dung bài viết chi tiết</label>
+          <textarea id="artContent" class="form-control" rows="6" placeholder="Nội dung bài viết..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeArticleModal()">Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu bài viết</button>
       </div>
     </form>
   </div>
