@@ -38,18 +38,146 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
-// Serve product data as API endpoint
-app.get('/api/products', (req, res) => {
+// ══════════════════════════════════════════════
+//  DATABASE FILE PERSISTENCE (LƯU TRỮ VĨNH VIỄN)
+// ══════════════════════════════════════════════
+const DB_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+
+function readDbFile(filename, fallbackData) {
+  const filePath = path.join(DB_DIR, filename);
+  if (fs.existsSync(filePath)) {
+    try {
+      return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (e) {
+      console.warn(`⚠️ Lỗi đọc file ${filename}, dùng dữ liệu mặc định:`, e.message);
+    }
+  }
+  return fallbackData;
+}
+
+function writeDbFile(filename, data) {
+  try {
+    const filePath = path.join(DB_DIR, filename);
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+
+    // Đồng bộ sang public/data/ nếu có
+    const pubPath = path.join(__dirname, 'public', 'data', filename);
+    if (fs.existsSync(path.dirname(pubPath))) {
+      fs.writeFileSync(pubPath, JSON.stringify(data, null, 2), 'utf8');
+    }
+    return true;
+  } catch (e) {
+    console.error(`❌ Lỗi ghi file ${filename}:`, e);
+    return false;
+  }
+}
+
+// Khởi tạo State ban đầu từ các file lưu trữ
+let dbProducts = readDbFile('products.json', null);
+if (!dbProducts) {
   try {
     const { products } = require('./data/products');
-    res.json({ success: true, data: products });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Không thể tải dữ liệu sản phẩm.' });
-  }
+    dbProducts = products || [];
+    writeDbFile('products.json', dbProducts);
+  } catch (e) { dbProducts = []; }
+}
+
+let dbStations = readDbFile('stations.json', null);
+if (!dbStations) {
+  dbStations = [];
+  writeDbFile('stations.json', dbStations);
+}
+
+let dbBanners = readDbFile('banners.json', null);
+if (!dbBanners) {
+  dbBanners = [
+    {
+      id: 'banner-1',
+      title: 'Smart TV HXY 100 Inch - QLED Đỉnh Cao Rạp Phim Tại Gia',
+      badge: 'TV HXY VIỆT NAM · FLAGSHIP CINEMA',
+      image: './images/banner_hxy_100.jpg',
+      desc: 'Màn hình vô cực 100 inch chuẩn rạp chiếu phim IMAX thế hệ mới, tấm nền QLED 4K siêu sắc nét, 144Hz VRR.',
+      link: './tv-hxy.html',
+      order: 1,
+      active: true
+    },
+    {
+      id: 'banner-2',
+      title: 'HIKERS Mini LED 75 Inch - Đỉnh Cao Tương Phản 1000+ Dimming Zones',
+      badge: 'HIKERS VIỆT NAM · CÔNG NGHỆ MINI LED',
+      image: './images/banner_hikers_75.jpg',
+      desc: 'Công nghệ đèn nền Mini LED siêu sáng 1200 nit, dải màu 98% DCI-P3, âm thanh Dolby Atmos sống động.',
+      link: './tv-hikers.html',
+      order: 2,
+      active: true
+    },
+    {
+      id: 'banner-3',
+      title: 'Dịch Vụ Bảo Hành Smart TV Toàn Quốc - Chuẩn Mực & Uy Tín',
+      badge: 'TNP CARE · DỊCH VỤ TOÀN QUỐC',
+      image: './images/banner_tnp_care.jpg',
+      desc: 'Mạng lưới 80 - 100 trạm bảo hành phủ sóng 63 tỉnh thành, cam kết linh kiện chính hãng 100%.',
+      link: './tram-bao-hanh.html',
+      order: 3,
+      active: true
+    }
+  ];
+  writeDbFile('banners.json', dbBanners);
+}
+
+let dbContacts = readDbFile('contacts.json', []);
+
+// 1. API Sản phẩm TV (Đồng bộ vĩnh viễn)
+app.get('/api/products', (req, res) => {
+  res.json({ success: true, data: dbProducts });
 });
 
-// Quản lý yêu cầu liên hệ / tư vấn (in-memory & append file)
-const contactsList = [];
+app.post('/api/admin/products', (req, res) => {
+  const newProducts = req.body;
+  if (!Array.isArray(newProducts)) {
+    return res.status(400).json({ success: false, message: 'Dữ liệu sản phẩm phải là một danh sách mảng (Array).' });
+  }
+  dbProducts = newProducts;
+  writeDbFile('products.json', dbProducts);
+  console.log(`💾 Đã lưu vĩnh viễn ${dbProducts.length} sản phẩm TV vào Database!`);
+  res.json({ success: true, message: 'Đã lưu vĩnh viễn danh sách sản phẩm thành công!' });
+});
+
+// 2. API Banner Hero Slider (Đồng bộ vĩnh viễn)
+app.get('/api/banners', (req, res) => {
+  res.json({ success: true, data: dbBanners.filter(b => b.active !== false) });
+});
+
+app.get('/api/admin/banners', (req, res) => {
+  res.json({ success: true, data: dbBanners });
+});
+
+app.post('/api/admin/banners', (req, res) => {
+  const newBanners = req.body;
+  if (!Array.isArray(newBanners)) {
+    return res.status(400).json({ success: false, message: 'Dữ liệu banners phải là một danh sách mảng (Array).' });
+  }
+  dbBanners = newBanners;
+  writeDbFile('banners.json', dbBanners);
+  console.log(`💾 Đã lưu vĩnh viễn ${dbBanners.length} banners vào Database!`);
+  res.json({ success: true, message: 'Đã lưu vĩnh viễn danh sách banners thành công!' });
+});
+
+// 3. API Trạm bảo hành (Đồng bộ vĩnh viễn)
+app.get('/api/admin/stations', (req, res) => {
+  res.json({ success: true, data: dbStations });
+});
+
+app.post('/api/admin/stations', (req, res) => {
+  const newStations = req.body;
+  if (!Array.isArray(newStations)) {
+    return res.status(400).json({ success: false, message: 'Dữ liệu trạm bảo hành phải là một mảng.' });
+  }
+  dbStations = newStations;
+  writeDbFile('stations.json', dbStations);
+  res.json({ success: true, message: 'Đã lưu danh sách trạm bảo hành!' });
+});
 
 // API Đăng nhập quản trị viên
 app.post('/api/admin/login', (req, res) => {
@@ -80,30 +208,32 @@ app.post('/api/admin/login', (req, res) => {
 
 // API Lấy danh sách liên hệ cho Admin
 app.get('/api/admin/contacts', (req, res) => {
-  res.json({ success: true, data: contactsList });
+  res.json({ success: true, data: dbContacts });
 });
 
 // API Cập nhật trạng thái liên hệ (chờ liên hệ -> đang tư vấn -> hoàn tất -> hủy)
 app.put('/api/admin/contacts/:id', (req, res) => {
   const { id } = req.params;
   const { status, notes } = req.body;
-  const lead = contactsList.find(c => c.id === id);
+  const lead = dbContacts.find(c => c.id === id);
   if (!lead) {
     return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu tư vấn này.' });
   }
   if (status) lead.status = status;
   if (notes !== undefined) lead.notes = notes;
+  writeDbFile('contacts.json', dbContacts);
   res.json({ success: true, data: lead, message: 'Đã cập nhật trạng thái liên hệ!' });
 });
 
 // API Xóa yêu cầu liên hệ
 app.delete('/api/admin/contacts/:id', (req, res) => {
   const { id } = req.params;
-  const idx = contactsList.findIndex(c => c.id === id);
+  const idx = dbContacts.findIndex(c => c.id === id);
   if (idx === -1) {
     return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu tư vấn này.' });
   }
-  contactsList.splice(idx, 1);
+  dbContacts.splice(idx, 1);
+  writeDbFile('contacts.json', dbContacts);
   res.json({ success: true, message: 'Đã xóa yêu cầu tư vấn thành công.' });
 });
 
@@ -125,7 +255,8 @@ app.post('/api/contact', (req, res) => {
     notes: ''
   };
 
-  contactsList.unshift(newLead);
+  dbContacts.unshift(newLead);
+  writeDbFile('contacts.json', dbContacts);
   console.log('📩 Yêu cầu tư vấn mới:', newLead);
   res.json({ success: true, message: 'Cảm ơn bạn! TNP sẽ liên hệ trong thời gian sớm nhất.' });
 });

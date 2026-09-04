@@ -828,6 +828,7 @@ const TNP = {
   //  INIT
   // ──────────────────────────────────────────
   init() {
+    this.syncDynamicData();
     if (typeof injectComponents === 'function') {
       injectComponents();
     }
@@ -847,6 +848,32 @@ const TNP = {
     this.setupSmoothScroll();
     this.setupLazyImages();
     console.log('✅ TNP Website initialized');
+  },
+
+  syncDynamicData() {
+    // 1. Đồng bộ sản phẩm từ Admin override nếu có
+    const savedProducts = localStorage.getItem('tnp_admin_products_override');
+    if (savedProducts) {
+      try {
+        const parsed = JSON.parse(savedProducts);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          TNP_PRODUCTS.length = 0;
+          TNP_PRODUCTS.push(...parsed);
+        }
+      } catch (e) {}
+    }
+
+    // 2. Fetch ngầm từ server API nếu server có dữ liệu mới hơn
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          TNP_PRODUCTS.length = 0;
+          TNP_PRODUCTS.push(...json.data);
+          this.renderProducts();
+        }
+      })
+      .catch(() => {});
   },
 
   // ──────────────────────────────────────────
