@@ -4592,76 +4592,84 @@ select.form-control { cursor: pointer; }
     justify-content: center;
   }
 
-  /* Compact Cinematic Hero (Trang Chu) */
+  /* Compact Cinematic Hero (Trang Chu - Neo gọn gàng 1 bên góc) */
   .hero-showcase.cinematic-hero {
-    min-height: 240px;
+    min-height: 230px;
     touch-action: pan-y;
   }
   .hero-slides {
-    min-height: 195px;
+    min-height: 190px;
     touch-action: pan-y;
     user-select: none;
     -webkit-user-select: none;
   }
   .cinematic-bg {
-    background-position: center center;
+    background-position: right center; /* Canh hình ảnh sản phẩm TV sang bên phải để góc trái thoáng cho chữ */
     background-size: cover;
-    filter: contrast(1.08) brightness(1.04); /* Làm hình ảnh TV nền rõ nét, trong trẻo và sống động hơn */
+    filter: contrast(1.08) brightness(1.04);
   }
   .cinematic-overlay {
-    background: linear-gradient(180deg, 
-      rgba(6, 9, 17, 0.15) 0%, 
-      rgba(6, 9, 17, 0.45) 60%, 
-      rgba(6, 9, 17, 0.85) 100%); /* Giảm lớp phủ tối để thấy rõ nét toàn cảnh TV */
+    background: linear-gradient(90deg, 
+      rgba(6, 9, 17, 0.75) 0%, 
+      rgba(6, 9, 17, 0.40) 50%, 
+      rgba(6, 9, 17, 0.05) 100%),
+      linear-gradient(180deg, transparent 60%, rgba(6, 9, 17, 0.85) 100%); /* Phủ nhẹ góc trái để chữ dễ đọc, để lộ 100% hình ảnh TV bên phải */
   }
   .cinematic-content-wrap {
-    padding-block: 8px 6px;
-    max-width: 100%;
+    padding-block: 8px 4px;
+    max-width: 58%; /* Neo gọn gàng sang 1 bên góc trái, không che chiếm toàn màn hình */
     text-align: left;
+    margin-left: 0;
+    margin-right: auto;
     pointer-events: auto;
   }
   .cinematic-badge {
-    padding: 2px 7px;
+    padding: 2px 6px;
     margin-bottom: 3px;
-    border-radius: 14px;
-    font-size: 8.5px;
+    border-radius: 12px;
+    font-size: 8px;
+    display: inline-flex;
+    width: fit-content;
   }
   .badge-dot {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
   }
   .badge-text {
-    font-size: 8px;
-    letter-spacing: 0.03em;
+    font-size: 7.5px;
+    letter-spacing: 0.02em;
   }
   .cinematic-title {
-    font-size: 15px;
+    font-size: 13.5px;
     line-height: 1.2;
     margin-bottom: 4px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
   }
   .cinematic-desc {
-    display: none !important; /* Ẩn đoạn chữ dài trên banner mobile để hình ảnh hiển thị rõ ràng, thoáng đãng */
+    display: none !important; /* Ẩn chữ dài */
   }
   .cinematic-specs-bar {
-    display: none !important; /* Ẩn bớt thanh thông số phụ trên mobile để lộ toàn cảnh hình nền TV sắc nét */
+    display: none !important; /* Ẩn thông số rườm rà */
   }
   .cinematic-actions {
-    gap: 6px;
+    gap: 5px;
     position: relative;
     z-index: 5;
-    display: flex;
+    display: inline-flex;
     flex-direction: row;
     flex-wrap: nowrap;
-    margin-top: 4px;
+    margin-top: 2px;
+    width: auto;
   }
   .cinematic-actions .btn {
-    padding: 5px 10px;
-    font-size: 10.5px;
-    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 9.5px;
+    border-radius: 4px;
     cursor: pointer;
     touch-action: manipulation;
     white-space: nowrap;
+    flex: 0 0 auto;
+    width: auto;
   }
 
   .cinematic-controls {
@@ -4670,7 +4678,7 @@ select.form-control { cursor: pointer; }
     z-index: 20;
   }
   .hero-tab-btns {
-    gap: 5px;
+    gap: 4px;
     overflow-x: auto;
     flex-wrap: nowrap;
     width: 100%;
@@ -4683,8 +4691,8 @@ select.form-control { cursor: pointer; }
     display: none;
   }
   .hero-tab-btn {
-    padding: 3px 7px;
-    border-radius: 5px;
+    padding: 2px 6px;
+    border-radius: 4px;
     flex-shrink: 0;
     cursor: pointer;
     touch-action: manipulation;
@@ -4699,11 +4707,11 @@ select.form-control { cursor: pointer; }
     border-color: rgba(96,165,250,.7);
   }
   .tab-brand {
-    font-size: 8px;
-    padding: 1px 4px;
+    font-size: 7.5px;
+    padding: 1px 3px;
   }
   .tab-text strong {
-    font-size: 9.5px;
+    font-size: 9px;
   }
   .tab-text small {
     display: none;
@@ -4712,60 +4720,73 @@ select.form-control { cursor: pointer; }
     display: none;
   }
 
-  /* Compact Corporate Hero (Gioi Thieu & Tram Bao Hanh) */
+  /* Compact Corporate Hero (Gioi Thieu & Tram Bao Hanh - Neo chữ sang 1 góc) */
   .tnp-corporate-hero {
-    padding-top: 12px;
-    padding-bottom: 14px;
-    background-position: center center;
+    padding-top: 10px;
+    padding-bottom: 12px;
+    background-position: right center;
     background-size: cover;
     filter: contrast(1.05);
   }
   .tnp-corporate-hero::before {
-    background: linear-gradient(180deg, 
-      rgba(7, 14, 28, 0.45) 0%, 
-      rgba(7, 14, 28, 0.75) 60%, 
-      rgba(7, 14, 28, 0.90) 100%); /* Làm sáng để thấy rõ ảnh nền trạm / trụ sở */
+    background: linear-gradient(90deg, 
+      rgba(7, 14, 28, 0.78) 0%, 
+      rgba(7, 14, 28, 0.45) 55%, 
+      rgba(7, 14, 28, 0.10) 100%),
+      linear-gradient(180deg, transparent 60%, rgba(7, 14, 28, 0.90) 100%);
   }
   .tnp-corporate-hero .breadcrumb {
-    margin-bottom: 4px;
-    font-size: 9.5px;
+    margin-bottom: 3px;
+    font-size: 9px;
+  }
+  .tnp-hero-grid {
+    max-width: 62% !important; /* Neo sang góc trái */
+    margin-left: 0;
+    margin-right: auto;
   }
   .tnp-hero-badge {
-    padding: 2px 6px;
-    font-size: 8.5px;
-    margin-bottom: 4px;
+    padding: 2px 5px;
+    font-size: 8px;
+    margin-bottom: 3px;
+    display: inline-flex;
+    width: fit-content;
   }
   .tnp-hero-title {
-    font-size: 16px;
+    font-size: 14.5px;
     line-height: 1.2;
-    margin-bottom: 3px;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    margin-bottom: 2px;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.9);
   }
   .tnp-hero-company-name {
-    font-size: 9px;
-    margin-bottom: 4px;
+    font-size: 8.5px;
+    margin-bottom: 3px;
   }
   .tnp-hero-desc {
-    display: none !important; /* Ẩn đoạn văn bản dài trên banner giới thiệu & trạm bảo hành */
+    display: none !important; /* Ẩn chữ dài */
   }
   .tnp-hero-pills-row {
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 3px;
+    margin-bottom: 6px;
+    max-width: 100%;
   }
   .tnp-pill-item {
-    font-size: 9px;
-    padding: 2px 5px;
-    border-radius: 4px;
+    font-size: 8.5px;
+    padding: 2px 4px;
+    border-radius: 3px;
   }
   .tnp-hero-actions {
-    gap: 5px;
+    gap: 4px;
     flex-wrap: nowrap;
+    display: inline-flex;
+    width: auto;
   }
   .tnp-hero-actions .btn {
-    padding: 5px 9px;
-    font-size: 10.5px;
-    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 9.5px;
+    border-radius: 4px;
     white-space: nowrap;
+    flex: 0 0 auto;
+    width: auto;
   }
 
   /* Compact Sections & Grids */
