@@ -7,7 +7,15 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const dns = require('dns');
 const mongoose = require('mongoose');
+
+// Cấu hình DNS Server chuẩn quốc tế (Google & Cloudflare) để giải quyết lỗi querySrv ECONNREFUSED khi kết nối MongoDB Atlas
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Bỏ qua nếu môi trường không cho phép đổi dns servers
+}
 
 // Tự động nạp biến môi trường từ file .env (không cần cài thêm thư viện)
 const envPath = path.join(__dirname, '.env');
