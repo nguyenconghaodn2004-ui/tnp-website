@@ -1,11 +1,13 @@
 /**
  * TRÚC NGUYÊN PHÁT – TNP
  * Node.js / Express Server
+ * Hỗ trợ chế độ kép: Cloud Database (MongoDB Atlas) & CSDL JSON Dự phòng
  */
 
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const mongoose = require('mongoose');
 
 // Tự động nạp biến môi trường từ file .env (không cần cài thêm thư viện)
 const envPath = path.join(__dirname, '.env');
@@ -30,6 +32,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DOMAIN = process.env.DOMAIN || 'tnpcare.vn';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const MONGODB_URI = process.env.DATABASE_URL || process.env.MONGODB_URI;
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,7 +42,7 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // ══════════════════════════════════════════════
-//  DATABASE FILE PERSISTENCE (LƯU TRỮ VĨNH VIỄN)
+//  1. CSDL DỰ PHÒNG CỤC BỘ (LOCAL JSON FALLBACK)
 // ══════════════════════════════════════════════
 const DB_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
@@ -128,143 +131,7 @@ if (!dbBanners) {
 
 let dbContacts = readDbFile('contacts.json', []);
 
-// 1. API Sản phẩm TV (Đồng bộ vĩnh viễn)
-app.get('/api/products', (req, res) => {
-  res.json({ success: true, data: dbProducts });
-});
-
-app.post('/api/admin/products', (req, res) => {
-  const newProducts = req.body;
-  if (!Array.isArray(newProducts)) {
-    return res.status(400).json({ success: false, message: 'Dữ liệu sản phẩm phải là một danh sách mảng (Array).' });
-  }
-  dbProducts = newProducts;
-  writeDbFile('products.json', dbProducts);
-  console.log(`💾 Đã lưu vĩnh viễn ${dbProducts.length} sản phẩm TV vào Database!`);
-  res.json({ success: true, message: 'Đã lưu vĩnh viễn danh sách sản phẩm thành công!' });
-});
-
-// 2. API Banner Hero Slider (Đồng bộ vĩnh viễn)
-app.get('/api/banners', (req, res) => {
-  res.json({ success: true, data: dbBanners.filter(b => b.active !== false) });
-});
-
-app.get('/api/admin/banners', (req, res) => {
-  res.json({ success: true, data: dbBanners });
-});
-
-app.post('/api/admin/banners', (req, res) => {
-  const newBanners = req.body;
-  if (!Array.isArray(newBanners)) {
-    return res.status(400).json({ success: false, message: 'Dữ liệu banners phải là một danh sách mảng (Array).' });
-  }
-  dbBanners = newBanners;
-  writeDbFile('banners.json', dbBanners);
-  console.log(`💾 Đã lưu vĩnh viễn ${dbBanners.length} banners vào Database!`);
-  res.json({ success: true, message: 'Đã lưu vĩnh viễn danh sách banners thành công!' });
-});
-
-// 3. API Trạm bảo hành (Đồng bộ vĩnh viễn)
-app.get('/api/admin/stations', (req, res) => {
-  res.json({ success: true, data: dbStations });
-});
-
-app.post('/api/admin/stations', (req, res) => {
-  const newStations = req.body;
-  if (!Array.isArray(newStations)) {
-    return res.status(400).json({ success: false, message: 'Dữ liệu trạm bảo hành phải là một mảng.' });
-  }
-  dbStations = newStations;
-  writeDbFile('stations.json', dbStations);
-  res.json({ success: true, message: 'Đã lưu danh sách trạm bảo hành!' });
-});
-
-// API Đăng nhập quản trị viên
-app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
-  const adminUser = process.env.ADMIN_USER || 'admin@tnpcare.vn';
-  const adminPass = process.env.ADMIN_PASS || 'tnpcare@2026';
-
-  if (
-    (username === adminUser || username === 'admin') &&
-    (password === adminPass || password === 'admin')
-  ) {
-    return res.json({
-      success: true,
-      token: 'tnp_jwt_' + Buffer.from(`${username}:${Date.now()}`).toString('base64'),
-      user: {
-        name: 'Quản Trị Viên TNP',
-        email: 'admin@tnpcare.vn',
-        role: 'Super Admin'
-      }
-    });
-  }
-
-  return res.status(401).json({
-    success: false,
-    message: 'Tài khoản hoặc mật khẩu quản trị không chính xác!'
-  });
-});
-
-// API Lấy danh sách liên hệ cho Admin
-app.get('/api/admin/contacts', (req, res) => {
-  res.json({ success: true, data: dbContacts });
-});
-
-// API Cập nhật trạng thái liên hệ (chờ liên hệ -> đang tư vấn -> hoàn tất -> hủy)
-app.put('/api/admin/contacts/:id', (req, res) => {
-  const { id } = req.params;
-  const { status, notes } = req.body;
-  const lead = dbContacts.find(c => c.id === id);
-  if (!lead) {
-    return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu tư vấn này.' });
-  }
-  if (status) lead.status = status;
-  if (notes !== undefined) lead.notes = notes;
-  writeDbFile('contacts.json', dbContacts);
-  res.json({ success: true, data: lead, message: 'Đã cập nhật trạng thái liên hệ!' });
-});
-
-// API Xóa yêu cầu liên hệ
-app.delete('/api/admin/contacts/:id', (req, res) => {
-  const { id } = req.params;
-  const idx = dbContacts.findIndex(c => c.id === id);
-  if (idx === -1) {
-    return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu tư vấn này.' });
-  }
-  dbContacts.splice(idx, 1);
-  writeDbFile('contacts.json', dbContacts);
-  res.json({ success: true, message: 'Đã xóa yêu cầu tư vấn thành công.' });
-});
-
-// Handle form submissions (contact / consultation)
-app.post('/api/contact', (req, res) => {
-  const { name, phone, product, message } = req.body;
-  if (!name || !phone) {
-    return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ họ tên và số điện thoại.' });
-  }
-  
-  const newLead = {
-    id: 'lead-' + Date.now(),
-    name,
-    phone,
-    product: product || 'Tư vấn chung',
-    message: message || '',
-    time: new Date().toLocaleString('vi-VN'),
-    status: 'pending',
-    notes: ''
-  };
-
-  dbContacts.unshift(newLead);
-  writeDbFile('contacts.json', dbContacts);
-  console.log('📩 Yêu cầu tư vấn mới:', newLead);
-  res.json({ success: true, message: 'Cảm ơn bạn! TNP sẽ liên hệ trong thời gian sớm nhất.' });
-});
-
-// ══════════════════════════════════════════════
-//  PHẦN 3: API UPLOAD MEDIA & BÀI VIẾT (ARTICLES)
-// ══════════════════════════════════════════════
-const articlesList = [
+let articlesList = [
   {
     id: 'art-1',
     title: 'Khoảng Cách Xem Tivi Chuẩn Khoa Học Bảo Vệ Mắt Cho Gia Đình',
@@ -291,7 +158,342 @@ const articlesList = [
   }
 ];
 
-// 1. API Tải ảnh lên máy chủ (Upload Base64 image)
+// ══════════════════════════════════════════════
+//  2. MONGODB ATLAS CLOUD SCHEMAS & MODELS
+// ══════════════════════════════════════════════
+// strict: false cho phép tùy biến linh hoạt mọi trường dữ liệu động
+const ProductSchema = new mongoose.Schema({ id: { type: String, unique: true, index: true } }, { strict: false, timestamps: true });
+const StationSchema = new mongoose.Schema({ id: { type: String, index: true } }, { strict: false, timestamps: true });
+const BannerSchema  = new mongoose.Schema({ id: { type: String, unique: true, index: true } }, { strict: false, timestamps: true });
+const ContactSchema = new mongoose.Schema({ id: { type: String, unique: true, index: true } }, { strict: false, timestamps: true });
+const ArticleSchema = new mongoose.Schema({ id: { type: String, unique: true, index: true } }, { strict: false, timestamps: true });
+
+const ProductModel = mongoose.model('Product', ProductSchema);
+const StationModel = mongoose.model('Station', StationSchema);
+const BannerModel  = mongoose.model('Banner', BannerSchema);
+const ContactModel = mongoose.model('Contact', ContactSchema);
+const ArticleModel = mongoose.model('Article', ArticleSchema);
+
+let isMongoConnected = false;
+
+// Tự động Seed dữ liệu từ file cục bộ sang MongoDB nếu Collection trên Cloud còn trống
+async function autoSeedMongoData() {
+  try {
+    const productCount = await ProductModel.countDocuments();
+    if (productCount === 0 && dbProducts && dbProducts.length > 0) {
+      await ProductModel.insertMany(dbProducts);
+      console.log(`  🌱 Đã tự động nạp ${dbProducts.length} sản phẩm vào MongoDB Atlas.`);
+    }
+
+    const stationCount = await StationModel.countDocuments();
+    if (stationCount === 0 && dbStations && dbStations.length > 0) {
+      await StationModel.insertMany(dbStations);
+      console.log(`  🌱 Đã tự động nạp ${dbStations.length} trạm bảo hành vào MongoDB Atlas.`);
+    }
+
+    const bannerCount = await BannerModel.countDocuments();
+    if (bannerCount === 0 && dbBanners && dbBanners.length > 0) {
+      await BannerModel.insertMany(dbBanners);
+      console.log(`  🌱 Đã tự động nạp ${dbBanners.length} banners vào MongoDB Atlas.`);
+    }
+
+    const articleCount = await ArticleModel.countDocuments();
+    if (articleCount === 0 && articlesList && articlesList.length > 0) {
+      await ArticleModel.insertMany(articlesList);
+      console.log(`  🌱 Đã tự động nạp ${articlesList.length} bài viết vào MongoDB Atlas.`);
+    }
+  } catch (err) {
+    console.warn('  ⚠️ Lỗi trong quá trình tự động nạp dữ liệu ban đầu vào MongoDB:', err.message);
+  }
+}
+
+// Khởi tạo kết nối MongoDB
+if (MONGODB_URI) {
+  mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+  })
+  .then(async () => {
+    isMongoConnected = true;
+    console.log('  🟢 ĐÃ KẾT NỐI THÀNH CÔNG CLOUD DATABASE MONGODB ATLAS!');
+    await autoSeedMongoData();
+  })
+  .catch(err => {
+    console.warn('  ⚠️ Không thể kết nối MongoDB Atlas (đang chạy CSDL JSON dự phòng):', err.message);
+  });
+} else {
+  console.log('  ℹ️ Chưa cấu hình DATABASE_URL trong .env, server đang chạy với CSDL JSON cục bộ.');
+}
+
+// ══════════════════════════════════════════════
+//  3. REST APIS (HYBRID: MONGODB + LOCAL FALLBACK)
+// ══════════════════════════════════════════════
+
+// API Kiểm tra trạng thái hệ thống và kết nối CSDL
+app.get('/api/status', (req, res) => {
+  res.json({
+    success: true,
+    server: 'TNP Care API Server',
+    database: isMongoConnected ? 'mongodb_atlas' : 'local_json',
+    connected: isMongoConnected,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 1. API Sản phẩm TV
+app.get('/api/products', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const items = await ProductModel.find().lean();
+      if (items && items.length > 0) {
+        return res.json({ success: true, data: items, source: 'cloud' });
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc sản phẩm từ MongoDB:', err.message);
+  }
+  res.json({ success: true, data: dbProducts, source: 'local' });
+});
+
+app.post('/api/admin/products', async (req, res) => {
+  const newProducts = req.body;
+  if (!Array.isArray(newProducts)) {
+    return res.status(400).json({ success: false, message: 'Dữ liệu sản phẩm phải là một danh sách mảng (Array).' });
+  }
+
+  // Cập nhật CSDL cục bộ
+  dbProducts = newProducts;
+  writeDbFile('products.json', dbProducts);
+
+  // Cập nhật Cloud MongoDB
+  if (isMongoConnected) {
+    try {
+      await ProductModel.deleteMany({});
+      if (newProducts.length > 0) {
+        await ProductModel.insertMany(newProducts);
+      }
+      console.log(`💾 Đã đồng bộ ${newProducts.length} sản phẩm lên MongoDB Atlas!`);
+      return res.json({ success: true, message: 'Đã lưu sản phẩm thành công lên Cloud MongoDB Atlas!' });
+    } catch (err) {
+      console.error('Lỗi ghi sản phẩm lên MongoDB:', err);
+    }
+  }
+
+  console.log(`💾 Đã lưu vĩnh viễn ${dbProducts.length} sản phẩm TV vào Database JSON!`);
+  res.json({ success: true, message: 'Đã lưu vĩnh viễn danh sách sản phẩm thành công!' });
+});
+
+// 2. API Banner Hero Slider
+app.get('/api/banners', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const banners = await BannerModel.find({ active: { $ne: false } }).sort({ order: 1 }).lean();
+      if (banners && banners.length > 0) {
+        return res.json({ success: true, data: banners, source: 'cloud' });
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc banners từ MongoDB:', err.message);
+  }
+  res.json({ success: true, data: dbBanners.filter(b => b.active !== false), source: 'local' });
+});
+
+app.get('/api/admin/banners', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const banners = await BannerModel.find().sort({ order: 1 }).lean();
+      if (banners && banners.length > 0) {
+        return res.json({ success: true, data: banners, source: 'cloud' });
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc admin banners từ MongoDB:', err.message);
+  }
+  res.json({ success: true, data: dbBanners, source: 'local' });
+});
+
+app.post('/api/admin/banners', async (req, res) => {
+  const newBanners = req.body;
+  if (!Array.isArray(newBanners)) {
+    return res.status(400).json({ success: false, message: 'Dữ liệu banners phải là một danh sách mảng (Array).' });
+  }
+
+  dbBanners = newBanners;
+  writeDbFile('banners.json', dbBanners);
+
+  if (isMongoConnected) {
+    try {
+      await BannerModel.deleteMany({});
+      if (newBanners.length > 0) {
+        await BannerModel.insertMany(newBanners);
+      }
+      console.log(`💾 Đã đồng bộ ${newBanners.length} banners lên MongoDB Atlas!`);
+      return res.json({ success: true, message: 'Đã lưu banners thành công lên Cloud MongoDB Atlas!' });
+    } catch (err) {
+      console.error('Lỗi ghi banners lên MongoDB:', err);
+    }
+  }
+
+  console.log(`💾 Đã lưu vĩnh viễn ${dbBanners.length} banners vào Database JSON!`);
+  res.json({ success: true, message: 'Đã lưu vĩnh viễn danh sách banners thành công!' });
+});
+
+// 3. API Trạm bảo hành
+app.get('/api/admin/stations', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const stations = await StationModel.find().lean();
+      if (stations && stations.length > 0) {
+        return res.json({ success: true, data: stations, source: 'cloud' });
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc trạm từ MongoDB:', err.message);
+  }
+  res.json({ success: true, data: dbStations, source: 'local' });
+});
+
+app.post('/api/admin/stations', async (req, res) => {
+  const newStations = req.body;
+  if (!Array.isArray(newStations)) {
+    return res.status(400).json({ success: false, message: 'Dữ liệu trạm bảo hành phải là một mảng.' });
+  }
+
+  dbStations = newStations;
+  writeDbFile('stations.json', dbStations);
+
+  if (isMongoConnected) {
+    try {
+      await StationModel.deleteMany({});
+      if (newStations.length > 0) {
+        await StationModel.insertMany(newStations);
+      }
+      return res.json({ success: true, message: 'Đã lưu danh sách trạm bảo hành lên Cloud MongoDB Atlas!' });
+    } catch (err) {
+      console.error('Lỗi ghi trạm lên MongoDB:', err);
+    }
+  }
+
+  res.json({ success: true, message: 'Đã lưu danh sách trạm bảo hành!' });
+});
+
+// 4. API Đăng nhập quản trị viên
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  const adminUser = process.env.ADMIN_USER || 'admin@tnpcare.vn';
+  const adminPass = process.env.ADMIN_PASS || 'tnpcare@2026';
+
+  if (
+    (username === adminUser || username === 'admin') &&
+    (password === adminPass || password === 'admin')
+  ) {
+    return res.json({
+      success: true,
+      token: 'tnp_jwt_' + Buffer.from(`${username}:${Date.now()}`).toString('base64'),
+      user: {
+        name: 'Quản Trị Viên TNP',
+        email: 'admin@tnpcare.vn',
+        role: 'Super Admin'
+      }
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    message: 'Tài khoản hoặc mật khẩu quản trị không chính xác!'
+  });
+});
+
+// 5. API Yêu cầu tư vấn & Liên hệ
+app.get('/api/admin/contacts', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const contacts = await ContactModel.find().sort({ createdAt: -1 }).lean();
+      return res.json({ success: true, data: contacts, source: 'cloud' });
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc contacts từ MongoDB:', err.message);
+  }
+  res.json({ success: true, data: dbContacts, source: 'local' });
+});
+
+app.put('/api/admin/contacts/:id', async (req, res) => {
+  const { id } = req.params;
+  const { status, notes } = req.body;
+
+  const lead = dbContacts.find(c => c.id === id);
+  if (lead) {
+    if (status) lead.status = status;
+    if (notes !== undefined) lead.notes = notes;
+    writeDbFile('contacts.json', dbContacts);
+  }
+
+  if (isMongoConnected) {
+    try {
+      const updateData = {};
+      if (status) updateData.status = status;
+      if (notes !== undefined) updateData.notes = notes;
+      await ContactModel.findOneAndUpdate({ id }, { $set: updateData });
+    } catch (err) {
+      console.warn('Lỗi cập nhật contact trên MongoDB:', err.message);
+    }
+  }
+
+  res.json({ success: true, data: lead, message: 'Đã cập nhật trạng thái liên hệ!' });
+});
+
+app.delete('/api/admin/contacts/:id', async (req, res) => {
+  const { id } = req.params;
+  const idx = dbContacts.findIndex(c => c.id === id);
+  if (idx !== -1) {
+    dbContacts.splice(idx, 1);
+    writeDbFile('contacts.json', dbContacts);
+  }
+
+  if (isMongoConnected) {
+    try {
+      await ContactModel.findOneAndDelete({ id });
+    } catch (err) {
+      console.warn('Lỗi xóa contact trên MongoDB:', err.message);
+    }
+  }
+
+  res.json({ success: true, message: 'Đã xóa yêu cầu tư vấn thành công.' });
+});
+
+// Nhận form gửi liên hệ từ khách hàng
+app.post('/api/contact', async (req, res) => {
+  const { name, phone, product, message } = req.body;
+  if (!name || !phone) {
+    return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ họ tên và số điện thoại.' });
+  }
+
+  const newLead = {
+    id: 'lead-' + Date.now(),
+    name,
+    phone,
+    product: product || 'Tư vấn chung',
+    message: message || '',
+    time: new Date().toLocaleString('vi-VN'),
+    status: 'pending',
+    notes: ''
+  };
+
+  dbContacts.unshift(newLead);
+  writeDbFile('contacts.json', dbContacts);
+
+  if (isMongoConnected) {
+    try {
+      await ContactModel.create(newLead);
+    } catch (err) {
+      console.warn('Lỗi lưu contact lên MongoDB:', err.message);
+    }
+  }
+
+  console.log('📩 Yêu cầu tư vấn mới:', newLead);
+  res.json({ success: true, message: 'Cảm ơn bạn! TNP sẽ liên hệ trong thời gian sớm nhất.' });
+});
+
+// 6. API Upload ảnh (Base64)
 app.post('/api/admin/upload', (req, res) => {
   const { filename, dataUrl } = req.body;
   if (!dataUrl) {
@@ -319,7 +521,6 @@ app.post('/api/admin/upload', (req, res) => {
     const targetPath = path.join(uploadDir, generatedFilename);
     fs.writeFileSync(targetPath, buffer);
 
-    // Đồng bộ sang thư mục gốc uploads/ nếu có
     const rootUploadDir = path.join(__dirname, 'uploads');
     if (fs.existsSync(rootUploadDir)) {
       fs.writeFileSync(path.join(rootUploadDir, generatedFilename), buffer);
@@ -340,12 +541,22 @@ app.post('/api/admin/upload', (req, res) => {
   }
 });
 
-// 2. API Quản lý Bài viết / Tin tức
-app.get('/api/admin/articles', (req, res) => {
-  res.json({ success: true, data: articlesList });
+// 7. API Quản lý Bài viết / Tin tức
+app.get('/api/admin/articles', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const articles = await ArticleModel.find().sort({ createdAt: -1 }).lean();
+      if (articles && articles.length > 0) {
+        return res.json({ success: true, data: articles, source: 'cloud' });
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc articles từ MongoDB:', err.message);
+  }
+  res.json({ success: true, data: articlesList, source: 'local' });
 });
 
-app.post('/api/admin/articles', (req, res) => {
+app.post('/api/admin/articles', async (req, res) => {
   const { id, title, category, categoryLabel, thumbnail, summary, content, status } = req.body;
   if (!title) {
     return res.status(400).json({ success: false, message: 'Vui lòng nhập tiêu đề bài viết.' });
@@ -371,22 +582,41 @@ app.post('/api/admin/articles', (req, res) => {
     articlesList.unshift(articleObj);
   }
 
+  if (isMongoConnected) {
+    try {
+      await ArticleModel.findOneAndUpdate(
+        { id: articleObj.id },
+        { $set: articleObj },
+        { upsert: true, new: true }
+      );
+    } catch (err) {
+      console.warn('Lỗi lưu article lên MongoDB:', err.message);
+    }
+  }
+
   res.json({ success: true, data: articleObj, message: 'Đã lưu bài viết thành công!' });
 });
 
-app.delete('/api/admin/articles/:id', (req, res) => {
+app.delete('/api/admin/articles/:id', async (req, res) => {
   const { id } = req.params;
   const idx = articlesList.findIndex(a => a.id === id);
-  if (idx === -1) {
-    return res.status(404).json({ success: false, message: 'Không tìm thấy bài viết.' });
+  if (idx !== -1) {
+    articlesList.splice(idx, 1);
   }
-  articlesList.splice(idx, 1);
+
+  if (isMongoConnected) {
+    try {
+      await ArticleModel.findOneAndDelete({ id });
+    } catch (err) {
+      console.warn('Lỗi xóa article trên MongoDB:', err.message);
+    }
+  }
+
   res.json({ success: true, message: 'Đã xóa bài viết thành công.' });
 });
 
 // Fallback: serve index.html for any unmatched routes (SPA support)
 app.get('*', (req, res) => {
-  // If request is under /admin, serve /public/admin/index.html
   if (req.path.startsWith('/admin')) {
     return res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
   }
@@ -403,6 +633,7 @@ const startServer = (port) => {
     console.log(`  ║  🌐 Tên miền:    ${DOMAIN.padEnd(23)} ║`);
     console.log(`  ║  🟢 Cục bộ:      http://localhost:${String(port).padEnd(9)} ║`);
     console.log(`  ║  🚀 Trực tuyến:  ${BASE_URL.padEnd(23)} ║`);
+    console.log(`  ║  🗄️  CSDL:        ${(isMongoConnected ? 'MongoDB Atlas' : 'JSON Cục bộ').padEnd(23)} ║`);
     console.log('  ║                                          ║');
     console.log('  ║  Nhấn Ctrl+C để dừng server              ║');
     console.log('  ╚══════════════════════════════════════════╝');
