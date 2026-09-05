@@ -695,10 +695,10 @@ input, select, textarea {
   background: #060911;
   color: #fff;
   overflow: hidden;
-  /* Co giãn linh hoạt theo tỷ lệ màn hình thực tế, không bị đè hay khuất trên đầu */
-  height: clamp(520px, calc(100vh - var(--full-header)), 720px);
-  min-height: 520px;
-  max-height: 720px;
+  /* Co giãn linh hoạt theo tỷ lệ màn hình, tối thiểu 580px để content và badge không bao giờ bị đè hay khuất */
+  height: clamp(580px, calc(100vh - var(--full-header)), 760px);
+  min-height: 580px;
+  max-height: 760px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -725,7 +725,8 @@ input, select, textarea {
   transform: scale(1.03);
   transition: opacity .8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility .8s;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: flex-start;
   z-index: 1;
 }
 
@@ -781,10 +782,12 @@ input, select, textarea {
 .cinematic-content-wrap {
   position: relative;
   z-index: 3;
-  /* Khoảng cách đỉnh vừa vặn, không bị đè sát mép trên */
-  padding-block: clamp(20px, 3.5vh, 36px) clamp(16px, 2.5vh, 26px);
-  max-width: 440px;
+  /* Khoảng cách an toàn đỉnh đảm bảo badge luôn cách header tối thiểu 28px */
+  padding-top: clamp(28px, 4.5vh, 44px);
+  padding-bottom: clamp(16px, 2.5vh, 26px);
+  max-width: 480px;
   margin-left: 0;
+  margin-block: auto; /* Tự căn giữa khi màn hình cao, không bao giờ đẩy ngược lên trên khi hẹp */
 }
 
 /* Badge Flagship */
@@ -792,21 +795,21 @@ input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 5px 14px;
+  padding: 6px 16px;
   border-radius: 999px;
-  background: rgba(30, 58, 138, 0.35);
-  border: 1px solid rgba(96, 165, 250, 0.35);
+  background: rgba(30, 58, 138, 0.4);
+  border: 1px solid rgba(96, 165, 250, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  margin-bottom: clamp(10px, 1.8vh, 18px);
+  margin-bottom: clamp(10px, 1.6vh, 16px);
 }
 .cinematic-badge.hikers-badge {
-  background: rgba(185, 28, 28, 0.35);
-  border-color: rgba(248, 113, 113, 0.35);
+  background: rgba(185, 28, 28, 0.4);
+  border-color: rgba(248, 113, 113, 0.4);
 }
 .cinematic-badge.care-badge {
-  background: rgba(5, 150, 105, 0.35);
-  border-color: rgba(52, 211, 153, 0.35);
+  background: rgba(5, 150, 105, 0.4);
+  border-color: rgba(52, 211, 153, 0.4);
 }
 .badge-dot {
   width: 8px;
@@ -834,12 +837,12 @@ input, select, textarea {
 
 /* Titles */
 .cinematic-title {
-  font-size: clamp(26px, 2.8vw, 42px);
+  font-size: clamp(24px, 2.5vw, 38px);
   font-weight: 900;
-  line-height: 1.18;
+  line-height: 1.2;
   letter-spacing: -0.025em;
   color: #ffffff;
-  margin-bottom: clamp(10px, 1.5vh, 16px);
+  margin-bottom: clamp(10px, 1.4vh, 15px);
   text-shadow: 0 4px 24px rgba(0,0,0,0.7);
 }
 .highlight-cyan {
@@ -862,10 +865,10 @@ input, select, textarea {
 }
 
 .cinematic-desc {
-  font-size: clamp(13px, 1.1vw, 15px);
-  color: rgba(226, 232, 240, 0.88);
-  line-height: 1.6;
-  margin-bottom: clamp(14px, 2vh, 22px);
+  font-size: clamp(13px, 1.05vw, 14.5px);
+  color: rgba(226, 232, 240, 0.9);
+  line-height: 1.55;
+  margin-bottom: clamp(12px, 1.8vh, 18px);
   text-shadow: 0 2px 10px rgba(0,0,0,0.6);
   max-width: 480px;
 }
@@ -874,13 +877,13 @@ input, select, textarea {
 .cinematic-specs-bar {
   display: flex;
   align-items: center;
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(15, 23, 42, 0.78);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
-  padding: 8px 14px;
-  margin-bottom: clamp(16px, 2.2vh, 24px);
+  padding: 7px 14px;
+  margin-bottom: clamp(14px, 2vh, 20px);
   box-shadow: 0 10px 30px rgba(0,0,0,0.4);
   width: fit-content;
   max-width: 100%;
@@ -897,28 +900,36 @@ input, select, textarea {
   padding-right: 4px;
 }
 .spec-val {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 800;
   color: #fff;
   line-height: 1.2;
 }
 .spec-lbl {
-  font-size: 10.5px;
+  font-size: 10px;
   color: #94a3b8;
   font-weight: 500;
   margin-top: 2px;
 }
 .spec-divider {
   width: 1px;
-  height: 26px;
+  height: 24px;
   background: rgba(255, 255, 255, 0.16);
 }
 
 /* Buttons Glow */
 .cinematic-actions {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
+}
+.cinematic-actions .btn {
+  padding: 12px 24px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
 }
 .btn-glow {
   box-shadow: 0 0 25px rgba(37, 99, 235, 0.5);
@@ -1194,16 +1205,38 @@ input, select, textarea {
   flex-wrap: wrap;
 }
 .brand-chip {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-3);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: .05em;
-  color: var(--gray-400);
-  transition: color var(--t-base);
+  color: var(--gray-600);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 6px 14px;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  line-height: 1.4;
+  transition: all var(--t-fast);
+  user-select: none;
 }
-.brand-chip:hover { color: var(--gray-700); }
+.brand-chip:hover {
+  color: var(--text-primary);
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.06);
+}
+.brand-chip:active {
+  transform: translateY(0);
+}
+.brand-chip:focus-visible {
+  outline: 2px solid var(--tnp-blue);
+  outline-offset: 2px;
+}
 .brand-chip-dot {
   width: 8px; height: 8px;
   border-radius: 50%;
@@ -1211,6 +1244,135 @@ input, select, textarea {
 }
 .brand-chip-dot.blue { background: var(--tnp-blue); }
 .brand-chip-dot.red  { background: var(--tnp-red); }
+
+/* ════════════════════════════════════════
+   MODERN TOAST NOTIFICATIONS
+   ════════════════════════════════════════ */
+.tnp-toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+  width: 390px;
+}
+
+.tnp-toast {
+  pointer-events: auto;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tnp-toast.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.tnp-toast.hide {
+  transform: translateX(120%);
+  opacity: 0;
+}
+
+.tnp-toast-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(56, 189, 248, 0.2) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.tnp-toast-content {
+  flex: 1 1 auto;
+}
+
+.tnp-toast-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.tnp-toast-msg {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.tnp-toast-msg strong {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.tnp-toast-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 4px;
+  border-radius: 4px;
+  transition: color var(--t-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tnp-toast-close:hover {
+  color: #ffffff;
+}
+
+/* Progress bar inside toast */
+.tnp-toast::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #38bdf8, #2563eb);
+  width: 100%;
+  animation: toastProgress 4s linear forwards;
+}
+
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@media (max-width: 480px) {
+  .tnp-toast-container {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+}
 
 /* ════════════════════════════════════════
    BRAND SHOWCASE
@@ -1920,7 +2082,7 @@ input, select, textarea {
    DEDICATED BRAND PAGES (TV-HXY & TV-HIKERS)
    ════════════════════════════════════════ */
 .brand-hero {
-  padding-top: var(--space-8);
+  padding-top: clamp(36px, 5vh, 48px);
   padding-bottom: var(--space-16);
   position: relative;
   overflow: hidden;
@@ -4475,30 +4637,36 @@ select.form-control { cursor: pointer; }
   
   /* Đảm bảo chữ banner trên laptop 13-15 inch không che TV và co giãn theo độ cao màn hình */
   .hero-showcase.cinematic-hero {
-    height: clamp(480px, calc(100vh - var(--full-header)), 620px);
-    min-height: 480px;
-    max-height: 620px;
+    height: clamp(540px, calc(100vh - var(--full-header)), 680px);
+    min-height: 540px;
+    max-height: 680px;
   }
   .cinematic-bg {
     background-position: 85% top !important;
   }
   .cinematic-content-wrap {
-    max-width: 400px;
-    padding-block: 20px 16px;
+    max-width: 440px;
+    padding-top: clamp(24px, 3.5vh, 32px);
+    padding-bottom: 16px;
+    margin-block: auto;
   }
   .cinematic-title {
-    font-size: 25px !important;
-    line-height: 1.18;
+    font-size: 24px !important;
+    line-height: 1.2;
     margin-bottom: 10px;
   }
   .cinematic-desc {
     font-size: 13px;
-    margin-bottom: 14px;
-    max-width: 380px;
+    margin-bottom: 12px;
+    max-width: 400px;
   }
   .cinematic-specs-bar {
     padding: 6px 12px;
     margin-bottom: 14px;
+  }
+  .cinematic-actions .btn {
+    padding: 10px 20px;
+    font-size: 13.5px;
   }
   .spec-val {
     font-size: 13.5px;
@@ -4516,22 +4684,24 @@ select.form-control { cursor: pointer; }
   /* Đảm bảo hình ảnh TV trên iPad/Tablet rõ nét và không bị chữ che */
   .hero-showcase.cinematic-hero {
     height: auto;
-    min-height: 460px;
+    min-height: 480px;
     max-height: none;
   }
   .cinematic-bg {
     background-position: 80% top !important;
   }
   .cinematic-content-wrap {
-    max-width: 380px;
-    padding-block: 20px 14px;
+    max-width: 420px;
+    padding-top: 24px;
+    padding-bottom: 16px;
+    margin-block: auto;
   }
   .cinematic-title {
     font-size: 22px !important;
     margin-bottom: 8px;
   }
   .cinematic-desc {
-    font-size: 12px;
+    font-size: 12.5px;
     line-height: 1.45;
     margin-bottom: 12px;
   }
@@ -4539,6 +4709,10 @@ select.form-control { cursor: pointer; }
     gap: 8px;
     padding: 5px 8px;
     margin-bottom: 14px;
+  }
+  .cinematic-actions .btn {
+    padding: 9px 16px;
+    font-size: 13px;
   }
   .spec-item {
     padding-inline: 6px;

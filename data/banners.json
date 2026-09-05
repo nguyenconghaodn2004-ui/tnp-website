@@ -1,0 +1,32 @@
+[
+  {
+    "id": "banner-1",
+    "title": "Smart TV HXY 100 Inch - QLED Đỉnh Cao Rạp Phim Tại Gia",
+    "badge": "TV HXY VIỆT NAM · FLAGSHIP CINEMA",
+    "image": "./images/banner_hxy_100.jpg",
+    "desc": "Màn hình vô cực 100 inch chuẩn rạp chiếu phim IMAX thế hệ mới, tấm nền QLED 4K siêu sắc nét, 144Hz VRR.",
+    "link": "./tv-hxy.html",
+    "order": 1,
+    "active": true
+  },
+  {
+    "id": "banner-2",
+    "title": "HIKERS Mini LED 75 Inch - Đỉnh Cao Tương Phản 1000+ Dimming Zones",
+    "badge": "HIKERS VIỆT NAM · CÔNG NGHỆ MINI LED",
+    "image": "./images/banner_hikers_75.jpg",
+    "desc": "Công nghệ đèn nền Mini LED siêu sáng 1200 nit, dải màu 98% DCI-P3, âm thanh Dolby Atmos sống động.",
+    "link": "./tv-hikers.html",
+    "order": 2,
+    "active": true
+  },
+  {
+    "id": "banner-3",
+    "title": "Dịch Vụ Bảo Hành Smart TV Toàn Quốc - Chuẩn Mực & Uy Tín",
+    "badge": "TNP CARE · DỊCH VỤ TOÀN QUỐC",
+    "image": "./images/banner_tnp_care.jpg",
+    "desc": "Mạng lưới 80 - 100 trạm bảo hành phủ sóng 63 tỉnh thành, cam kết linh kiện chính hãng 100%.",
+    "link": "./tram-bao-hanh.html",
+    "order": 3,
+    "active": true
+  }
+]

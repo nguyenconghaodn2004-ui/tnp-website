@@ -447,9 +447,69 @@ function injectComponents() {
   window.__tnp_components_injected = true;
 }
 
+// ══════════════════════════════════════════════
+//  BRAND UPDATE TOAST NOTIFICATION
+// ══════════════════════════════════════════════
+function showBrandNotice(brandName) {
+  let container = document.getElementById('tnp-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'tnp-toast-container';
+    container.className = 'tnp-toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'tnp-toast';
+  toast.setAttribute('role', 'alert');
+  toast.innerHTML = `
+    <div class="tnp-toast-icon">
+      <i class="fas fa-clock" aria-hidden="true"></i>
+    </div>
+    <div class="tnp-toast-content">
+      <div class="tnp-toast-title">Thông Báo Cập Nhật</div>
+      <div class="tnp-toast-msg">Thông tin &amp; sản phẩm thương hiệu <strong>${brandName}</strong> đang được chuẩn bị và sẽ sớm ra mắt trong thời gian tới!</div>
+    </div>
+    <button type="button" class="tnp-toast-close" aria-label="Đóng thông báo"><i class="fas fa-times" aria-hidden="true"></i></button>
+  `;
+
+  const closeBtn = toast.querySelector('.tnp-toast-close');
+  const dismiss = () => {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 350);
+  };
+
+  closeBtn.addEventListener('click', dismiss);
+  container.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  setTimeout(() => {
+    if (toast.parentNode && !toast.classList.contains('hide')) {
+      dismiss();
+    }
+  }, 4000);
+}
+
+window.showBrandNotice = showBrandNotice;
+
+// Lắng nghe sự kiện click trên các brand-chip có data-brand
+document.addEventListener('click', (e) => {
+  const chip = e.target.closest('.brand-chip[data-brand]');
+  if (chip) {
+    e.preventDefault();
+    const brand = chip.getAttribute('data-brand') || chip.textContent.trim();
+    showBrandNotice(brand);
+  }
+});
+
 // Run as soon as DOM is interactive
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', injectComponents);
 } else {
   injectComponents();
 }
+
