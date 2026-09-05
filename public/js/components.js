@@ -503,6 +503,16 @@ document.addEventListener('click', (e) => {
     e.preventDefault();
     const brand = chip.getAttribute('data-brand') || chip.textContent.trim();
     showBrandNotice(brand);
+    return;
+  }
+
+  const modelTag = e.target.closest('[data-product-id]');
+  if (modelTag) {
+    const pid = modelTag.getAttribute('data-product-id');
+    if (pid && window.TNP && typeof window.TNP.openModal === 'function') {
+      e.preventDefault();
+      window.TNP.openModal(pid);
+    }
   }
 });
 
