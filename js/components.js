@@ -135,8 +135,8 @@ function renderHeader() {
         <i class="fas fa-phone-alt" aria-hidden="true"></i><span>Hotline: 028 22 422 822</span>
       </a>
       <div class="top-bar-divider" aria-hidden="true"></div>
-      <a href="mailto:nguyenhung355@gmail.com" class="top-bar-item" aria-label="Email">
-        <i class="fas fa-envelope" aria-hidden="true"></i><span>nguyenhung355@gmail.com</span>
+      <a href="mailto:trucnguyenphat@gmail.com" class="top-bar-item" aria-label="Email">
+        <i class="fas fa-envelope" aria-hidden="true"></i><span>trucnguyenphat@gmail.com</span>
       </a>
       <div class="top-bar-divider" aria-hidden="true"></div>
       <span class="top-bar-item">
@@ -203,7 +203,7 @@ function renderHeader() {
   <div class="mobile-menu-footer">
     <div class="mobile-contact-info">
       <div class="mobile-contact-row"><i class="fas fa-phone-alt"></i><span>028 22 422 822</span></div>
-      <div class="mobile-contact-row"><i class="fas fa-envelope"></i><span>nguyenhung355@gmail.com</span></div>
+      <div class="mobile-contact-row"><i class="fas fa-envelope"></i><span>trucnguyenphat@gmail.com</span></div>
       <div class="mobile-contact-row"><i class="fas fa-map-marker-alt"></i><span>2 Hoàng Ngân, P.16, Q.8, TP.HCM</span></div>
       <div class="mobile-contact-row"><i class="fas fa-shield-alt"></i><span>80 – 100 Trạm bảo hành toàn quốc</span></div>
     </div>
@@ -258,7 +258,7 @@ function renderFooter() {
           <div><i class="fas fa-building"></i> Trụ sở: 61/67 Võ Văn Kiệt, KP.3, P. An Lạc, Q. Tân Bình, TP.HCM</div>
           <div><i class="fas fa-map-marked-alt"></i> Văn phòng: Số 2 Hoàng Ngân, Phường 16, Quận 8, TP.HCM</div>
           <div><i class="fas fa-phone-alt"></i> Hotline: <a href="tel:02822422822" style="color:#60a5fa;font-weight:700;">028 22 422 822</a></div>
-          <div><i class="fas fa-envelope"></i> Email: <a href="mailto:nguyenhung355@gmail.com" style="color:rgba(255,255,255,.8);">nguyenhung355@gmail.com</a></div>
+          <div><i class="fas fa-envelope"></i> Email: <a href="mailto:trucnguyenphat@gmail.com" style="color:rgba(255,255,255,.8);">trucnguyenphat@gmail.com</a></div>
         </div>
       </div>
       <div>
