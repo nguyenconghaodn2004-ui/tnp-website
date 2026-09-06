@@ -6,16 +6,6 @@
 
 'use strict';
 
-// Áp dụng Dark Mode sớm nhất có thể để tránh hiện tượng chớp nháy giao diện sáng
-(function() {
-  try {
-    const savedTheme = localStorage.getItem('tnp_theme');
-    if (savedTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  } catch (e) {}
-})();
-
 // ══════════════════════════════════════════════
 //  NAVIGATION CONFIG
 // ══════════════════════════════════════════════
@@ -158,29 +148,6 @@ function renderHeader() {
         <i class="fas fa-search-location"></i><span>Tra cứu trạm bảo hành</span>
       </a>
       <div class="top-bar-divider" aria-hidden="true"></div>
-      <!-- Language Switcher in Top Bar -->
-      <div class="lang-dropdown" id="topbar-lang-dropdown">
-        <button type="button" class="lang-btn" id="topbar-lang-btn" aria-label="Chọn ngôn ngữ" aria-haspopup="true">
-          <span class="lang-current-flag">🇻🇳</span>
-          <span class="lang-current-label">VN</span>
-          <i class="fas fa-chevron-down" style="font-size:9px;opacity:0.8;"></i>
-        </button>
-        <div class="lang-menu" role="menu">
-          <button type="button" class="lang-item active" data-lang="vi" role="menuitem">
-            <span>🇻🇳 Tiếng Việt</span><i class="fas fa-check check-icon"></i>
-          </button>
-          <button type="button" class="lang-item" data-lang="en" role="menuitem">
-            <span>🇬🇧 English</span><i class="fas fa-check check-icon"></i>
-          </button>
-          <button type="button" class="lang-item" data-lang="zh-CN" role="menuitem">
-            <span>🇨🇳 中文</span><i class="fas fa-check check-icon"></i>
-          </button>
-          <button type="button" class="lang-item" data-lang="ja" role="menuitem">
-            <span>🇯🇵 日本語</span><i class="fas fa-check check-icon"></i>
-          </button>
-        </div>
-      </div>
-      <div class="top-bar-divider" aria-hidden="true"></div>
       <div class="top-bar-social" aria-label="Mạng xã hội">
         <a href="https://zalo.me" target="_blank" aria-label="Zalo TNP"><i class="fas fa-comment-dots" aria-hidden="true"></i></a>
         <a href="tel:02822422822" aria-label="Hotline"><i class="fas fa-phone" aria-hidden="true"></i></a>
@@ -205,33 +172,6 @@ function renderHeader() {
       ${buildDesktopNav()}
     </nav>
     <div class="header-actions">
-      <!-- Dark Mode Button -->
-      <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Chuyển chế độ tối" title="Chuyển chế độ tối">
-        <i class="fas fa-moon" aria-hidden="true"></i>
-      </button>
-
-      <!-- Language Switcher in Header (Mobile & Desktop) -->
-      <div class="lang-dropdown header-lang-dropdown" id="header-lang-dropdown">
-        <button type="button" class="lang-btn header-lang-btn" id="header-lang-btn" aria-label="Đổi ngôn ngữ" aria-haspopup="true">
-          <span class="lang-current-flag">🇻🇳</span>
-          <i class="fas fa-globe" style="font-size:12px;opacity:0.85;"></i>
-        </button>
-        <div class="lang-menu" role="menu">
-          <button type="button" class="lang-item active" data-lang="vi" role="menuitem">
-            <span>🇻🇳 Tiếng Việt</span><i class="fas fa-check check-icon"></i>
-          </button>
-          <button type="button" class="lang-item" data-lang="en" role="menuitem">
-            <span>🇬🇧 English</span><i class="fas fa-check check-icon"></i>
-          </button>
-          <button type="button" class="lang-item" data-lang="zh-CN" role="menuitem">
-            <span>🇨🇳 中文</span><i class="fas fa-check check-icon"></i>
-          </button>
-          <button type="button" class="lang-item" data-lang="ja" role="menuitem">
-            <span>🇯🇵 日本語</span><i class="fas fa-check check-icon"></i>
-          </button>
-        </div>
-      </div>
-
       <button class="header-search-btn" id="search-btn" aria-label="Tìm kiếm sản phẩm">
         <i class="fas fa-search" aria-hidden="true"></i>
       </button>
@@ -260,17 +200,6 @@ function renderHeader() {
     </button>
   </div>
   <div class="mobile-nav">${buildMobileNav()}</div>
-  <div class="mobile-extra-controls">
-    <button type="button" class="mobile-theme-btn" id="mobile-theme-btn" aria-label="Chuyển chế độ sáng/tối">
-      <i class="fas fa-moon"></i> <span>Chế độ tối</span>
-    </button>
-    <div class="mobile-lang-row" aria-label="Chọn ngôn ngữ">
-      <button type="button" class="mobile-lang-chip active" data-lang="vi">🇻🇳 VI</button>
-      <button type="button" class="mobile-lang-chip" data-lang="en">🇬🇧 EN</button>
-      <button type="button" class="mobile-lang-chip" data-lang="zh-CN">🇨🇳 ZH</button>
-      <button type="button" class="mobile-lang-chip" data-lang="ja">🇯🇵 JA</button>
-    </div>
-  </div>
   <div class="mobile-menu-footer">
     <div class="mobile-contact-info">
       <div class="mobile-contact-row"><i class="fas fa-phone-alt"></i><span>028 22 422 822</span></div>
@@ -492,10 +421,7 @@ function renderModals() {
 <!-- BACK TO TOP -->
 <button class="back-top" id="back-top" aria-label="Lên đầu trang">
   <i class="fas fa-chevron-up" aria-hidden="true"></i>
-</button>
-
-<!-- GOOGLE TRANSLATE ANCHOR -->
-<div id="google_translate_element" style="display:none;" aria-hidden="true"></div>`;
+</button>`;
 }
 
 // ══════════════════════════════════════════════
@@ -520,8 +446,6 @@ function injectComponents() {
   }
 
   window.__tnp_components_injected = true;
-  initTheme();
-  initI18n();
 }
 
 // ══════════════════════════════════════════════
@@ -598,186 +522,5 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', injectComponents);
 } else {
   injectComponents();
-}
-
-// ══════════════════════════════════════════════
-//  DARK MODE THEME CONTROLLER
-// ══════════════════════════════════════════════
-function initTheme() {
-  const savedTheme = localStorage.getItem('tnp_theme') || 'light';
-  applyTheme(savedTheme);
-
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('#theme-toggle-btn, #mobile-theme-btn, .theme-toggle-btn');
-    if (btn) {
-      e.preventDefault();
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const newTheme = isDark ? 'light' : 'dark';
-      applyTheme(newTheme);
-      localStorage.setItem('tnp_theme', newTheme);
-    }
-  });
-}
-
-function applyTheme(theme) {
-  const isDark = theme === 'dark';
-  if (isDark) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-  }
-
-  document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-    btn.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}" aria-hidden="true"></i>`;
-    btn.setAttribute('title', isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối');
-    btn.setAttribute('aria-label', isDark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối');
-  });
-
-  const mobileBtn = document.getElementById('mobile-theme-btn');
-  if (mobileBtn) {
-    mobileBtn.innerHTML = `<i class="fas ${isDark ? 'fa-sun' : 'fa-moon'}"></i> <span>${isDark ? 'Chế độ sáng' : 'Chế độ tối'}</span>`;
-  }
-}
-
-// ══════════════════════════════════════════════
-//  MULTI-LANGUAGE (i18n) CONTROLLER
-//  Hỗ trợ: vi (Tiếng Việt), en (English), zh-CN (Tiếng Trung), ja (Tiếng Nhật)
-// ══════════════════════════════════════════════
-const LANG_MAP = {
-  'vi': { label: 'VN', fullName: 'Tiếng Việt', flag: '🇻🇳' },
-  'en': { label: 'EN', fullName: 'English', flag: '🇬🇧' },
-  'zh-CN': { label: 'ZH', fullName: '中文', flag: '🇨🇳' },
-  'ja': { label: 'JA', fullName: '日本語', flag: '🇯🇵' }
-};
-
-let googleTranslateLoaded = false;
-
-function initI18n() {
-  const savedLang = localStorage.getItem('tnp_lang') || 'vi';
-  updateLangUI(savedLang);
-
-  // Dropdown open/close handler
-  document.addEventListener('click', (e) => {
-    const langBtn = e.target.closest('.lang-btn');
-    if (langBtn) {
-      e.preventDefault();
-      e.stopPropagation();
-      const dropdown = langBtn.closest('.lang-dropdown');
-      document.querySelectorAll('.lang-dropdown').forEach(d => {
-        if (d !== dropdown) d.classList.remove('open');
-      });
-      dropdown?.classList.toggle('open');
-      return;
-    }
-
-    // Chọn ngôn ngữ từ dropdown item hoặc mobile chip
-    const item = e.target.closest('[data-lang]');
-    if (item) {
-      e.preventDefault();
-      const lang = item.getAttribute('data-lang');
-      if (lang) {
-        changeLanguage(lang);
-      }
-      document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
-      return;
-    }
-
-    // Bấm ra ngoài đóng dropdown
-    document.querySelectorAll('.lang-dropdown').forEach(d => d.classList.remove('open'));
-  });
-
-  // Áp dụng ngôn ngữ đã lưu nếu không phải tiếng Việt mặc định
-  if (savedLang && savedLang !== 'vi') {
-    applyGoogleTranslate(savedLang);
-  }
-}
-
-function updateLangUI(lang) {
-  const info = LANG_MAP[lang] || LANG_MAP['vi'];
-  
-  // Cập nhật cờ và nhãn hiển thị trên các nút
-  document.querySelectorAll('.lang-current-flag').forEach(el => el.textContent = info.flag);
-  document.querySelectorAll('.lang-current-label').forEach(el => el.textContent = info.label);
-
-  // Cập nhật trạng thái active trong menu và mobile chips
-  document.querySelectorAll('[data-lang]').forEach(el => {
-    const elLang = el.getAttribute('data-lang');
-    el.classList.toggle('active', elLang === lang);
-  });
-}
-
-function changeLanguage(lang) {
-  const currentLang = localStorage.getItem('tnp_lang') || 'vi';
-  localStorage.setItem('tnp_lang', lang);
-  updateLangUI(lang);
-
-  if (lang === 'vi') {
-    // Xóa cookie dịch thuật và reload để khôi phục tiếng Việt nguyên bản chuẩn xác
-    clearTranslateCookie();
-    if (currentLang !== 'vi') {
-      window.location.reload();
-    }
-  } else {
-    setTranslateCookie(lang);
-    applyGoogleTranslate(lang);
-  }
-}
-
-function setTranslateCookie(lang) {
-  const cookieValue = `/vi/${lang}`;
-  const hostname = window.location.hostname;
-  document.cookie = `googtrans=${cookieValue}; path=/;`;
-  if (hostname && hostname !== 'localhost' && !hostname.match(/^[0-9.]+$/)) {
-    document.cookie = `googtrans=${cookieValue}; domain=.${hostname}; path=/;`;
-  }
-}
-
-function clearTranslateCookie() {
-  const hostname = window.location.hostname;
-  document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-  if (hostname && hostname !== 'localhost' && !hostname.match(/^[0-9.]+$/)) {
-    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${hostname}; path=/;`;
-  }
-}
-
-function applyGoogleTranslate(lang) {
-  setTranslateCookie(lang);
-
-  if (!googleTranslateLoaded) {
-    googleTranslateLoaded = true;
-    window.googleTranslateElementInit = function() {
-      try {
-        new google.translate.TranslateElement({
-          pageLanguage: 'vi',
-          includedLanguages: 'vi,en,zh-CN,ja',
-          autoDisplay: false
-        }, 'google_translate_element');
-      } catch (err) {}
-
-      triggerGoogleTranslate(lang);
-    };
-
-    const script = document.createElement('script');
-    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    script.async = true;
-    document.body.appendChild(script);
-  } else {
-    triggerGoogleTranslate(lang);
-  }
-}
-
-function triggerGoogleTranslate(lang) {
-  let tries = 0;
-  const interval = setInterval(() => {
-    tries++;
-    const select = document.querySelector('.goog-te-combo');
-    if (select) {
-      clearInterval(interval);
-      select.value = lang;
-      select.dispatchEvent(new Event('change'));
-    } else if (tries > 30) {
-      clearInterval(interval);
-    }
-  }, 150);
 }
 
