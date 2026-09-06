@@ -4341,16 +4341,17 @@ select.form-control { cursor: pointer; }
 .footer-logo-tn { color: #60a5fa; }
 .footer-logo-p  { color: #f87171; }
 .footer-tagline-text {
-  font-size: 10px;
-  color: rgba(255,255,255,.35);
+  font-size: 11px;
+  color: #cbd5e1;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .12em;
+  letter-spacing: .06em;
   margin-left: 2px;
   margin-bottom: var(--space-4);
 }
 .footer-desc {
   font-size: 13.5px;
-  color: rgba(255,255,255,.55);
+  color: rgba(255,255,255,.75);
   line-height: 1.8;
   margin-bottom: var(--space-6);
   max-width: 340px;
@@ -5843,12 +5844,16 @@ select.form-control { cursor: pointer; }
     font-size: 15px !important;
   }
   .footer-tagline-text {
-    font-size: 8.5px !important;
-    letter-spacing: 0.05em !important;
+    font-size: 10.5px !important;
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.03em !important;
     margin-bottom: 6px !important;
+    line-height: 1.4 !important;
   }
   .footer-desc {
     font-size: 12px !important;
+    color: rgba(255,255,255,.78) !important;
     line-height: 1.6 !important;
     margin-bottom: 10px !important;
     display: block !important;
