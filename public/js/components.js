@@ -251,6 +251,7 @@ function renderFooter() {
         <p class="footer-desc">
           TNP Care tự hào là đơn vị hàng đầu tại Việt Nam cung cấp giải pháp và dịch vụ bảo hành,
           sửa chữa và lắp đặt hệ thống Smart TV &amp; thiết bị nghe nhìn với mạng lưới <strong>80 – 100 trung tâm bảo hành trên toàn quốc</strong>.
+          <a href="./gioi-thieu.html" class="footer-readmore-link" title="Xem thêm thông tin giới thiệu công ty">Xem thêm thông tin &raquo;</a>
         </p>
         <div class="footer-company-meta">
           <div><i class="fas fa-id-card"></i> Mã số thuế: <strong>0318287851</strong></div>

@@ -4353,7 +4353,19 @@ select.form-control { cursor: pointer; }
   color: rgba(255,255,255,.55);
   line-height: 1.8;
   margin-bottom: var(--space-6);
-  max-width: 300px;
+  max-width: 340px;
+}
+.footer-readmore-link {
+  display: inline;
+  color: #38bdf8;
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 6px;
+  transition: color var(--t-fast);
+}
+.footer-readmore-link:hover {
+  color: #7dd3fc;
+  text-decoration: underline;
 }
 .footer-social { display: flex; gap: var(--space-2); }
 .footer-social a {
@@ -5836,13 +5848,23 @@ select.form-control { cursor: pointer; }
     margin-bottom: 6px !important;
   }
   .footer-desc {
-    font-size: 11px !important;
-    line-height: 1.5 !important;
-    margin-bottom: 8px !important;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    margin-bottom: 10px !important;
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+  }
+  .footer-readmore-link {
+    display: inline-block;
+    color: #38bdf8 !important;
+    font-weight: 600;
+    font-size: 11.5px !important;
+    margin-left: 4px;
+    text-decoration: underline !important;
+    text-underline-offset: 2px;
   }
   .footer-company-meta {
     gap: 4px !important;
