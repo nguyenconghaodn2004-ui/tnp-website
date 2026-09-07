@@ -4511,6 +4511,10 @@ select.form-control { cursor: pointer; }
 .float-btn-zalo {
   background: linear-gradient(135deg, #0068ff, #0050c8);
 }
+.float-btn-fb {
+  background: linear-gradient(135deg, #1877f2, #0d65d9);
+  font-size: 22px;
+}
 .zalo-icon-badge {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
@@ -4529,6 +4533,9 @@ select.form-control { cursor: pointer; }
   border: 2.5px solid currentColor;
   opacity: 0;
   animation: pulse-ring 2.2s cubic-bezier(.215,.61,.355,1) infinite;
+}
+.float-btn-fb.float-btn-pulse::before {
+  animation-delay: 0.55s;
 }
 .float-btn-zalo.float-btn-pulse::before {
   animation-delay: 1.1s;

@@ -258,6 +258,7 @@ function renderFooter() {
           <div><i class="fas fa-map-marked-alt"></i> Văn phòng: Số 2 Hoàng Ngân, Phường 16, Quận 8, TP.HCM</div>
           <div><i class="fas fa-phone-alt"></i> Hotline: <a href="tel:02822422822" style="color:#60a5fa;font-weight:700;">028 22 422 822</a></div>
           <div><i class="fas fa-envelope"></i> Email: <a href="mailto:trucnguyenphat@gmail.com" style="color:rgba(255,255,255,.8);">trucnguyenphat@gmail.com</a></div>
+          <div><i class="fab fa-facebook" style="color:#1877f2;"></i> Fanpage: <a href="https://www.facebook.com/share/19JbKK8qvM/" target="_blank" rel="noopener noreferrer" style="color:#60a5fa;font-weight:700;">TNP Care Việt Nam</a></div>
         </div>
       </div>
       <div>
@@ -285,6 +286,9 @@ function renderFooter() {
         <div class="footer-links">
           <a href="tel:02822422822" class="footer-link" style="color:#f87171;font-weight:800;font-size:16px;">
             <i class="fas fa-phone-alt"></i> 028 22 422 822
+          </a>
+          <a href="https://www.facebook.com/share/19JbKK8qvM/" target="_blank" rel="noopener noreferrer" class="footer-link" style="color:#60a5fa;display:inline-flex;align-items:center;gap:6px;">
+            <i class="fab fa-facebook-f"></i> Fanpage Facebook TNP
           </a>
           <a href="./ho-tro.html#faq" class="footer-link">Câu hỏi thường gặp FAQ</a>
           <a href="./ho-tro.html#bao-hanh" class="footer-link">Chính sách bảo hành điện tử</a>
@@ -401,8 +405,14 @@ function renderModals() {
   </div>
 </div>
 
-<!-- FLOATING CONTACT BUTTONS (CHỈ CÒN ĐIỆN THOẠI & ZALO) -->
+<!-- FLOATING CONTACT BUTTONS (FACEBOOK, ZALO & GỌI ĐIỆN) -->
 <div class="float-btns" aria-label="Liên hệ nhanh">
+  <!-- Bong bóng Facebook -->
+  <a href="https://www.facebook.com/share/19JbKK8qvM/" target="_blank" rel="noopener noreferrer" class="float-btn float-btn-fb float-btn-pulse" aria-label="Facebook Fanpage Trúc Nguyên Phát TNP Care">
+    <i class="fab fa-facebook-f" aria-hidden="true"></i>
+    <span class="float-tooltip">Fanpage Facebook</span>
+  </a>
+
   <!-- Bong bóng Gọi điện -->
   <a href="tel:02822422822" class="float-btn float-btn-phone float-btn-pulse" aria-label="Gọi hotline 028 22 422 822">
     <i class="fas fa-phone-alt" aria-hidden="true"></i>
