@@ -945,20 +945,9 @@ async function fetchContactsFromServer() {
     console.warn('Không thể tải contacts từ server, hiển thị dữ liệu hiện thời...');
   }
 
-  // Sample lead nếu trống hoàn toàn
-  if (contactsList.length === 0) {
-    contactsList = [
-      {
-        id: 'lead-sample-1',
-        name: 'Nguyễn Văn Hùng',
-        phone: '0908 123 456',
-        product: 'Smart TV HXY 100 Inch Cinema',
-        message: 'Tôi muốn tư vấn kích thước lắp phòng khách 40m2 và dịch vụ giao hàng tại TP.HCM',
-        time: new Date().toLocaleString('vi-VN'),
-        status: 'pending',
-        notes: ''
-      }
-    ];
+  // Chỉ sử dụng dữ liệu tin nhắn thực tế từ khách hàng, loại bỏ dữ liệu ảo
+  if (Array.isArray(contactsList)) {
+    contactsList = contactsList.filter(c => c && c.id && !c.id.includes('sample'));
   }
 
   renderContactsTable(contactsList);

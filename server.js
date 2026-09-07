@@ -150,44 +150,11 @@ if (!dbHomepage) {
 let dbContacts = readDbFile('contacts.json', []);
 
 let dbAnalytics = readDbFile('analytics.json', null);
-if (!dbAnalytics) {
-  // Sinh dữ liệu ban đầu cho 14 ngày gần nhất để biểu đồ hiển thị trực quan
-  const daily = {};
-  const now = new Date();
-  let totalVisits = 0;
-  for (let i = 13; i >= 0; i--) {
-    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-    const dateStr = d.toISOString().split('T')[0];
-    const isWeekend = d.getDay() === 0 || d.getDay() === 6;
-    const baseViews = isWeekend ? 72 : 54;
-    const views = Math.floor(baseViews + (i * 3 % 17));
-    const uniques = Math.floor(views * 0.72);
-    const mobile = Math.floor(views * 0.62);
-    const tablet = Math.floor(views * 0.06);
-    const desktop = views - mobile - tablet;
-    daily[dateStr] = {
-      views,
-      uniques,
-      devices: { desktop, mobile, tablet },
-      pages: {
-        '/': Math.floor(views * 0.38),
-        '/tram-bao-hanh.html': Math.floor(views * 0.26),
-        '/tv-hikers.html': Math.floor(views * 0.16),
-        '/tv-hxy.html': Math.floor(views * 0.12),
-        '/san-pham.html': Math.floor(views * 0.08)
-      }
-    };
-    totalVisits += views;
-  }
+if (!dbAnalytics || typeof dbAnalytics !== 'object') {
   dbAnalytics = {
-    totalVisits,
-    daily,
-    recentVisits: [
-      { time: new Date(Date.now() - 3 * 60 * 1000).toISOString(), path: '/', title: 'Trang Chủ TNP Care', device: 'mobile', referrer: 'Google Search' },
-      { time: new Date(Date.now() - 12 * 60 * 1000).toISOString(), path: '/tram-bao-hanh.html', title: 'Mạng Lưới Trạm Bảo Hành', device: 'desktop', referrer: 'Trực tiếp' },
-      { time: new Date(Date.now() - 25 * 60 * 1000).toISOString(), path: '/tv-hikers.html', title: 'Smart TV HIKERS', device: 'mobile', referrer: 'Facebook' },
-      { time: new Date(Date.now() - 44 * 60 * 1000).toISOString(), path: '/tv-hxy.html', title: 'Smart TV HXY', device: 'desktop', referrer: 'Google Search' }
-    ]
+    totalVisits: 0,
+    daily: {},
+    recentVisits: []
   };
   writeDbFile('analytics.json', dbAnalytics);
 }
