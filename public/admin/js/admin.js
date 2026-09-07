@@ -458,28 +458,71 @@ function renderProductsTable(filterQuery = '') {
   `).join('');
 }
 
-// ── Stations Table ──
-function renderStationsTable(filterQuery = '') {
+// ── Stations Table & Filtering Engine ──
+let currentStationRegion = 'all';
+let currentStationQuery = '';
+
+function getFilteredStations() {
+  let list = serviceCentersList || [];
+
+  // 1. Lọc theo vùng miền (Miền Bắc / Miền Trung / Miền Nam)
+  if (currentStationRegion && currentStationRegion !== 'all') {
+    const bacProvinces = ['hà nội', 'hải phòng', 'quảng ninh', 'bắc ninh', 'hải dương', 'hưng yên', 'nam định', 'thái bình', 'ninh bình', 'hà nam', 'vĩnh phúc', 'phú thọ', 'thái nguyên', 'bắc giang', 'lạng sơn', 'cao bằng', 'bắc kạn', 'tuyên quang', 'hà giang', 'yên bái', 'lào cai', 'điện biên', 'lai châu', 'sơn la', 'hòa bình'];
+    const trungProvinces = ['đà nẵng', 'thanh hóa', 'nghệ an', 'hà tĩnh', 'quảng bình', 'quảng trị', 'thừa thiên huế', 'quảng nam', 'quảng ngãi', 'bình định', 'phú yên', 'khánh hòa', 'ninh thuận', 'bình thuận', 'kon tum', 'gia lai', 'đắk lắk', 'đắk nông', 'lâm đồng'];
+    const namProvinces = ['hồ chí minh', 'tp.hcm', 'tp. hồ chí minh', 'sài gòn', 'bình dương', 'đồng nai', 'bà rịa - vũng tàu', 'tây ninh', 'bình phước', 'long an', 'tiền giang', 'bến tre', 'trà vinh', 'vĩnh long', 'đồng tháp', 'an giang', 'kiên giang', 'cần thơ', 'hậu giang', 'sóc trăng', 'bạc liêu', 'cà mau'];
+
+    list = list.filter(s => {
+      if (!s) return false;
+      const reg = (s.region || '').toLowerCase();
+      const lbl = (s.regionLabel || '').toLowerCase();
+      const prov = (s.province || s.city || '').toLowerCase();
+
+      if (currentStationRegion === 'bac') {
+        return reg === 'north' || lbl.includes('bắc') || bacProvinces.some(p => prov.includes(p));
+      }
+      if (currentStationRegion === 'trung') {
+        return reg === 'central' || lbl.includes('trung') || trungProvinces.some(p => prov.includes(p));
+      }
+      if (currentStationRegion === 'nam') {
+        return reg === 'south' || lbl.includes('nam') || namProvinces.some(p => prov.includes(p));
+      }
+      return true;
+    });
+  }
+
+  // 2. Lọc theo từ khóa tìm kiếm (tên trạm, tỉnh thành, địa chỉ, số điện thoại)
+  if (currentStationQuery) {
+    const q = currentStationQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter(s =>
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        (s.province && s.province.toLowerCase().includes(q)) ||
+        (s.city && s.city.toLowerCase().includes(q)) ||
+        (s.address && s.address.toLowerCase().includes(q)) ||
+        (s.phone && s.phone.toLowerCase().includes(q))
+      );
+    }
+  }
+
+  return list;
+}
+
+function renderStationsTable(customListOrQuery) {
   const tbody = document.getElementById('stationsTableBody');
   if (!tbody) return;
 
-  let filtered = serviceCentersList || [];
-  if (filterQuery) {
-    const q = filterQuery.toLowerCase();
-    filtered = filtered.filter(s => 
-      (s.name && s.name.toLowerCase().includes(q)) ||
-      (s.province && s.province.toLowerCase().includes(q)) ||
-      (s.address && s.address.toLowerCase().includes(q)) ||
-      (s.phone && s.phone.toLowerCase().includes(q))
-    );
+  if (typeof customListOrQuery === 'string') {
+    currentStationQuery = customListOrQuery;
   }
 
+  const filtered = Array.isArray(customListOrQuery) ? customListOrQuery : getFilteredStations();
+
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--adm-text-muted);">Không tìm thấy trạm bảo hành nào. Bấm "Thêm Trạm Mới" để tạo.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--adm-text-muted);">Không tìm thấy trạm bảo hành nào phù hợp bộ lọc. Bấm "Thêm Trạm Mới" để tạo.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = filtered.slice(0, 100).map((s, idx) => `
+  tbody.innerHTML = filtered.map((s, idx) => `
     <tr>
       <td style="font-weight: 600; color: var(--adm-text-secondary);">${idx + 1}</td>
       <td>
@@ -487,7 +530,7 @@ function renderStationsTable(filterQuery = '') {
         ${s.note ? `<br><small style="color: #64748b;">${s.note}</small>` : ''}
       </td>
       <td>
-        <span class="badge badge-secondary">${s.province || 'Chưa cập nhật'}</span>
+        <span class="badge badge-secondary">${s.province || s.city || 'Chưa cập nhật'}</span>
         ${s.region ? `<br><small style="color: #94a3b8; font-size: 11px;">${s.region === 'north' ? 'Miền Bắc' : s.region === 'central' ? 'Miền Trung' : 'Miền Nam'}</small>` : ''}
       </td>
       <td><small style="color: var(--adm-text);">${s.address}</small></td>
@@ -509,6 +552,11 @@ function renderStationsTable(filterQuery = '') {
       </td>
     </tr>
   `).join('');
+}
+
+function filterStations(query) {
+  currentStationQuery = query || '';
+  renderStationsTable();
 }
 
 function openAddStationModal() {
@@ -964,56 +1012,36 @@ function exportContactsCSV() {
 }
 
 // ── BỘ LỌC VÙNG MIỀN & XUẤT EXCEL CHO TRẠM BẢO HÀNH ──
-let currentStationRegion = 'all';
-
 function filterStationsByRegion(region) {
   currentStationRegion = region;
   ['all', 'bac', 'trung', 'nam'].forEach(r => {
     const btn = document.getElementById(`filterStationRegion${r.charAt(0).toUpperCase() + r.slice(1)}`);
     if (btn) btn.classList.toggle('active', r === region);
   });
-  
-  if (region === 'all') {
-    renderStationsTable(serviceCentersList);
-    return;
-  }
-  
-  const bacProvinces = ['Hà Nội', 'Hải Phòng', 'Quảng Ninh', 'Bắc Ninh', 'Hải Dương', 'Hưng Yên', 'Nam Định', 'Thái Bình', 'Ninh Bình', 'Hà Nam', 'Vĩnh Phúc', 'Phú Thọ', 'Thái Nguyên', 'Bắc Giang', 'Lạng Sơn', 'Cao Bằng', 'Bắc Kạn', 'Tuyên Quang', 'Hà Giang', 'Yên Bái', 'Lào Cai', 'Điện Biên', 'Lai Châu', 'Sơn La', 'Hòa Bình'];
-  const trungProvinces = ['Đà Nẵng', 'Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông', 'Lâm Đồng'];
-  
-  const filtered = serviceCentersList.filter(s => {
-    const loc = (s.city || s.province || s.address || '').toLowerCase();
-    if (region === 'bac') {
-      return bacProvinces.some(p => loc.includes(p.toLowerCase()));
-    } else if (region === 'trung') {
-      return trungProvinces.some(p => loc.includes(p.toLowerCase()));
-    } else if (region === 'nam') {
-      return !bacProvinces.some(p => loc.includes(p.toLowerCase())) && !trungProvinces.some(p => loc.includes(p.toLowerCase()));
-    }
-    return true;
-  });
-  renderStationsTable(filtered);
+  renderStationsTable();
 }
 
 function exportStationsCSV() {
-  if (!serviceCentersList || serviceCentersList.length === 0) {
+  const exportList = getFilteredStations();
+  if (!exportList || exportList.length === 0) {
     showToast('Chưa có dữ liệu trạm bảo hành để xuất file!', 'warning');
     return;
   }
   let csv = '\uFEFF';
-  csv += 'STT,Tên trạm bảo hành,Tỉnh Thành,Địa chỉ chi tiết,Hotline\n';
-  serviceCentersList.forEach((s, idx) => {
+  csv += 'STT,Tên trạm bảo hành,Tỉnh Thành,Vùng Miền,Địa chỉ chi tiết,Hotline\n';
+  exportList.forEach((s, idx) => {
     const name = `"${(s.name || '').replace(/"/g, '""')}"`;
-    const city = `"${(s.city || s.province || '').replace(/"/g, '""')}"`;
+    const city = `"${(s.province || s.city || '').replace(/"/g, '""')}"`;
+    const regionName = s.region === 'north' ? 'Miền Bắc' : s.region === 'central' ? 'Miền Trung' : 'Miền Nam';
     const address = `"${(s.address || '').replace(/"/g, '""')}"`;
     const phone = `"${(s.phone || '').replace(/"/g, '""')}"`;
-    csv += `${idx + 1},${name},${city},${address},${phone}\n`;
+    csv += `${idx + 1},${name},${city},"${regionName}",${address},${phone}\n`;
   });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `tnp_tram_bao_hanh_${new Date().toISOString().split('T')[0]}.csv`;
+  a.download = `danh_sach_tram_bao_hanh_tnp_${currentStationRegion}_${new Date().toISOString().split('T')[0]}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
