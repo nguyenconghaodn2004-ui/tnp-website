@@ -4570,17 +4570,17 @@ select.form-control { cursor: pointer; }
    ════════════════════════════════════════ */
 .back-top {
   position: fixed;
-  right: var(--space-6);
-  bottom: calc(var(--space-8) + 125px);
-  width: 40px; height: 40px;
+  right: calc(var(--space-6) + 5px);
+  bottom: calc(var(--space-8) + 195px);
+  width: 42px; height: 42px;
   background: var(--tnp-blue);
   color: #fff;
-  border-radius: var(--r-sm);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 14px rgba(0,0,0,.25);
   cursor: pointer;
   z-index: 700;
   opacity: 0;
@@ -5985,12 +5985,12 @@ select.form-control { cursor: pointer; }
     display: none !important; /* Hide hover tooltip on touch devices to avoid horizontal overflow */
   }
   .back-top {
-    right: 12px;
-    bottom: 128px;
+    right: 16px;
+    bottom: 180px;
     width: 36px;
     height: 36px;
     font-size: 14px;
-    border-radius: 8px;
+    border-radius: 50%;
   }
 }
 
