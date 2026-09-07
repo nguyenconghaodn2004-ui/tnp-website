@@ -17,7 +17,6 @@ const NAV_LINKS = [
     dropdown: [
       { href: './tram-bao-hanh.html', icon: 'fas fa-map-marker-alt', label: 'Mạng lưới 80 – 100 Trạm' },
       { href: './tram-bao-hanh.html#quy-trinh', icon: 'fas fa-cogs', label: 'Quy trình 6 bước dịch vụ' },
-      { href: './tram-bao-hanh.html#doi-tac', icon: 'fas fa-handshake', label: 'Đối tác bảo hành tiêu biểu' },
       { href: './tram-bao-hanh.html#cam-ket', icon: 'fas fa-shield-alt', label: 'Cam kết chất lượng' },
     ]
   },
@@ -265,7 +264,6 @@ function renderFooter() {
         <div class="footer-links">
           <a href="./tram-bao-hanh.html" class="footer-link"><strong>80 – 100 Trạm toàn quốc</strong></a>
           <a href="./tram-bao-hanh.html#quy-trinh" class="footer-link">Quy trình 6 bước dịch vụ</a>
-          <a href="./tram-bao-hanh.html#doi-tac" class="footer-link">Đối tác bảo hành tiêu biểu</a>
           <a href="./tram-bao-hanh.html#cam-ket" class="footer-link">Cam kết chất lượng dịch vụ</a>
           <a href="./gioi-thieu.html" class="footer-link">Hồ sơ năng lực công ty</a>
         </div>
