@@ -137,6 +137,15 @@ if (!dbBanners) {
   writeDbFile('banners.json', dbBanners);
 }
 
+let dbHomepage = readDbFile('homepage.json', null);
+if (!dbHomepage) {
+  try {
+    const defaultHp = require('./data/homepage.json');
+    dbHomepage = defaultHp;
+    writeDbFile('homepage.json', dbHomepage);
+  } catch (e) { dbHomepage = null; }
+}
+
 let dbContacts = readDbFile('contacts.json', []);
 
 let articlesList = [
@@ -175,12 +184,14 @@ const StationSchema = new mongoose.Schema({ id: { type: String, index: true } },
 const BannerSchema  = new mongoose.Schema({ id: { type: String, unique: true, index: true } }, { strict: false, timestamps: true });
 const ContactSchema = new mongoose.Schema({ id: { type: String, unique: true, index: true } }, { strict: false, timestamps: true });
 const ArticleSchema = new mongoose.Schema({ id: { type: String, unique: true, index: true } }, { strict: false, timestamps: true });
+const HomepageSchema = new mongoose.Schema({ id: { type: String, default: 'homepage_config', unique: true } }, { strict: false, timestamps: true });
 
 const ProductModel = mongoose.model('Product', ProductSchema);
 const StationModel = mongoose.model('Station', StationSchema);
 const BannerModel  = mongoose.model('Banner', BannerSchema);
 const ContactModel = mongoose.model('Contact', ContactSchema);
 const ArticleModel = mongoose.model('Article', ArticleSchema);
+const HomepageModel = mongoose.model('Homepage', HomepageSchema);
 
 let isMongoConnected = false;
 
@@ -209,6 +220,12 @@ async function autoSeedMongoData() {
     if (articleCount === 0 && articlesList && articlesList.length > 0) {
       await ArticleModel.insertMany(articlesList);
       console.log(`  🌱 Đã tự động nạp ${articlesList.length} bài viết vào MongoDB Atlas.`);
+    }
+
+    const homepageCount = await HomepageModel.countDocuments();
+    if (homepageCount === 0 && dbHomepage) {
+      await HomepageModel.create({ id: 'homepage_config', ...dbHomepage });
+      console.log('  🌱 Đã tự động nạp cấu hình Trang Chủ vào MongoDB Atlas.');
     }
   } catch (err) {
     console.warn('  ⚠️ Lỗi trong quá trình tự động nạp dữ liệu ban đầu vào MongoDB:', err.message);
@@ -343,6 +360,63 @@ app.post('/api/admin/banners', async (req, res) => {
 
   console.log(`💾 Đã lưu vĩnh viễn ${dbBanners.length} banners vào Database JSON!`);
   res.json({ success: true, message: 'Đã lưu vĩnh viễn danh sách banners thành công!' });
+});
+
+// 2.1 API Cấu hình toàn bộ Trang Chủ (Bố cục & Nội dung)
+app.get('/api/homepage', async (req, res) => {
+  try {
+    if (isMongoConnected) {
+      const doc = await HomepageModel.findOne({ id: 'homepage_config' }).lean();
+      if (doc) {
+        // Loại bỏ trường kỹ thuật mongoose
+        const { _id, __v, createdAt, updatedAt, id, ...cleanData } = doc;
+        return res.json({ success: true, data: cleanData, source: 'cloud' });
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc cấu hình trang chủ từ MongoDB:', err.message);
+  }
+
+  // Fallback đọc file CSDL JSON
+  if (!dbHomepage) {
+    dbHomepage = readDbFile('homepage.json', null);
+  }
+  res.json({ success: true, data: dbHomepage, source: 'local' });
+});
+
+app.post('/api/admin/homepage', async (req, res) => {
+  const newConfig = req.body;
+  if (!newConfig || typeof newConfig !== 'object') {
+    return res.status(400).json({ success: false, message: 'Dữ liệu cấu hình trang chủ không hợp lệ.' });
+  }
+
+  // Cập nhật CSDL cục bộ
+  dbHomepage = newConfig;
+  writeDbFile('homepage.json', dbHomepage);
+
+  // Nếu có cập nhật heroBanners trong homepage, tự đồng bộ dbBanners luôn
+  if (Array.isArray(newConfig.heroBanners)) {
+    dbBanners = newConfig.heroBanners;
+    writeDbFile('banners.json', dbBanners);
+  }
+
+  // Cập nhật Cloud MongoDB
+  if (isMongoConnected) {
+    try {
+      await HomepageModel.findOneAndUpdate(
+        { id: 'homepage_config' },
+        { $set: { id: 'homepage_config', ...newConfig } },
+        { upsert: true, new: true }
+      );
+      console.log('💾 Đã đồng bộ cấu hình Trang Chủ lên MongoDB Atlas!');
+      return res.json({ success: true, message: 'Đã lưu cấu hình Trang Chủ lên Cloud MongoDB Atlas!' });
+    } catch (err) {
+      console.error('Lỗi ghi cấu hình Trang Chủ lên MongoDB:', err);
+    }
+  }
+
+  console.log('💾 Đã lưu vĩnh viễn cấu hình Trang Chủ vào Database JSON!');
+  res.json({ success: true, message: 'Đã lưu vĩnh viễn cấu hình Trang Chủ thành công!' });
 });
 
 // 3. API Trạm bảo hành

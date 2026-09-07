@@ -829,6 +829,7 @@ const TNP = {
   // ──────────────────────────────────────────
   init() {
     this.syncDynamicData();
+    this.syncHomepageData();
     if (typeof injectComponents === 'function') {
       injectComponents();
     }
@@ -877,11 +878,369 @@ const TNP = {
   },
 
   // ──────────────────────────────────────────
+  //  ĐỒNG BỘ NỘI DUNG & BỐ CỤC TRANG CHỦ (CMS)
+  // ──────────────────────────────────────────
+  homepageConfig: null,
+
+  syncHomepageData() {
+    // 1. Kiểm tra cache override từ Admin (phản hồi tức thì)
+    const savedConfig = localStorage.getItem('tnp_admin_homepage_override');
+    if (savedConfig) {
+      try {
+        const parsed = JSON.parse(savedConfig);
+        if (parsed && typeof parsed === 'object') {
+          this.homepageConfig = parsed;
+          this.applyHomepageConfig(parsed);
+        }
+      } catch (e) {
+        console.warn('Lỗi đọc cấu hình trang chủ từ cache:', e);
+      }
+    }
+
+    // 2. Lắng nghe storage event để cập nhật realtime giữa các tab (Admin & Client)
+    if (!this._storageListenerBound) {
+      this._storageListenerBound = true;
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'tnp_admin_homepage_override' && e.newValue) {
+          try {
+            const parsed = JSON.parse(e.newValue);
+            if (parsed && typeof parsed === 'object') {
+              this.homepageConfig = parsed;
+              this.applyHomepageConfig(parsed);
+            }
+          } catch (err) {}
+        }
+      });
+    }
+
+    // 3. Fetch API từ Server (MongoDB/JSON)
+    fetch('/api/homepage')
+      .then(res => {
+        if (!res.ok) throw new Error('API unavailable');
+        return res.json();
+      })
+      .then(json => {
+        if (json && json.success && json.data) {
+          this.homepageConfig = json.data;
+          this.applyHomepageConfig(json.data);
+        }
+      })
+      .catch(() => {
+        // Fallback đọc file tĩnh nếu chưa có server API
+        if (!this.homepageConfig) {
+          fetch('./data/homepage.json')
+            .then(res => res.json())
+            .then(data => {
+              if (data) {
+                this.homepageConfig = data;
+                this.applyHomepageConfig(data);
+              }
+            })
+            .catch(() => {});
+        }
+      });
+  },
+
+  applyHomepageConfig(config) {
+    if (!config || typeof config !== 'object') return;
+
+    // ── 1. ĐIỀU CHỈNH THỨ TỰ BỐ CỤC & ẨN/HIỆN SECTION ──
+    const container = document.getElementById('homepage-sections-container');
+    if (container && Array.isArray(config.layout)) {
+      const sorted = [...config.layout].sort((a, b) => (a.order || 0) - (b.order || 0));
+      sorted.forEach(item => {
+        const el = container.querySelector(`[data-section-id="${item.id}"]`) || document.getElementById(item.id);
+        if (el) {
+          if (item.enabled === false) {
+            el.style.display = 'none';
+          } else {
+            el.style.display = '';
+            container.appendChild(el);
+          }
+        }
+      });
+    }
+
+    // ── 2. HERO BANNERS SLIDER ──
+    if (Array.isArray(config.heroBanners) && config.heroBanners.length > 0) {
+      const banner = document.getElementById('hero-banner');
+      if (banner) {
+        const slidesTrack = banner.querySelector('.hero-slides');
+        const tabBtns = banner.querySelector('.hero-tab-btns');
+        if (slidesTrack) {
+          slidesTrack.innerHTML = config.heroBanners.map((b, idx) => `
+            <div class="hero-slide ${idx === 0 ? 'active' : ''} cinematic-slide" data-slide="${idx}" aria-hidden="${idx !== 0}">
+              <div class="cinematic-bg" style="background-image: url('${b.bgImage || './images/banner_hxy_100.jpg'}');">
+                <div class="cinematic-overlay ${b.badgeClass && (b.badgeClass.includes('care') || b.badgeClass.includes('green')) ? 'care-overlay' : ''}"></div>
+              </div>
+              <div class="container cinematic-content-wrap">
+                <div class="cinematic-badge ${b.badgeClass || ''}">
+                  <span class="badge-dot ${b.pulseClass || 'pulse-blue'}"></span>
+                  <span class="badge-text">${b.badgeText || ''}</span>
+                </div>
+                <h${idx === 0 ? '1' : '2'} class="cinematic-title">
+                  ${b.title || ''}
+                </h${idx === 0 ? '1' : '2'}>
+                <p class="cinematic-desc">
+                  ${b.desc || ''}
+                </p>
+                <div class="cinematic-specs-bar">
+                  ${(b.specs || []).map((s, si) => `
+                    ${si > 0 ? '<div class="spec-divider"></div>' : ''}
+                    <div class="spec-item">
+                      <span class="spec-val">${s.val || ''}</span>
+                      <span class="spec-lbl">${s.lbl || ''}</span>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="cinematic-actions">
+                  ${b.btn1 ? `<a href="${b.btn1.link || '#'}" class="${b.btn1.className || 'btn btn-primary btn-xl btn-glow'}">
+                    <i class="${b.btn1.icon || 'fas fa-tv'}"></i> ${b.btn1.text || 'Khám phá'}
+                  </a>` : ''}
+                  ${b.btn2 ? `<a href="${b.btn2.link || '#'}" class="${b.btn2.className || 'btn btn-outline btn-xl btn-glass'}">
+                    <i class="${b.btn2.icon || 'fas fa-phone-alt'}"></i> ${b.btn2.text || 'Tư vấn'}
+                  </a>` : ''}
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        if (tabBtns) {
+          tabBtns.innerHTML = config.heroBanners.map((b, idx) => `
+            <button class="hero-tab-btn ${idx === 0 ? 'active' : ''}" data-slide-target="${idx}">
+              <span class="tab-brand ${b.tabBrandColor || 'blue'}">${b.tabBrand || ''}</span>
+              <div class="tab-text">
+                <strong>${b.tabTitle || ''}</strong>
+                <small>${b.tabSubtitle || ''}</small>
+              </div>
+              <div class="tab-progress"><div class="tab-progress-bar"></div></div>
+            </button>
+          `).join('');
+        }
+
+        // Khởi tạo lại tương tác slider
+        this.setupHeroBanner();
+      }
+    }
+
+    // ── 3. DẢI THƯƠNG HIỆU ĐỐI TÁC ──
+    if (config.brandsStrip) {
+      const stripLabel = document.querySelector('#brands-strip .brands-strip-label');
+      if (stripLabel && config.brandsStrip.label) {
+        stripLabel.textContent = config.brandsStrip.label;
+      }
+      const brandsList = document.querySelector('#brands-strip .brands-list');
+      if (brandsList && Array.isArray(config.brandsStrip.brands)) {
+        brandsList.innerHTML = config.brandsStrip.brands.map(b => {
+          const isLink = !!b.link;
+          const tag = isLink ? 'a' : 'button';
+          const attrs = isLink ? `href="${b.link}"` : `type="button" data-brand="${b.name}"`;
+          return `<${tag} ${attrs} class="brand-chip" title="${b.title || b.name}">
+            <span class="brand-chip-dot ${b.dotColor || 'blue'}"></span><span>${b.name}</span>
+          </${tag}>`;
+        }).join('');
+      }
+    }
+
+    // ── 4. GIỚI THIỆU 2 THƯƠNG HIỆU HXY & HIKERS ──
+    if (config.brandDeepdive) {
+      const deepdiveSec = document.getElementById('ve-hxy-hikers');
+      if (deepdiveSec) {
+        const titleEl = deepdiveSec.querySelector('#brand-deepdive-title');
+        if (titleEl && config.brandDeepdive.title) titleEl.innerHTML = config.brandDeepdive.title;
+        const descEl = deepdiveSec.querySelector('.section-desc');
+        if (descEl && config.brandDeepdive.desc) descEl.textContent = config.brandDeepdive.desc;
+
+        // HXY
+        if (config.brandDeepdive.hxy) {
+          const hxyBox = deepdiveSec.querySelector('.hxy-box');
+          if (hxyBox) {
+            const h = hxyBox.querySelector('.brand-detail-heading');
+            if (h && config.brandDeepdive.hxy.heading) h.textContent = config.brandDeepdive.hxy.heading;
+            const l = hxyBox.querySelector('.brand-detail-lead');
+            if (l && config.brandDeepdive.hxy.lead) l.innerHTML = config.brandDeepdive.hxy.lead;
+            const img = hxyBox.querySelector('.brand-detail-tv-img');
+            if (img && config.brandDeepdive.hxy.image) img.src = config.brandDeepdive.hxy.image;
+            const cap = hxyBox.querySelector('.brand-media-caption');
+            if (cap && config.brandDeepdive.hxy.imageCaption) cap.textContent = config.brandDeepdive.hxy.imageCaption;
+
+            if (Array.isArray(config.brandDeepdive.hxy.features)) {
+              const grid = hxyBox.querySelector('.brand-features-grid');
+              if (grid) {
+                grid.innerHTML = config.brandDeepdive.hxy.features.map(f => `
+                  <div class="brand-feat-card">
+                    <div class="feat-icon blue"><i class="${f.icon || 'fas fa-check'}"></i></div>
+                    <div class="feat-content">
+                      <h4>${f.title || ''}</h4>
+                      <p>${f.desc || ''}</p>
+                    </div>
+                  </div>
+                `).join('');
+              }
+            }
+
+            if (Array.isArray(config.brandDeepdive.hxy.featuredModels)) {
+              const preview = hxyBox.querySelector('.brand-models-preview');
+              if (preview) {
+                preview.innerHTML = `<span class="lbl">Dòng TV tiêu biểu:</span>` +
+                  config.brandDeepdive.hxy.featuredModels.map(m => `
+                    <button type="button" class="tag" data-product-id="${m.productId || ''}" onclick="TNP && TNP.openModal('${m.productId || ''}')" title="Xem chi tiết ${m.name}">${m.name}</button>
+                  `).join('');
+              }
+            }
+          }
+        }
+
+        // HIKERS
+        if (config.brandDeepdive.hikers) {
+          const hikersBox = deepdiveSec.querySelector('.hikers-box');
+          if (hikersBox) {
+            const h = hikersBox.querySelector('.brand-detail-heading');
+            if (h && config.brandDeepdive.hikers.heading) h.textContent = config.brandDeepdive.hikers.heading;
+            const l = hikersBox.querySelector('.brand-detail-lead');
+            if (l && config.brandDeepdive.hikers.lead) l.innerHTML = config.brandDeepdive.hikers.lead;
+            const img = hikersBox.querySelector('.brand-detail-tv-img');
+            if (img && config.brandDeepdive.hikers.image) img.src = config.brandDeepdive.hikers.image;
+            const cap = hikersBox.querySelector('.brand-media-caption');
+            if (cap && config.brandDeepdive.hikers.imageCaption) cap.textContent = config.brandDeepdive.hikers.imageCaption;
+
+            if (Array.isArray(config.brandDeepdive.hikers.features)) {
+              const grid = hikersBox.querySelector('.brand-features-grid');
+              if (grid) {
+                grid.innerHTML = config.brandDeepdive.hikers.features.map(f => `
+                  <div class="brand-feat-card">
+                    <div class="feat-icon red"><i class="${f.icon || 'fas fa-check'}"></i></div>
+                    <div class="feat-content">
+                      <h4>${f.title || ''}</h4>
+                      <p>${f.desc || ''}</p>
+                    </div>
+                  </div>
+                `).join('');
+              }
+            }
+
+            if (Array.isArray(config.brandDeepdive.hikers.featuredModels)) {
+              const preview = hikersBox.querySelector('.brand-models-preview');
+              if (preview) {
+                preview.innerHTML = `<span class="lbl">Dòng TV tiêu biểu:</span>` +
+                  config.brandDeepdive.hikers.featuredModels.map(m => `
+                    <button type="button" class="tag" data-product-id="${m.productId || ''}" onclick="TNP && TNP.openModal('${m.productId || ''}')" title="Xem chi tiết ${m.name}">${m.name}</button>
+                  `).join('');
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // ── 5. BẢNG SO SÁNH 2 THƯƠNG HIỆU ──
+    if (config.comparisonTable) {
+      const compareSec = document.getElementById('brand-compare');
+      if (compareSec) {
+        const heading = compareSec.querySelector('#brand-compare-heading');
+        if (heading && config.comparisonTable.title) heading.textContent = config.comparisonTable.title;
+        const desc = compareSec.querySelector('#brand-compare-desc');
+        if (desc && config.comparisonTable.desc) desc.textContent = config.comparisonTable.desc;
+
+        const tbody = compareSec.querySelector('.brand-comparison-table tbody');
+        if (tbody && Array.isArray(config.comparisonTable.rows)) {
+          let rowsHTML = config.comparisonTable.rows.map(r => `
+            <tr>
+              <td><strong>${r.criteria || ''}</strong></td>
+              <td>${r.hxy || ''}</td>
+              <td>${r.hikers || ''}</td>
+            </tr>
+          `).join('');
+
+          if (config.comparisonTable.policyRow) {
+            rowsHTML += `
+              <tr>
+                <td><strong>${config.comparisonTable.policyRow.criteria || 'Chính sách TNP'}</strong></td>
+                <td colspan="2" class="center-policy">
+                  <i class="fas fa-check-circle" style="color:#16a34a;margin-right:6px;"></i> ${config.comparisonTable.policyRow.text || ''}
+                </td>
+              </tr>
+            `;
+          }
+          tbody.innerHTML = rowsHTML;
+        }
+      }
+    }
+
+    // ── 6. THANH THỐNG KÊ NĂNG LỰC ──
+    if (config.stats && Array.isArray(config.stats.items)) {
+      const statsGrid = document.querySelector('#stats-bar .stats-bar-grid');
+      if (statsGrid) {
+        statsGrid.innerHTML = config.stats.items.map((st, idx) => `
+          <div class="stat-block" data-sr data-sr-delay="${idx}">
+            <span class="stat-num">${st.num || ''}</span>
+            <div class="stat-lbl">${st.lbl || ''}</div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // ── 7. MẠNG LƯỚI TRẠM BẢO HÀNH ──
+    if (config.networkSection) {
+      const sec = document.getElementById('tram-bao-hanh-section');
+      if (sec) {
+        const title = sec.querySelector('#network-title');
+        if (title && config.networkSection.title) title.innerHTML = config.networkSection.title;
+        const desc = sec.querySelector('.section-desc');
+        if (desc && config.networkSection.desc) desc.innerHTML = config.networkSection.desc;
+      }
+    }
+
+    // ── 8. SẢN PHẨM TV NỔI BẬT ──
+    if (config.featuredProducts) {
+      const sec = document.getElementById('products-featured');
+      if (sec) {
+        const title = sec.querySelector('#featured-title');
+        if (title && config.featuredProducts.title) title.innerHTML = config.featuredProducts.title;
+        const desc = sec.querySelector('.section-desc');
+        if (desc && config.featuredProducts.desc) desc.textContent = config.featuredProducts.desc;
+      }
+      this.renderProducts();
+    }
+
+    // ── 9. BANNER KÊU GỌI TƯ VẤN CTA ──
+    if (config.ctaBanner) {
+      const ctaSec = document.getElementById('cta-banner');
+      if (ctaSec) {
+        const badge = ctaSec.querySelector('.section-label');
+        if (badge && config.ctaBanner.badge) badge.textContent = config.ctaBanner.badge;
+        const title = ctaSec.querySelector('#cta-title');
+        if (title && config.ctaBanner.title) title.innerHTML = config.ctaBanner.title;
+        const desc = ctaSec.querySelector('.cta-banner-desc');
+        if (desc && config.ctaBanner.desc) desc.innerHTML = config.ctaBanner.desc;
+
+        const actions = ctaSec.querySelector('.cta-banner-actions');
+        if (actions) {
+          actions.innerHTML = `
+            <a href="${config.ctaBanner.btnLink || './lien-he.html'}" class="btn btn-white btn-xl">
+              <i class="fas fa-headset"></i> ${config.ctaBanner.btnText || 'Liên hệ TNP ngay'}
+            </a>
+            <a href="tel:${(config.ctaBanner.phone || '028 22 422 822').replace(/\s+/g, '')}" class="btn btn-outline-white btn-xl">
+              <i class="fas fa-phone-alt"></i> Gọi: ${config.ctaBanner.phone || '028 22 422 822'}
+            </a>
+          `;
+        }
+      }
+    }
+  },
+
+  // ──────────────────────────────────────────
   //  HERO SHOWCASE BANNER SLIDER
   // ──────────────────────────────────────────
   setupHeroBanner() {
     const banner = document.getElementById('hero-banner');
     if (!banner) return;
+
+    if (this._heroTimer) {
+      clearInterval(this._heroTimer);
+      this._heroTimer = null;
+    }
 
     const slides = banner.querySelectorAll('.hero-slide');
     const tabs   = banner.querySelectorAll('.hero-tab-btn');
@@ -923,34 +1282,41 @@ const TNP = {
     const startTimer = () => {
       stopTimer();
       timer = setInterval(next, 6000);
+      this._heroTimer = timer;
     };
 
     const stopTimer = () => {
       if (timer) clearInterval(timer);
+      if (this._heroTimer) clearInterval(this._heroTimer);
+      timer = null;
+      this._heroTimer = null;
     };
 
     // Tab button clicks & touch
     tabs.forEach((tab, idx) => {
-      const activate = (e) => {
+      tab.onclick = (e) => {
         e.preventDefault();
         showSlide(idx);
         startTimer();
       };
-      tab.addEventListener('click', activate);
     });
 
-    nextBtn?.addEventListener('click', () => {
-      next();
-      startTimer();
-    });
+    if (nextBtn) {
+      nextBtn.onclick = () => {
+        next();
+        startTimer();
+      };
+    }
 
-    prevBtn?.addEventListener('click', () => {
-      prev();
-      startTimer();
-    });
+    if (prevBtn) {
+      prevBtn.onclick = () => {
+        prev();
+        startTimer();
+      };
+    }
 
-    banner.addEventListener('mouseenter', stopTimer);
-    banner.addEventListener('mouseleave', startTimer);
+    banner.onmouseenter = stopTimer;
+    banner.onmouseleave = startTimer;
 
     // Touch swipe gesture support for mobile devices
     let touchStartX = 0;
@@ -1155,7 +1521,16 @@ const TNP = {
     // 1. Featured grid (e.g. on homepage)
     const featuredGrid = document.getElementById('product-grid-featured');
     if (featuredGrid) {
-      const featured = TNP_PRODUCTS.filter(p => p.isFeatured).slice(0, 4);
+      let featured = [];
+      const pinnedIds = this.homepageConfig?.featuredProducts?.productIds;
+      if (Array.isArray(pinnedIds) && pinnedIds.length > 0) {
+        featured = pinnedIds
+          .map(id => TNP_PRODUCTS.find(p => p.id === id))
+          .filter(Boolean);
+      }
+      if (!featured.length) {
+        featured = TNP_PRODUCTS.filter(p => p.isFeatured).slice(0, 4);
+      }
       featuredGrid.innerHTML = featured.map(p => this.renderProductCardHTML(p)).join('');
     }
 

@@ -1,0 +1,10 @@
+{
+  "layout": [
+    {
+      "name": "Hero Banner Slider",
+      "id": "hero-banner",
+      "order": 1,
+      "enabled": true
+    }
+  ]
+}
