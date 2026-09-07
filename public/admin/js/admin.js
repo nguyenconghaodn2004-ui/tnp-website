@@ -24,8 +24,35 @@ const STORAGE_ARTICLES_KEY = 'tnp_admin_articles_override';
 const STORAGE_HOMEPAGE_KEY = 'tnp_admin_homepage_override';
 
 // ══════════════════════════════════════════════
-//  AUTH GUARD
+//  AUTH GUARD & TOKEN REQUEST WRAPPER
 // ══════════════════════════════════════════════
+function getAdminToken() {
+  try {
+    const authData = localStorage.getItem('tnp_admin_auth');
+    if (!authData) return '';
+    const auth = JSON.parse(authData);
+    return auth?.token || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+async function adminFetch(url, options = {}) {
+  const token = getAdminToken();
+  const headers = {
+    ...(options.headers || {}),
+    'Authorization': `Bearer ${token}`
+  };
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401) {
+    localStorage.removeItem('tnp_admin_auth');
+    alert('Phiên làm việc quản trị đã hết hạn. Vui lòng đăng nhập lại!');
+    window.location.href = './login.html';
+    throw new Error('Unauthorized');
+  }
+  return response;
+}
+
 function checkAdminAuth() {
   const authData = localStorage.getItem('tnp_admin_auth');
   if (!authData) {
@@ -68,11 +95,15 @@ function handleAdminLogout() {
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   if (!checkAdminAuth()) return;
+  initAdminTheme();
   initNavigation();
   initSidebarMobile();
+  initQuickSearch();
   loadData();
   renderAll();
   fetchContactsFromServer();
+  loadAnalyticsData();
+  checkSystemStatus();
 });
 
 // ── Navigation tabs ──
@@ -290,7 +321,7 @@ function getDefaultArticles() {
 async function saveProducts() {
   localStorage.setItem(STORAGE_PRODUCTS_KEY, JSON.stringify(productsList));
   try {
-    await fetch('/api/admin/products', {
+    await adminFetch('/api/admin/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(productsList)
@@ -303,7 +334,7 @@ async function saveProducts() {
 async function saveStations() {
   localStorage.setItem(STORAGE_STATIONS_KEY, JSON.stringify(serviceCentersList));
   try {
-    await fetch('/api/admin/stations', {
+    await adminFetch('/api/admin/stations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(serviceCentersList)
@@ -319,7 +350,7 @@ async function saveBanners() {
     homepageConfig.heroBanners = [...bannersList];
     try {
       localStorage.setItem(STORAGE_HOMEPAGE_KEY, JSON.stringify(homepageConfig));
-      await fetch('/api/admin/homepage', {
+      await adminFetch('/api/admin/homepage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(homepageConfig)
@@ -327,7 +358,7 @@ async function saveBanners() {
     } catch (e) {}
   }
   try {
-    await fetch('/api/admin/banners', {
+    await adminFetch('/api/admin/banners', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bannersList)
@@ -901,7 +932,7 @@ async function fetchContactsFromServer() {
   if (!tbody) return;
 
   try {
-    const res = await fetch('/api/admin/contacts');
+    const res = await adminFetch('/api/admin/contacts');
     if (res.ok) {
       const json = await res.json();
       if (json.data) {
@@ -947,6 +978,103 @@ function filterContacts(query) {
   renderContactsTable(filtered);
 }
 
+function filterContactsByStatus(status) {
+  if (!status || status === 'all') {
+    renderContactsTable(contactsList);
+    return;
+  }
+  const filtered = contactsList.filter(c => c.status === status);
+  renderContactsTable(filtered);
+}
+
+function exportContactsCSV() {
+  if (!contactsList || contactsList.length === 0) {
+    showToast('Chưa có danh sách liên hệ để xuất file!', 'warning');
+    return;
+  }
+  let csv = '\uFEFF'; // UTF-8 BOM cho Excel mở tiếng Việt không bị lỗi font
+  csv += 'STT,Họ và tên khách hàng,Số điện thoại,Dòng TV quan tâm,Nội dung lời nhắn,Thời gian gửi,Trạng thái,Ghi chú CSKH\n';
+  contactsList.forEach((c, idx) => {
+    const name = `"${(c.name || '').replace(/"/g, '""')}"`;
+    const phone = `"${(c.phone || '').replace(/"/g, '""')}"`;
+    const product = `"${(c.product || '').replace(/"/g, '""')}"`;
+    const message = `"${(c.message || '').replace(/"/g, '""')}"`;
+    const time = `"${(c.time || '').replace(/"/g, '""')}"`;
+    let statusLabel = 'Chờ liên hệ';
+    if (c.status === 'in_progress' || c.status === 'contacting') statusLabel = 'Đang tư vấn';
+    else if (c.status === 'completed' || c.status === 'resolved') statusLabel = 'Đã hoàn tất';
+    const notes = `"${(c.notes || '').replace(/"/g, '""')}"`;
+    csv += `${idx + 1},${name},${phone},${product},${message},${time},"${statusLabel}",${notes}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tnp_khach_hang_lien_he_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('Đã xuất danh sách liên hệ ra file Excel / CSV thành công!', 'success');
+}
+
+// ── BỘ LỌC VÙNG MIỀN & XUẤT EXCEL CHO TRẠM BẢO HÀNH ──
+let currentStationRegion = 'all';
+
+function filterStationsByRegion(region) {
+  currentStationRegion = region;
+  ['all', 'bac', 'trung', 'nam'].forEach(r => {
+    const btn = document.getElementById(`filterStationRegion${r.charAt(0).toUpperCase() + r.slice(1)}`);
+    if (btn) btn.classList.toggle('active', r === region);
+  });
+  
+  if (region === 'all') {
+    renderStationsTable(serviceCentersList);
+    return;
+  }
+  
+  const bacProvinces = ['Hà Nội', 'Hải Phòng', 'Quảng Ninh', 'Bắc Ninh', 'Hải Dương', 'Hưng Yên', 'Nam Định', 'Thái Bình', 'Ninh Bình', 'Hà Nam', 'Vĩnh Phúc', 'Phú Thọ', 'Thái Nguyên', 'Bắc Giang', 'Lạng Sơn', 'Cao Bằng', 'Bắc Kạn', 'Tuyên Quang', 'Hà Giang', 'Yên Bái', 'Lào Cai', 'Điện Biên', 'Lai Châu', 'Sơn La', 'Hòa Bình'];
+  const trungProvinces = ['Đà Nẵng', 'Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông', 'Lâm Đồng'];
+  
+  const filtered = serviceCentersList.filter(s => {
+    const loc = (s.city || s.province || s.address || '').toLowerCase();
+    if (region === 'bac') {
+      return bacProvinces.some(p => loc.includes(p.toLowerCase()));
+    } else if (region === 'trung') {
+      return trungProvinces.some(p => loc.includes(p.toLowerCase()));
+    } else if (region === 'nam') {
+      return !bacProvinces.some(p => loc.includes(p.toLowerCase())) && !trungProvinces.some(p => loc.includes(p.toLowerCase()));
+    }
+    return true;
+  });
+  renderStationsTable(filtered);
+}
+
+function exportStationsCSV() {
+  if (!serviceCentersList || serviceCentersList.length === 0) {
+    showToast('Chưa có dữ liệu trạm bảo hành để xuất file!', 'warning');
+    return;
+  }
+  let csv = '\uFEFF';
+  csv += 'STT,Tên trạm bảo hành,Tỉnh Thành,Địa chỉ chi tiết,Hotline\n';
+  serviceCentersList.forEach((s, idx) => {
+    const name = `"${(s.name || '').replace(/"/g, '""')}"`;
+    const city = `"${(s.city || s.province || '').replace(/"/g, '""')}"`;
+    const address = `"${(s.address || '').replace(/"/g, '""')}"`;
+    const phone = `"${(s.phone || '').replace(/"/g, '""')}"`;
+    csv += `${idx + 1},${name},${city},${address},${phone}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tnp_tram_bao_hanh_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('Đã xuất danh sách trạm bảo hành ra file Excel / CSV thành công!', 'success');
+}
+
 function renderContactsTable(leads) {
   const tbody = document.getElementById('contactsTableBody');
   if (!tbody) return;
@@ -970,7 +1098,9 @@ function renderContactsTable(leads) {
   const statusMap = {
     pending: { label: 'Chờ liên hệ', class: 'badge-warning' },
     in_progress: { label: 'Đang tư vấn', class: 'badge-brand-hxy' },
+    contacting: { label: 'Đang tư vấn', class: 'badge-brand-hxy' },
     completed: { label: 'Đã hoàn tất', class: 'badge-success' },
+    resolved: { label: 'Đã hoàn tất', class: 'badge-success' },
     cancelled: { label: 'Đã hủy', class: 'badge-secondary' }
   };
 
@@ -1037,7 +1167,7 @@ async function saveLeadStatus(e) {
   }
 
   try {
-    await fetch(`/api/admin/contacts/${id}`, {
+    await adminFetch(`/api/admin/contacts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, notes })
@@ -1055,7 +1185,7 @@ async function deleteLead(id) {
   contactsList = contactsList.filter(c => c.id !== id);
 
   try {
-    await fetch(`/api/admin/contacts/${id}`, { method: 'DELETE' });
+    await adminFetch(`/api/admin/contacts/${id}`, { method: 'DELETE' });
   } catch (err) {}
 
   renderContactsTable(contactsList);
@@ -1212,7 +1342,7 @@ async function saveArticleForm(e) {
 
   // Gửi API backend nếu server đang chạy
   try {
-    await fetch('/api/admin/articles', {
+    await adminFetch('/api/admin/articles', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(articleObj)
@@ -1229,7 +1359,7 @@ async function deleteArticle(id) {
   articlesList = articlesList.filter(a => a.id !== id);
 
   try {
-    await fetch(`/api/admin/articles/${id}`, { method: 'DELETE' });
+    await adminFetch(`/api/admin/articles/${id}`, { method: 'DELETE' });
   } catch (err) {}
 
   saveArticles();
@@ -1258,7 +1388,7 @@ async function handleDirectImageUpload(event, inputTargetId, previewTargetId) {
     const base64Data = e.target.result;
 
     try {
-      const response = await fetch('/api/admin/upload', {
+      const response = await adminFetch('/api/admin/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2539,7 +2669,7 @@ async function saveHomepageConfig() {
 
   // 2. Gửi lên Server API để lưu trữ vĩnh viễn (MongoDB / JSON file)
   try {
-    const res = await fetch('/api/admin/homepage', {
+    const res = await adminFetch('/api/admin/homepage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(homepageConfig)
@@ -2564,4 +2694,550 @@ function resetHomepageDefault() {
     saveHomepageConfig();
     showToast('Đã khôi phục cài đặt mặc định cho trang chủ!', 'success');
   }
+}
+
+// ══════════════════════════════════════════════
+//  ANALYTICS ENGINE & CHART.JS RENDERING
+// ══════════════════════════════════════════════
+let analyticsData = null;
+let trafficChartInstance = null;
+let currentAnalyticsDays = 7;
+
+async function loadAnalyticsData() {
+  const refreshIcon = document.getElementById('analyticsRefreshIcon');
+  if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+  try {
+    const res = await adminFetch('/api/admin/analytics');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) {
+        analyticsData = json.data;
+        renderAnalyticsUI(analyticsData);
+      }
+    }
+  } catch (err) {
+    console.warn('Không thể tải analytics từ server:', err);
+  } finally {
+    if (refreshIcon) {
+      setTimeout(() => refreshIcon.classList.remove('fa-spin'), 500);
+    }
+  }
+}
+
+function renderAnalyticsUI(data) {
+  if (!data) return;
+
+  // 1. Cập nhật 4 thẻ thống kê
+  const today = data.today || { views: 0, uniques: 0, diffPercent: 0 };
+  const statTodayViews = document.getElementById('statTodayViews');
+  const statTodayUniques = document.getElementById('statTodayUniques');
+  const statTodayTrend = document.getElementById('statTodayTrend');
+  const stat7DaysViews = document.getElementById('stat7DaysViews');
+  const statMonthViews = document.getElementById('statMonthViews');
+  const statTotalViews = document.getElementById('statTotalViews');
+
+  if (statTodayViews) statTodayViews.textContent = (today.views || 0).toLocaleString('vi-VN');
+  if (statTodayUniques) statTodayUniques.textContent = (today.uniques || 0).toLocaleString('vi-VN');
+  if (statTodayTrend) {
+    const isUp = (today.diffPercent || 0) >= 0;
+    statTodayTrend.className = `stat-trend ${isUp ? 'trend-up' : 'trend-down'}`;
+    statTodayTrend.innerHTML = `<i class="fas fa-arrow-${isUp ? 'up' : 'down'}"></i> ${Math.abs(today.diffPercent || 0)}%`;
+  }
+  if (stat7DaysViews) stat7DaysViews.textContent = (data.last7Days || 0).toLocaleString('vi-VN');
+  if (statMonthViews) statMonthViews.textContent = (data.thisMonth || 0).toLocaleString('vi-VN');
+  if (statTotalViews) statTotalViews.textContent = (data.totalVisits || 0).toLocaleString('vi-VN');
+
+  // 2. Vẽ biểu đồ biến động
+  renderTrafficChart(currentAnalyticsDays === 7 ? data.history7Days : data.history30Days);
+
+  // 3. Phân bổ thiết bị
+  const devices = data.devices || { desktop: 0, mobile: 0, tablet: 0, desktopPercent: 0, mobilePercent: 0, tabletPercent: 0 };
+  const mobPercent = devices.mobilePercent || 0;
+  const dskPercent = devices.desktopPercent || 0;
+  const tabPercent = devices.tabletPercent || 0;
+
+  const mobBar = document.getElementById('deviceMobileBar');
+  const dskBar = document.getElementById('deviceDesktopBar');
+  const tabBar = document.getElementById('deviceTabletBar');
+
+  if (mobBar) mobBar.style.width = `${mobPercent}%`;
+  if (dskBar) dskBar.style.width = `${dskPercent}%`;
+  if (tabBar) tabBar.style.width = `${tabPercent}%`;
+
+  const mobPercentEl = document.getElementById('deviceMobilePercent');
+  const dskPercentEl = document.getElementById('deviceDesktopPercent');
+  const tabPercentEl = document.getElementById('deviceTabletPercent');
+
+  if (mobPercentEl) mobPercentEl.textContent = `${mobPercent}%`;
+  if (dskPercentEl) dskPercentEl.textContent = `${dskPercent}%`;
+  if (tabPercentEl) tabPercentEl.textContent = `${tabPercent}%`;
+
+  const mobCount = document.getElementById('deviceMobileCount');
+  const dskCount = document.getElementById('deviceDesktopCount');
+  const tabCount = document.getElementById('deviceTabletCount');
+
+  if (mobCount) mobCount.textContent = `${(devices.mobile || 0).toLocaleString('vi-VN')} lượt xem`;
+  if (dskCount) dskCount.textContent = `${(devices.desktop || 0).toLocaleString('vi-VN')} lượt xem`;
+  if (tabCount) tabCount.textContent = `${(devices.tablet || 0).toLocaleString('vi-VN')} lượt xem`;
+
+  // 4. Top trang xem nhiều nhất
+  renderTopPagesTable(data.topPages || []);
+}
+
+function renderTrafficChart(history) {
+  const canvas = document.getElementById('trafficChart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const labels = (history || []).map(h => h.label || h.date);
+  const viewsData = (history || []).map(h => h.views || 0);
+  const uniquesData = (history || []).map(h => h.uniques || 0);
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+
+  if (trafficChartInstance) {
+    trafficChartInstance.destroy();
+  }
+
+  const ctx = canvas.getContext('2d');
+  
+  const gradientViews = ctx.createLinearGradient(0, 0, 0, 240);
+  gradientViews.addColorStop(0, 'rgba(37, 99, 235, 0.35)');
+  gradientViews.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+
+  trafficChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Lượt xem trang (Pageviews)',
+          data: viewsData,
+          borderColor: '#2563eb',
+          backgroundColor: gradientViews,
+          borderWidth: 2.5,
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: '#2563eb',
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: 'Khách duy nhất (Unique Visitors)',
+          data: uniquesData,
+          borderColor: '#10b981',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [4, 4],
+          tension: 0.35,
+          fill: false,
+          pointBackgroundColor: '#10b981',
+          pointRadius: 3,
+          pointHoverRadius: 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: textColor,
+            font: { size: 12, family: 'Inter' },
+            boxWidth: 12,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          backgroundColor: isDark ? '#1e293b' : '#0f172a',
+          titleColor: '#fff',
+          bodyColor: '#cbd5e1',
+          borderColor: isDark ? '#334155' : '#e2e8f0',
+          borderWidth: 1,
+          padding: 10,
+          boxPadding: 4,
+          usePointStyle: true
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { size: 11, family: 'Inter' } }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { size: 11, family: 'Inter' }, precision: 0 }
+        }
+      }
+    }
+  });
+}
+
+function switchAnalyticsTimeframe(days) {
+  currentAnalyticsDays = days;
+  const btn7 = document.getElementById('btnTf7');
+  const btn30 = document.getElementById('btnTf30');
+  if (btn7) btn7.classList.toggle('active', days === 7);
+  if (btn30) btn30.classList.toggle('active', days === 30);
+
+  if (analyticsData) {
+    renderTrafficChart(days === 7 ? analyticsData.history7Days : analyticsData.history30Days);
+  }
+}
+
+function renderTopPagesTable(pages) {
+  const tbody = document.getElementById('topPagesTableBody');
+  if (!tbody) return;
+
+  if (!pages || pages.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--adm-text-muted);">Chưa có dữ liệu trang xem.</td></tr>`;
+    return;
+  }
+
+  const maxViews = Math.max(...pages.map(p => p.views || 1), 1);
+
+  tbody.innerHTML = pages.map((item, idx) => {
+    const percent = Math.round((item.views / maxViews) * 100);
+    return `
+      <tr>
+        <td><strong>${idx + 1}</strong></td>
+        <td>
+          <strong>${item.title || item.path}</strong>
+        </td>
+        <td>
+          <code style="background: var(--adm-border-light); padding: 2px 6px; border-radius: 4px; font-size: 11.5px;">${item.path}</code>
+        </td>
+        <td style="text-align: right;">
+          <strong style="color: var(--adm-accent);">${item.views.toLocaleString('vi-VN')}</strong> lượt
+        </td>
+        <td>
+          <div class="device-progress-bg" style="height: 6px;">
+            <div class="device-progress-bar" style="width: ${percent}%; background: var(--adm-accent);"></div>
+          </div>
+        </td>
+        <td style="text-align: center;">
+          <a href="..${item.path === '/' ? '/index.html' : item.path}" target="_blank" class="btn btn-secondary btn-sm" style="padding: 3px 8px;" title="Mở trang trong tab mới">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  DARK / LIGHT THEME TOGGLE
+// ══════════════════════════════════════════════
+function initAdminTheme() {
+  const savedTheme = localStorage.getItem('tnp_admin_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeIcon(savedTheme);
+}
+
+function toggleAdminTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('tnp_admin_theme', next);
+  updateThemeIcon(next);
+  if (analyticsData) {
+    renderTrafficChart(currentAnalyticsDays === 7 ? analyticsData.history7Days : analyticsData.history30Days);
+  }
+}
+
+function updateThemeIcon(theme) {
+  const icon = document.getElementById('themeIcon');
+  if (icon) {
+    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  QUICK SEARCH SPOTLIGHT (CTRL + K)
+// ══════════════════════════════════════════════
+function initQuickSearch() {
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openQuickSearchModal();
+    }
+    if (e.key === 'Escape') {
+      closeQuickSearchModal();
+    }
+  });
+}
+
+function openQuickSearchModal() {
+  const modal = document.getElementById('quickSearchModal');
+  if (!modal) return;
+  modal.classList.add('open');
+  const input = document.getElementById('quickSearchInput');
+  if (input) {
+    input.value = '';
+    setTimeout(() => input.focus(), 80);
+  }
+  handleQuickSearchInput('');
+}
+
+function closeQuickSearchModal() {
+  const modal = document.getElementById('quickSearchModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function handleQuickSearchBackdropClick(e) {
+  if (e.target.id === 'quickSearchModal') {
+    closeQuickSearchModal();
+  }
+}
+
+function handleQuickSearchInput(query) {
+  const resultsContainer = document.getElementById('quickSearchResults');
+  if (!resultsContainer) return;
+
+  const q = (query || '').trim().toLowerCase();
+  if (!q) {
+    resultsContainer.innerHTML = `
+      <div class="quicksearch-group-title">Lối tắt nhanh</div>
+      <div class="quicksearch-item" onclick="quickNav('dashboard')">
+        <div class="quicksearch-item-left">
+          <div class="quicksearch-item-icon"><i class="fas fa-chart-pie"></i></div>
+          <div>
+            <div class="quicksearch-item-title">Tổng quan hệ thống &amp; Thống kê lưu lượng</div>
+            <div class="quicksearch-item-sub">Xem báo cáo truy cập, tổng sản phẩm, số trạm</div>
+          </div>
+        </div>
+        <i class="fas fa-arrow-right text-muted"></i>
+      </div>
+      <div class="quicksearch-item" onclick="quickNav('products')">
+        <div class="quicksearch-item-left">
+          <div class="quicksearch-item-icon"><i class="fas fa-tv"></i></div>
+          <div>
+            <div class="quicksearch-item-title">Danh sách TV HXY &amp; HIKERS</div>
+            <div class="quicksearch-item-sub">Quản lý thêm, sửa giá, model, thông số</div>
+          </div>
+        </div>
+        <i class="fas fa-arrow-right text-muted"></i>
+      </div>
+      <div class="quicksearch-item" onclick="quickNav('stations')">
+        <div class="quicksearch-item-left">
+          <div class="quicksearch-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div>
+            <div class="quicksearch-item-title">Mạng lưới Trạm bảo hành</div>
+            <div class="quicksearch-item-sub">80 - 100 trạm trên 63 tỉnh thành</div>
+          </div>
+        </div>
+        <i class="fas fa-arrow-right text-muted"></i>
+      </div>
+      <div class="quicksearch-item" onclick="quickNav('contacts')">
+        <div class="quicksearch-item-left">
+          <div class="quicksearch-item-icon"><i class="fas fa-headset"></i></div>
+          <div>
+            <div class="quicksearch-item-title">Yêu cầu liên hệ từ khách hàng</div>
+            <div class="quicksearch-item-sub">Xem danh sách số điện thoại, xuất Excel</div>
+          </div>
+        </div>
+        <i class="fas fa-arrow-right text-muted"></i>
+      </div>
+    `;
+    return;
+  }
+
+  const matchedProducts = (productsList || []).filter(p => 
+    (p.name && p.name.toLowerCase().includes(q)) ||
+    (p.model && p.model.toLowerCase().includes(q)) ||
+    (p.brand && p.brand.toLowerCase().includes(q))
+  ).slice(0, 4);
+
+  const matchedStations = (serviceCentersList || []).filter(s => 
+    (s.name && s.name.toLowerCase().includes(q)) ||
+    (s.city && s.city.toLowerCase().includes(q)) ||
+    (s.address && s.address.toLowerCase().includes(q))
+  ).slice(0, 4);
+
+  const matchedArticles = (articlesList || []).filter(a => 
+    (a.title && a.title.toLowerCase().includes(q)) ||
+    (a.category && a.category.toLowerCase().includes(q))
+  ).slice(0, 3);
+
+  let html = '';
+
+  if (matchedProducts.length > 0) {
+    html += `<div class="quicksearch-group-title">Sản phẩm TV (${matchedProducts.length})</div>`;
+    matchedProducts.forEach(p => {
+      html += `
+        <div class="quicksearch-item" onclick="quickNavProduct('${p.id}')">
+          <div class="quicksearch-item-left">
+            <div class="quicksearch-item-icon"><i class="fas fa-tv"></i></div>
+            <div>
+              <div class="quicksearch-item-title">${p.name}</div>
+              <div class="quicksearch-item-sub">${p.brand} · ${p.model} · ${p.size} inch</div>
+            </div>
+          </div>
+          <span class="badge ${p.brand === 'HXY' ? 'badge-brand-hxy' : 'badge-brand-hikers'}">${p.brand}</span>
+        </div>
+      `;
+    });
+  }
+
+  if (matchedStations.length > 0) {
+    html += `<div class="quicksearch-group-title">Trạm bảo hành (${matchedStations.length})</div>`;
+    matchedStations.forEach(s => {
+      html += `
+        <div class="quicksearch-item" onclick="quickNavStation('${s.id}')">
+          <div class="quicksearch-item-left">
+            <div class="quicksearch-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <div class="quicksearch-item-title">${s.name}</div>
+              <div class="quicksearch-item-sub">${s.city || s.province} · ${s.phone || 'TNP Care'}</div>
+            </div>
+          </div>
+          <span class="badge badge-secondary">${s.city || 'Toàn quốc'}</span>
+        </div>
+      `;
+    });
+  }
+
+  if (matchedArticles.length > 0) {
+    html += `<div class="quicksearch-group-title">Bài viết &amp; Hướng dẫn (${matchedArticles.length})</div>`;
+    matchedArticles.forEach(a => {
+      html += `
+        <div class="quicksearch-item" onclick="quickNavArticle('${a.id}')">
+          <div class="quicksearch-item-left">
+            <div class="quicksearch-item-icon"><i class="fas fa-newspaper"></i></div>
+            <div>
+              <div class="quicksearch-item-title">${a.title}</div>
+              <div class="quicksearch-item-sub">${a.categoryLabel || 'Tin tức'} · ${a.date}</div>
+            </div>
+          </div>
+          <i class="fas fa-arrow-right text-muted"></i>
+        </div>
+      `;
+    });
+  }
+
+  if (!html) {
+    html = `<div class="quicksearch-empty">Không tìm thấy kết quả nào phù hợp với từ khóa "<strong>${query}</strong>"</div>`;
+  }
+
+  resultsContainer.innerHTML = html;
+}
+
+function quickNav(tabId) {
+  closeQuickSearchModal();
+  switchTab(tabId);
+}
+
+function quickNavProduct(prodId) {
+  closeQuickSearchModal();
+  switchTab('products');
+  setTimeout(() => {
+    openEditProductModal(prodId);
+  }, 120);
+}
+
+function quickNavStation(stationId) {
+  closeQuickSearchModal();
+  switchTab('stations');
+  setTimeout(() => {
+    const sInput = document.querySelector('#tab-stations .search-input-wrap input');
+    const s = serviceCentersList.find(x => x.id === stationId);
+    if (sInput && s) {
+      sInput.value = s.name;
+      filterStations(s.name);
+    }
+  }, 120);
+}
+
+function quickNavArticle(artId) {
+  closeQuickSearchModal();
+  switchTab('articles');
+  setTimeout(() => {
+    openEditArticleModal(artId);
+  }, 120);
+}
+
+// ══════════════════════════════════════════════
+//  BACKUP, RESTORE & SYSTEM STATUS
+// ══════════════════════════════════════════════
+async function downloadBackupJson() {
+  try {
+    showToast('Đang tạo bản sao lưu dữ liệu hệ thống...', 'info');
+    const res = await adminFetch('/api/admin/backup');
+    if (!res.ok) throw new Error('Backup failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tnp_backup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('Đã tải về bản sao lưu toàn bộ cơ sở dữ liệu thành công!', 'success');
+  } catch (err) {
+    showToast('Lỗi khi tải bản sao lưu!', 'error');
+  }
+}
+
+function triggerRestoreUpload() {
+  const input = document.getElementById('restoreFileInput');
+  if (input) input.click();
+}
+
+async function handleRestoreFileSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  if (!confirm(`Bạn có chắc chắn muốn khôi phục dữ liệu từ tệp "${file.name}"? Dữ liệu hiện tại sẽ được cập nhật đồng bộ.`)) {
+    event.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const backupData = JSON.parse(e.target.result);
+      const res = await adminFetch('/api/admin/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ backup: backupData })
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast('Đã khôi phục cơ sở dữ liệu thành công! Đang làm mới trang...', 'success');
+        setTimeout(() => window.location.reload(), 1400);
+      } else {
+        showToast(json.message || 'Lỗi khôi phục dữ liệu!', 'error');
+      }
+    } catch (err) {
+      showToast('Tệp sao lưu không hợp lệ hoặc lỗi định dạng JSON!', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function checkSystemStatus() {
+  try {
+    const res = await fetch('/api/status');
+    if (res.ok) {
+      const json = await res.json();
+      const statusEl = document.getElementById('topbarDbStatus');
+      if (statusEl) {
+        if (json.database === 'mongodb_atlas') {
+          statusEl.textContent = 'Cloud Atlas Online';
+        } else {
+          statusEl.textContent = 'Local JSON Online';
+        }
+      }
+    }
+  } catch (err) {}
 }

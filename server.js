@@ -42,8 +42,9 @@ const DOMAIN = process.env.DOMAIN || 'tnpcare.vn';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const MONGODB_URI = process.env.DATABASE_URL || process.env.MONGODB_URI;
 
-// Serve static files from the 'public' directory
+// Serve static files from the 'public' directory and fallback to root
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname)));
 
 // Parse JSON and URL-encoded bodies (cho phép tải ảnh Base64 lên tới 25MB)
 app.use(express.json({ limit: '25mb' }));
