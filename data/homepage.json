@@ -1,10 +1,422 @@
 {
   "layout": [
     {
-      "name": "Hero Banner Slider",
       "id": "hero-banner",
-      "order": 1,
-      "enabled": true
+      "name": "Banner Hero Showcase (Slide lớn)",
+      "desc": "Slide trình chiếu video/ảnh lớn nổi bật ở đầu trang chủ",
+      "enabled": true,
+      "order": 1
+    },
+    {
+      "id": "brands-strip",
+      "name": "Dải thương hiệu đồng hành",
+      "desc": "Thanh ngang hiển thị các thương hiệu đối tác tiêu biểu",
+      "enabled": true,
+      "order": 2
+    },
+    {
+      "id": "ve-hxy-hikers",
+      "name": "Giới thiệu 2 thương hiệu HXY & HIKERS",
+      "desc": "Khối chi tiết về định vị, thế mạnh công nghệ và TV tiêu biểu",
+      "enabled": true,
+      "order": 3
+    },
+    {
+      "id": "brand-compare",
+      "name": "Bảng so sánh 2 thương hiệu TV",
+      "desc": "Bảng so sánh trực quan các tiêu chí giữa TV HXY và HIKERS",
+      "enabled": true,
+      "order": 4
+    },
+    {
+      "id": "stats-bar",
+      "name": "Thanh thống kê năng lực TNP Care",
+      "desc": "4 chỉ số số liệu nổi bật về trạm, tỉnh thành, đối tác, linh kiện",
+      "enabled": true,
+      "order": 5
+    },
+    {
+      "id": "tram-bao-hanh-section",
+      "name": "Tra cứu mạng lưới 80-100 trạm bảo hành",
+      "desc": "Bảng tương tác tra cứu trạm kỹ thuật theo tỉnh/thành phố",
+      "enabled": true,
+      "order": 6
+    },
+    {
+      "id": "products-featured",
+      "name": "Sản phẩm TV nổi bật ghim trang chủ",
+      "desc": "Lưới các sản phẩm TV tiêu biểu được chọn lọc để ghim",
+      "enabled": true,
+      "order": 7
+    },
+    {
+      "id": "cta-banner",
+      "name": "Banner kêu gọi hành động & tư vấn (CTA)",
+      "desc": "Khối chân trang kêu gọi liên hệ và số hotline gọi ngay",
+      "enabled": true,
+      "order": 8
     }
-  ]
+  ],
+  "heroBanners": [
+    {
+      "id": "banner-1",
+      "title": "Smart TV HXY 100 Inch\nQLED Đỉnh Cao Rạp Phim Tại Gia",
+      "badge": "TV HXY VIỆT NAM · FLAGSHIP CINEMA",
+      "image": "./images/banner_hxy_100.jpg",
+      "desc": "Màn hình vô cực 100 inch chuẩn rạp chiếu phim IMAX thế hệ mới, tấm nền QLED 4K siêu sắc nét, 144Hz VRR cùng âm thanh vòm Dolby Atmos đa chiều bùng nổ.",
+      "tabBrand": "HXY",
+      "tabBrandColor": "blue",
+      "tabTitle": "TV HXY 100\" Cinema",
+      "tabDesc": "QLED 4K · 144Hz · Dolby Atmos",
+      "specs": [
+        {
+          "val": "100\"",
+          "lbl": "Màn Hình IMAX"
+        },
+        {
+          "val": "QLED 4K",
+          "lbl": "1 Tỷ Màu Siêu Thực"
+        },
+        {
+          "val": "144Hz",
+          "lbl": "VRR Chuyên Game"
+        },
+        {
+          "val": "Dolby Atmos",
+          "lbl": "Âm Thanh Đa Hướng"
+        }
+      ],
+      "primaryBtn": {
+        "text": "Khám phá Dòng HXY",
+        "link": "./san-pham.html?filter=hxy"
+      },
+      "secondaryBtn": {
+        "text": "Tư vấn & Báo giá",
+        "link": "./lien-he.html?product=TV+HXY+QLED+100+inch"
+      },
+      "order": 1,
+      "active": true
+    },
+    {
+      "id": "banner-2",
+      "title": "Smart TV HIKERS Mini LED\n512 Vùng Sáng Loa Siêu Trầm 60W",
+      "badge": "TV HIKERS VIỆT NAM · MINI LED ĐẲNG CẤP",
+      "image": "./images/banner_hikers_75.jpg",
+      "desc": "Công nghệ đèn nền Mini LED đỉnh cao với 512 vùng làm tối độc lập, độ sáng 1000 nit chói lọi, tương phản tuyệt đối và hệ thống loa rạp hát 2.1 bùng nổ mọi giác quan.",
+      "tabBrand": "HIKERS",
+      "tabBrandColor": "red",
+      "tabTitle": "HIKERS Mini LED 75\"",
+      "tabDesc": "512 Zones · 1000 Nit · Loa 60W",
+      "specs": [
+        {
+          "val": "512 Zones",
+          "lbl": "Mini LED Local Dimming"
+        },
+        {
+          "val": "1000 Nit",
+          "lbl": "Độ Sáng Chói Lọi"
+        },
+        {
+          "val": "Sub 60W",
+          "lbl": "Loa Rạp Hát 2.1"
+        },
+        {
+          "val": "Google TV",
+          "lbl": "Voice Remote Tiếng Việt"
+        }
+      ],
+      "primaryBtn": {
+        "text": "Khám phá Dòng HIKERS",
+        "link": "./san-pham.html?filter=hikers"
+      },
+      "secondaryBtn": {
+        "text": "Tư vấn & Báo giá",
+        "link": "./lien-he.html?product=TV+HIKERS+Mini+LED+S700"
+      },
+      "order": 2,
+      "active": true
+    },
+    {
+      "id": "banner-3",
+      "title": "Bảo Hành Chính Hãng 24 Tháng\nAn Tâm Tuyệt Đối Phủ Sóng Toàn Quốc",
+      "badge": "TRÚC NGUYÊN PHÁT · HỆ THỐNG TNP CARE",
+      "image": "./images/banner_tnp_care.jpg",
+      "desc": "Mạng lưới trạm bảo hành ủy quyền chính hãng trải dài 63 tỉnh thành. Đội ngũ kỹ sư tay nghề cao, hỗ trợ tận nơi nhanh chóng, linh kiện chính hãng chuẩn 100%.",
+      "tabBrand": "TNP CARE",
+      "tabBrandColor": "green",
+      "tabTitle": "Bảo Hành 24 Tháng",
+      "tabDesc": "63 Tỉnh Thành · Hỗ Trợ Tận Nơi",
+      "specs": [
+        {
+          "val": "24 Tháng",
+          "lbl": "Bảo Hành Chính Hãng"
+        },
+        {
+          "val": "63 Tỉnh",
+          "lbl": "Trạm Tiếp Nhận Toàn Quốc"
+        },
+        {
+          "val": "Tận Nơi",
+          "lbl": "Hỗ Trợ Kỹ Thuật Tại Nhà"
+        },
+        {
+          "val": "100%",
+          "lbl": "Linh Kiện Nhập Khẩu"
+        }
+      ],
+      "primaryBtn": {
+        "text": "Tra Cứu Trạm Bảo Hành",
+        "link": "./tram-bao-hanh.html"
+      },
+      "secondaryBtn": {
+        "text": "Chính Sách TNP Care",
+        "link": "./ho-tro.html"
+      },
+      "order": 3,
+      "active": true
+    }
+  ],
+  "brandsStrip": {
+    "label": "Thương hiệu đồng hành",
+    "brands": [
+      {
+        "name": "HXY TV",
+        "color": "blue",
+        "link": "./tv-hxy.html"
+      },
+      {
+        "name": "HIKERS TV",
+        "color": "red",
+        "link": "./tv-hikers.html"
+      },
+      {
+        "name": "Midea",
+        "color": "blue",
+        "link": ""
+      },
+      {
+        "name": "Panasonic",
+        "color": "blue",
+        "link": ""
+      },
+      {
+        "name": "Daikin",
+        "color": "blue",
+        "link": ""
+      },
+      {
+        "name": "Toshiba",
+        "color": "blue",
+        "link": ""
+      },
+      {
+        "name": "80-100 Trạm Toàn Quốc",
+        "color": "red",
+        "link": "./tram-bao-hanh.html"
+      }
+    ]
+  },
+  "brandDeepdive": {
+    "sectionHeader": {
+      "badge": "Thông tin chi tiết thương hiệu",
+      "title": "Tìm hiểu về <span class=\"blue\">TV HXY</span> &amp; <span class=\"red\">TV HIKERS</span>",
+      "desc": "Trúc Nguyên Phát (TNP Care) cung cấp giải pháp và dịch vụ bảo hành, bảo trì chính hãng cho hai thương hiệu TV HXY và HIKERS tại Việt Nam. Khám phá định vị, sứ mệnh và các thế mạnh công nghệ độc quyền của từng hãng để chọn mẫu TV ưng ý nhất."
+    },
+    "hxy": {
+      "badge": "THƯƠNG HIỆU TV HXY VIỆT NAM",
+      "heading": "HXY TV – Công Nghệ Đỉnh Cao, Giá Trị Đích Thực",
+      "lead": "HXY TV là thương hiệu TV thông minh đang bứt phá mạnh mẽ tại thị trường Việt Nam. HXY định hướng phổ cập công nghệ màn hình cao cấp QLED, OLED và 4K UHD với dải kích thước cực kỳ đa dạng từ 32 inch tới siêu phẩm 100 inch chuẩn rạp chiếu phim, tối ưu hóa chi phí cho mọi gia đình và dự án khách sạn.",
+      "image": "./images/brands/hxy_b650.jpg",
+      "caption": "Mẫu TV HXY OLED 65\" B650 Siêu Mỏng",
+      "features": [
+        {
+          "icon": "fab fa-google",
+          "title": "Google TV Bản Quyền",
+          "desc": "Hệ điều hành Google TV mượt mà, kho 10,000+ ứng dụng, điều khiển tìm kiếm giọng nói Tiếng Việt rảnh tay không cần remote."
+        },
+        {
+          "icon": "fas fa-tv",
+          "title": "QLED & OLED 4K Rực Rỡ",
+          "desc": "Tái tạo 100% dải màu DCI-P3, màu đen sâu thẳm, công nghệ HDR10+ mang đến hình ảnh sống động, độ tương phản ấn tượng."
+        },
+        {
+          "icon": "fas fa-expand-arrows-alt",
+          "title": "Đủ Kích Thước 32\" – 100\"",
+          "desc": "Dải kích thước rộng nhất: từ TV 32\" phòng ngủ, 43\"–65\" phòng khách đến màn hình khổng lồ 100 inch S950 đẳng cấp rạp phim."
+        },
+        {
+          "icon": "fas fa-shield-alt",
+          "title": "Bảo Hành 24T Tại Nhà",
+          "desc": "Bo mạch nhiệt đới hóa chống ẩm tối ưu cho khí hậu Việt Nam. TNP phân phối chính hãng kèm bảo hành 24 tháng tận nơi."
+        }
+      ],
+      "models": [
+        {
+          "id": "hxy-tv-s950",
+          "name": "HXY 100\" S950"
+        },
+        {
+          "id": "hxy-tv-q850",
+          "name": "HXY 75\" Q850"
+        },
+        {
+          "id": "hxy-tv-b650",
+          "name": "HXY 65\" B650"
+        },
+        {
+          "id": "hxy-tv-p750",
+          "name": "HXY 55\" P750"
+        },
+        {
+          "id": "hxy-tv-43g1",
+          "name": "HXY 43\" Google TV"
+        }
+      ],
+      "primaryBtn": {
+        "text": "Trang chi tiết TV HXY",
+        "link": "./tv-hxy.html"
+      },
+      "secondaryBtn": {
+        "text": "Xem toàn bộ TV HXY",
+        "link": "./san-pham.html?filter=hxy"
+      }
+    },
+    "hikers": {
+      "badge": "THƯƠNG HIỆU TV HIKERS VIỆT NAM",
+      "heading": "HIKERS TV – Đỉnh Cao Rạp Phim & Tốc Độ Gaming",
+      "lead": "HIKERS TV là thương hiệu TV tiên phong định hình trải nghiệm rạp chiếu phim gia đình và thể thao điện tử tốc độ cao. HIKERS tạo dấu ấn vượt trội với công nghệ đèn nền Mini LED 512 vùng độc lập, độ sáng 1000 nit, tần số quét 144Hz chuyên game và dàn loa soundbar 60W chuẩn Dolby Atmos.",
+      "image": "./images/brands/hikers_full_tv.jpg",
+      "caption": "Mẫu TV HIKERS Flagship Viền Vô Cực",
+      "features": [
+        {
+          "icon": "fas fa-layer-group",
+          "title": "Mini LED 512 Vùng Sáng",
+          "desc": "Công nghệ Local Dimming 512 vùng độc lập, độ sáng cực đại 1000 nit, kiểm soát bóng tối sâu thẳm, triệt tiêu hoàn toàn quầng sáng."
+        },
+        {
+          "icon": "fas fa-gamepad",
+          "title": "144Hz VRR & Cổng HDMI 2.1",
+          "desc": "Tần số quét cao 144Hz, chống giật xé hình VRR FreeSync Premium, phản hồi 1ms siêu tốc, sẵn sàng cho PS5 và các giải đấu thể thao."
+        },
+        {
+          "icon": "fas fa-volume-up",
+          "title": "Loa Vòm 60W Dolby Atmos",
+          "desc": "Tích hợp hệ thống loa Subwoofer siêu trầm 2.1 công suất 60W, tạo hiệu ứng âm thanh 3D vòm bùng nổ chân thực như ngồi tại rạp IMAX."
+        },
+        {
+          "icon": "fas fa-award",
+          "title": "Viền Kim Loại Nguyên Khối",
+          "desc": "Khung vỏ hợp kim Unibody cao cấp, viền mỏng vô cực thanh lịch, tôn vinh vẻ đẹp kiến trúc sang trọng cho phòng khách và căn hộ cao cấp."
+        }
+      ],
+      "models": [
+        {
+          "id": "hikers-dong-s700",
+          "name": "HIKERS Mini LED HK-S700 75\""
+        },
+        {
+          "id": "hikers-dong-m600",
+          "name": "HIKERS QLED HK-M600 65\""
+        },
+        {
+          "id": "hikers-hk65a500ua",
+          "name": "HIKERS HK65A500UA 65\""
+        },
+        {
+          "id": "hikers-hk55a500ua",
+          "name": "HIKERS 55\" 4K Google TV"
+        }
+      ],
+      "primaryBtn": {
+        "text": "Trang chi tiết TV HIKERS",
+        "link": "./tv-hikers.html"
+      },
+      "secondaryBtn": {
+        "text": "Xem toàn bộ TV HIKERS",
+        "link": "./san-pham.html?filter=hikers"
+      }
+    }
+  },
+  "comparisonTable": {
+    "title": "Nên Chọn TV HXY Hay TV HIKERS?",
+    "desc": "Bảng tóm tắt nhanh từ Trúc Nguyên Phát – TNP giúp quý khách hàng dễ dàng đưa ra quyết định phù hợp nhất với nhu cầu sử dụng:",
+    "rows": [
+      {
+        "criteria": "Điểm mạnh nổi bật nhất",
+        "hxy": "Đa dạng kích cỡ (32\" – 100\"), tối ưu chi phí, Google TV chính chủ mượt mà",
+        "hikers": "Mini LED 512 vùng, độ sáng 1000 nit, loa Sub 60W, 144Hz Gaming Pro"
+      },
+      {
+        "criteria": "Công nghệ hiển thị",
+        "hxy": "OLED, QLED, 4K UHD Ultra Sharp, HDR10+",
+        "hikers": "Mini LED Local Dimming, QLED 4K, Dolby Vision IQ"
+      },
+      {
+        "criteria": "Tần số quét",
+        "hxy": "60Hz chuẩn gia đình – 144Hz VRR trên dòng Flagship",
+        "hikers": "120Hz – 144Hz Pro chuyên Game & Thể thao"
+      },
+      {
+        "criteria": "Hệ thống âm thanh",
+        "hxy": "Dolby Audio Stereo 20W – 30W âm thanh trong trẻo",
+        "hikers": "Loa Subwoofer 60W tích hợp, Dolby Atmos 2.1 uy lực"
+      },
+      {
+        "criteria": "Phù hợp nhất cho",
+        "hxy": "Gia đình, phòng ngủ, phòng khách, khách sạn, dự án cần tối ưu ngân sách",
+        "hikers": "Tín đồ mê phim rạp tại gia, thể thao bóng đá, game thủ PS5/PC"
+      },
+      {
+        "criteria": "Chính sách TNP",
+        "hxy": "100% Phân phối chính hãng · Bảo hành 24 tháng tận nhà · Giao hàng và lắp đặt tận nơi",
+        "hikers": "100% Phân phối chính hãng · Bảo hành 24 tháng tận nhà · Giao hàng và lắp đặt tận nơi"
+      }
+    ],
+    "policyText": "100% Phân phối chính hãng · Bảo hành 24 tháng tận nhà · Giao hàng và lắp đặt tận nơi"
+  },
+  "stats": [
+    {
+      "number": "80-100",
+      "label": "Trạm bảo hành toàn quốc"
+    },
+    {
+      "number": "63",
+      "label": "Tỉnh thành bao phủ"
+    },
+    {
+      "number": "15+",
+      "label": "Hãng đối tác uy tín"
+    },
+    {
+      "number": "100%",
+      "label": "Linh kiện chuẩn hãng"
+    }
+  ],
+  "networkSection": {
+    "badge": "MẠNG LƯỚI TOÀN QUỐC",
+    "title": "Hệ Thống 80 – 100 Trạm Bảo Hành Trúc Nguyên Phát",
+    "desc": "Bấm chọn Tỉnh / Thành phố bạn cần hỗ trợ (như Hà Nội, TP.HCM, Bắc Ninh, Hải Phòng...) hoặc gõ tên vào ô tìm kiếm để hiển thị ngay các trạm tiếp nhận kỹ thuật:",
+    "hotline": "028 22 422 822",
+    "primaryBtnText": "Xem Trang Chi Tiết 80 – 100 Trạm & Quy Trình Dịch Vụ",
+    "primaryBtnLink": "./tram-bao-hanh.html"
+  },
+  "featuredProducts": {
+    "badge": "Sản phẩm nổi bật",
+    "title": "TV được quan tâm nhiều nhất",
+    "desc": "Chọn lọc các mẫu TV nổi bật từ HXY và HIKERS, phù hợp mọi không gian và ngân sách.",
+    "productIds": [
+      "hxy-tv-s950",
+      "hikers-dong-s700",
+      "hxy-tv-b650",
+      "hikers-dong-m600"
+    ]
+  },
+  "ctaBanner": {
+    "badge": "Tư vấn miễn phí",
+    "title": "Tìm chiếc TV phù hợp\ncho không gian của bạn?",
+    "desc": "Để TNP tư vấn kích thước và dòng TV phù hợp với nhu cầu, diện tích phòng và ngân sách của bạn. Hoàn toàn miễn phí.",
+    "primaryBtnText": "Liên hệ TNP ngay",
+    "primaryBtnLink": "./lien-he.html",
+    "phone": "028 22 422 822"
+  }
 }

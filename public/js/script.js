@@ -951,10 +951,13 @@ const TNP = {
       sorted.forEach(item => {
         const el = container.querySelector(`[data-section-id="${item.id}"]`) || document.getElementById(item.id);
         if (el) {
-          if (item.enabled === false) {
+          const isEnabled = item.enabled !== false && item.enabled !== 'false';
+          if (!isEnabled) {
             el.style.display = 'none';
+            el.setAttribute('aria-hidden', 'true');
           } else {
             el.style.display = '';
+            el.removeAttribute('aria-hidden');
             container.appendChild(el);
           }
         }
@@ -962,61 +965,97 @@ const TNP = {
     }
 
     // ── 2. HERO BANNERS SLIDER ──
-    if (Array.isArray(config.heroBanners) && config.heroBanners.length > 0) {
-      const banner = document.getElementById('hero-banner');
-      if (banner) {
+    const banner = document.getElementById('hero-banner');
+    if (banner) {
+      const heroSecLayout = Array.isArray(config.layout) ? config.layout.find(s => s.id === 'hero-banner') : null;
+      const isHeroLayoutEnabled = !heroSecLayout || (heroSecLayout.enabled !== false && heroSecLayout.enabled !== 'false');
+
+      const allBanners = Array.isArray(config.heroBanners) ? config.heroBanners : [];
+      const activeBanners = allBanners.filter(b => b.active !== false && b.active !== 'false');
+
+      if (!isHeroLayoutEnabled || activeBanners.length === 0) {
+        banner.style.display = 'none';
+        banner.setAttribute('aria-hidden', 'true');
+      } else {
+        banner.style.display = '';
+        banner.removeAttribute('aria-hidden');
+
         const slidesTrack = banner.querySelector('.hero-slides');
         const tabBtns = banner.querySelector('.hero-tab-btns');
+
         if (slidesTrack) {
-          slidesTrack.innerHTML = config.heroBanners.map((b, idx) => `
-            <div class="hero-slide ${idx === 0 ? 'active' : ''} cinematic-slide" data-slide="${idx}" aria-hidden="${idx !== 0}">
-              <div class="cinematic-bg" style="background-image: url('${b.bgImage || './images/banner_hxy_100.jpg'}');">
-                <div class="cinematic-overlay ${b.badgeClass && (b.badgeClass.includes('care') || b.badgeClass.includes('green')) ? 'care-overlay' : ''}"></div>
+          slidesTrack.innerHTML = activeBanners.map((b, idx) => {
+            const bgImg = b.image || b.bgImage || './images/banner_hxy_100.jpg';
+            const badge = b.badge || b.badgeText || 'TV HXY VIỆT NAM';
+            const titleFormatted = (b.title || '').replace(/\n/g, '<br>');
+            const desc = b.desc || '';
+            const specs = Array.isArray(b.specs) && b.specs.length > 0 ? b.specs : [
+              { val: '4K QLED', lbl: 'Độ Phân Giải' },
+              { val: '144Hz', lbl: 'Tần Số Quét' },
+              { val: 'Dolby Atmos', lbl: 'Âm Thanh Vòm' }
+            ];
+            const btn1Text = (b.primaryBtn && b.primaryBtn.text) || (b.btn1 && b.btn1.text) || 'Khám phá sản phẩm';
+            const btn1Link = (b.primaryBtn && b.primaryBtn.link) || (b.btn1 && b.btn1.link) || (b.link || '#');
+            const btn2Text = (b.secondaryBtn && b.secondaryBtn.text) || (b.btn2 && b.btn2.text) || 'Tư vấn & Báo giá';
+            const btn2Link = (b.secondaryBtn && b.secondaryBtn.link) || (b.btn2 && b.btn2.link) || './lien-he.html';
+
+            return `
+              <div class="hero-slide ${idx === 0 ? 'active' : ''} cinematic-slide" data-slide="${idx}" aria-hidden="${idx !== 0}">
+                <div class="cinematic-bg" style="background-image: url('${bgImg}');">
+                  <div class="cinematic-overlay ${b.badgeClass && (b.badgeClass.includes('care') || b.badgeClass.includes('green')) ? 'care-overlay' : ''}"></div>
+                </div>
+                <div class="container cinematic-content-wrap">
+                  <div class="cinematic-badge ${b.badgeClass || ''}">
+                    <span class="badge-dot ${b.pulseClass || 'pulse-blue'}"></span>
+                    <span class="badge-text">${badge}</span>
+                  </div>
+                  <h${idx === 0 ? '1' : '2'} class="cinematic-title">
+                    ${titleFormatted}
+                  </h${idx === 0 ? '1' : '2'}>
+                  <p class="cinematic-desc">
+                    ${desc}
+                  </p>
+                  <div class="cinematic-specs-bar">
+                    ${specs.map((s, si) => `
+                      ${si > 0 ? '<div class="spec-divider"></div>' : ''}
+                      <div class="spec-item">
+                        <span class="spec-val">${s.val || ''}</span>
+                        <span class="spec-lbl">${s.lbl || ''}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                  <div class="cinematic-actions">
+                    <a href="${btn1Link}" class="btn btn-primary btn-xl btn-glow">
+                      <i class="fas fa-play-circle"></i> ${btn1Text}
+                    </a>
+                    <a href="${btn2Link}" class="btn btn-outline btn-xl btn-glass">
+                      <i class="fas fa-phone-alt"></i> ${btn2Text}
+                    </a>
+                  </div>
+                </div>
               </div>
-              <div class="container cinematic-content-wrap">
-                <div class="cinematic-badge ${b.badgeClass || ''}">
-                  <span class="badge-dot ${b.pulseClass || 'pulse-blue'}"></span>
-                  <span class="badge-text">${b.badgeText || ''}</span>
-                </div>
-                <h${idx === 0 ? '1' : '2'} class="cinematic-title">
-                  ${b.title || ''}
-                </h${idx === 0 ? '1' : '2'}>
-                <p class="cinematic-desc">
-                  ${b.desc || ''}
-                </p>
-                <div class="cinematic-specs-bar">
-                  ${(b.specs || []).map((s, si) => `
-                    ${si > 0 ? '<div class="spec-divider"></div>' : ''}
-                    <div class="spec-item">
-                      <span class="spec-val">${s.val || ''}</span>
-                      <span class="spec-lbl">${s.lbl || ''}</span>
-                    </div>
-                  `).join('')}
-                </div>
-                <div class="cinematic-actions">
-                  ${b.btn1 ? `<a href="${b.btn1.link || '#'}" class="${b.btn1.className || 'btn btn-primary btn-xl btn-glow'}">
-                    <i class="${b.btn1.icon || 'fas fa-tv'}"></i> ${b.btn1.text || 'Khám phá'}
-                  </a>` : ''}
-                  ${b.btn2 ? `<a href="${b.btn2.link || '#'}" class="${b.btn2.className || 'btn btn-outline btn-xl btn-glass'}">
-                    <i class="${b.btn2.icon || 'fas fa-phone-alt'}"></i> ${b.btn2.text || 'Tư vấn'}
-                  </a>` : ''}
-                </div>
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         }
 
         if (tabBtns) {
-          tabBtns.innerHTML = config.heroBanners.map((b, idx) => `
-            <button class="hero-tab-btn ${idx === 0 ? 'active' : ''}" data-slide-target="${idx}">
-              <span class="tab-brand ${b.tabBrandColor || 'blue'}">${b.tabBrand || ''}</span>
-              <div class="tab-text">
-                <strong>${b.tabTitle || ''}</strong>
-                <small>${b.tabSubtitle || ''}</small>
-              </div>
-              <div class="tab-progress"><div class="tab-progress-bar"></div></div>
-            </button>
-          `).join('');
+          tabBtns.innerHTML = activeBanners.map((b, idx) => {
+            const brand = b.tabBrand || (b.badge && b.badge.includes('HIKERS') ? 'HIKERS' : b.badge && b.badge.includes('TNP') ? 'TNP CARE' : 'HXY');
+            const color = b.tabBrandColor || (brand === 'HIKERS' ? 'red' : brand === 'TNP CARE' ? 'green' : 'blue');
+            const title = b.tabTitle || (b.title ? b.title.split('\n')[0] : `Slide #${idx + 1}`);
+            const subtitle = b.tabDesc || b.tabSubtitle || (b.desc ? b.desc.substring(0, 30) + '...' : 'Trúc Nguyên Phát');
+
+            return `
+              <button class="hero-tab-btn ${idx === 0 ? 'active' : ''}" data-slide-target="${idx}">
+                <span class="tab-brand ${color}">${brand}</span>
+                <div class="tab-text">
+                  <strong>${title}</strong>
+                  <small>${subtitle}</small>
+                </div>
+                <div class="tab-progress"><div class="tab-progress-bar"></div></div>
+              </button>
+            `;
+          }).join('');
         }
 
         // Khởi tạo lại tương tác slider

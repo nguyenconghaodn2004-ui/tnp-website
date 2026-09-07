@@ -788,18 +788,23 @@ function openAddBannerModal() {
 }
 
 function openEditBannerModal(id) {
-  const b = bannersList.find(item => item.id === id);
-  if (!b) return;
+  const b = (bannersList && bannersList.find(item => item.id === id)) ||
+            (typeof homepageConfig !== 'undefined' && homepageConfig && homepageConfig.heroBanners && homepageConfig.heroBanners.find(item => item.id === id));
+  if (!b) {
+    alert('Không tìm thấy banner để chỉnh sửa.');
+    return;
+  }
 
   document.getElementById('bannerModalTitle').textContent = 'Chỉnh sửa Banner Hero';
   document.getElementById('bannerId').value = b.id;
   document.getElementById('bannerTitle').value = b.title || '';
   document.getElementById('bannerBadge').value = b.badge || '';
   document.getElementById('bannerOrder').value = b.order || 1;
-  document.getElementById('bannerImage').value = b.image || '';
+  document.getElementById('bannerImage').value = b.image || b.bgImage || '';
   document.getElementById('bannerDesc').value = b.desc || '';
-  document.getElementById('bannerLinkPrimary').value = b.link || '';
-  document.getElementById('bannerActive').value = b.active !== false ? 'true' : 'false';
+  document.getElementById('bannerLinkPrimary').value = b.link || (b.primaryBtn ? b.primaryBtn.link : '');
+  const isCurrentlyActive = b.active !== false && b.active !== 'false';
+  document.getElementById('bannerActive').value = isCurrentlyActive ? 'true' : 'false';
 
   document.getElementById('bannerModal').classList.add('open');
 }
@@ -825,12 +830,45 @@ function saveBannerForm(e) {
   }
 
   const existingIdx = bannersList.findIndex(b => b.id === id);
-  const bannerObj = { id, title, badge, order, image, desc, link, active };
-
+  let bannerObj;
   if (existingIdx >= 0) {
+    bannerObj = {
+      ...bannersList[existingIdx],
+      id,
+      title,
+      badge,
+      order,
+      image,
+      bgImage: image,
+      desc,
+      link,
+      active
+    };
     bannersList[existingIdx] = bannerObj;
   } else {
+    bannerObj = {
+      id,
+      title,
+      badge,
+      order,
+      image,
+      bgImage: image,
+      desc,
+      link,
+      active
+    };
     bannersList.push(bannerObj);
+  }
+
+  // Đồng bộ sang homepageConfig.heroBanners
+  if (typeof homepageConfig !== 'undefined' && homepageConfig) {
+    if (!homepageConfig.heroBanners) homepageConfig.heroBanners = [];
+    const hpIdx = homepageConfig.heroBanners.findIndex(b => b.id === id);
+    if (hpIdx >= 0) {
+      homepageConfig.heroBanners[hpIdx] = { ...homepageConfig.heroBanners[hpIdx], ...bannerObj };
+    } else {
+      homepageConfig.heroBanners.push(bannerObj);
+    }
   }
 
   closeBannerModal();
@@ -840,6 +878,9 @@ function saveBannerForm(e) {
 function deleteBanner(id) {
   if (confirm('Bạn có chắc chắn muốn xóa Banner này?')) {
     bannersList = bannersList.filter(b => b.id !== id);
+    if (typeof homepageConfig !== 'undefined' && homepageConfig && homepageConfig.heroBanners) {
+      homepageConfig.heroBanners = homepageConfig.heroBanners.filter(b => b.id !== id);
+    }
     saveBanners();
   }
 }
@@ -1442,10 +1483,29 @@ async function fetchHomepageFromServer() {
   try {
     const res = await fetch('/api/homepage');
     const json = await res.json();
-    if (json.success && json.data && json.data.layout) {
-      homepageConfig = json.data;
+    if (json.success && json.data) {
+      const serverData = json.data;
+      const defaultData = getDefaultHomepageConfig();
+
+      // Đảm bảo không bị thiếu các khối bố cục chuẩn
+      if (!serverData.layout || serverData.layout.length < defaultData.layout.length) {
+        const existingIds = (serverData.layout || []).map(s => s.id);
+        const missing = defaultData.layout.filter(s => !existingIds.includes(s.id));
+        serverData.layout = [...(serverData.layout || []), ...missing];
+        serverData.layout.forEach((s, idx) => { s.order = idx + 1; });
+      }
+
+      homepageConfig = serverData;
+
+      // Đồng bộ bannersList từ heroBanners
+      if (homepageConfig.heroBanners && homepageConfig.heroBanners.length > 0) {
+        bannersList = [...homepageConfig.heroBanners];
+        localStorage.setItem(STORAGE_BANNERS_KEY, JSON.stringify(bannersList));
+      }
+
       localStorage.setItem(STORAGE_HOMEPAGE_KEY, JSON.stringify(homepageConfig));
       renderHomepageCMS();
+      renderBannersTable();
     }
   } catch (e) {}
 }
@@ -1585,6 +1645,7 @@ function saveLayoutSectionForm(e) {
 
   closeLayoutModal();
   renderLayoutManager();
+  saveHomepageConfig();
 }
 
 function deleteLayoutSection(index) {
@@ -1595,6 +1656,7 @@ function deleteLayoutSection(index) {
     homepageConfig.layout.forEach((s, idx) => { s.order = idx + 1; });
     renderLayoutManager();
     showToast(`Đã xóa khối "${sec.name}"`, 'info');
+    saveHomepageConfig();
   }
 }
 
@@ -1604,6 +1666,7 @@ function resetLayoutDefault() {
     homepageConfig.layout = def.layout;
     renderLayoutManager();
     showToast('Đã khôi phục bố cục trang chủ về mặc định.', 'success');
+    saveHomepageConfig();
   }
 }
 
@@ -1621,7 +1684,8 @@ function moveLayoutSection(index, direction) {
   });
 
   renderLayoutManager();
-  showToast('Đã đổi thứ tự khối. Nhấn "Lưu toàn bộ thay đổi" để áp dụng!', 'info');
+  showToast('Đã đổi thứ tự khối và lưu áp dụng!', 'success');
+  saveHomepageConfig();
 }
 
 function toggleLayoutSection(index, isChecked) {
@@ -1630,6 +1694,8 @@ function toggleLayoutSection(index, isChecked) {
   renderLayoutManager();
   const secName = homepageConfig.layout[index].name;
   showToast((isChecked ? 'Đã BẬT: ' : 'Đã ẨN: ') + secName, 'info');
+  // Tự động lưu ngay lập tức để đồng bộ realtime với trang chủ
+  saveHomepageConfig();
 }
 
 // ── 2. Hero Banner Slider CMS ──
