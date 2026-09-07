@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 48" width="144" height="48">
+  <defs>
+    <linearGradient id="hikersTextGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="hikersRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&amp;family=Inter:wght@800&amp;display=swap');
+    .hikers-brand-text {
+      font-family: 'Montserrat', 'Inter', -apple-system, sans-serif;
+      font-weight: 900;
+      font-size: 26px;
+      letter-spacing: 2.2px;
+      fill: url(#hikersTextGrad);
+    }
+    .hikers-sub-text {
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-weight: 800;
+      font-size: 6.5px;
+      letter-spacing: 3.2px;
+      fill: #dc2626;
+    }
+  </style>
+  <g transform="translate(4, 2)">
+    <text x="68" y="27" text-anchor="middle" class="hikers-brand-text">HIKERS</text>
+    <circle cx="126" cy="9" r="2.5" fill="url(#hikersRed)"/>
+    <text x="68" y="38" text-anchor="middle" class="hikers-sub-text">SMART TV</text>
+  </g>
+</svg>

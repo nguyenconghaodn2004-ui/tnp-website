@@ -416,19 +416,41 @@ input, select, textarea {
 .site-logo {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-shrink: 0;
   text-decoration: none;
 }
 .logo-img {
-  height: 54px;
+  height: 50px;
   width: auto;
 }
 .logo-tnp-img {
-  height: 54px;
+  height: 50px;
   width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,.15));
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.12));
+  transition: transform var(--t-fast);
+}
+.logo-brands-divider {
+  width: 1.5px;
+  height: 28px;
+  background: #cbd5e1;
+  border-radius: 1px;
+}
+.logo-partners-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-partner-img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  transition: transform var(--t-fast);
+}
+.site-logo:hover .logo-tnp-img,
+.site-logo:hover .logo-partner-img {
+  transform: translateY(-1px);
 }
 .logo-text-group {
   display: flex;
@@ -4814,22 +4836,31 @@ select.form-control { cursor: pointer; }
     height: 100%;
   }
   .site-logo {
-    gap: 10px;
+    gap: 8px;
     max-width: calc(100% - 92px);
     overflow: visible;
   }
   .logo-tnp-img {
-    height: 46px; /* Tăng từ 36px lên 46px để logo to rõ ràng */
+    height: 38px;
     filter: drop-shadow(0 2px 5px rgba(0,0,0,.15));
   }
+  .logo-brands-divider {
+    height: 22px;
+  }
+  .logo-partners-group {
+    gap: 8px;
+  }
+  .logo-partner-img {
+    height: 32px;
+  }
   .logo-name {
-    font-size: 15.5px; /* Tăng từ 13px lên 15.5px */
+    font-size: 15.5px;
     letter-spacing: -0.01em;
     font-weight: 900;
     line-height: 1.15;
   }
   .logo-tagline {
-    font-size: 8.5px; /* Tăng từ 7.5px lên 8.5px */
+    font-size: 8.5px;
     letter-spacing: .02em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6005,13 +6036,22 @@ select.form-control { cursor: pointer; }
 /* ── 400px ── */
 @media (max-width: 400px) {
   .site-logo {
-    gap: 8px;
+    gap: 6px;
   }
   .logo-tnp-img {
-    height: 40px; /* Tăng từ 30px lên 40px */
+    height: 32px;
+  }
+  .logo-brands-divider {
+    height: 18px;
+  }
+  .logo-partners-group {
+    gap: 5px;
+  }
+  .logo-partner-img {
+    height: 26px;
   }
   .logo-name {
-    font-size: 14px; /* Tăng từ 11px lên 14px */
+    font-size: 14px;
   }
   .logo-tagline {
     display: none;

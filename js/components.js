@@ -159,13 +159,12 @@ function renderHeader() {
 <!-- HEADER -->
 <header class="site-header" id="site-header" role="banner">
   <div class="container header-inner">
-    <a href="./index.html" class="site-logo" aria-label="Trúc Nguyên Phát – Trang chủ">
+    <a href="./index.html" class="site-logo" aria-label="TNP Care – HIKERS – HXY TV">
       <img src="./images/logo_tnp_care.png" alt="TNP Care Logo" class="logo-tnp-img">
-      <div class="logo-text-group">
-        <div class="logo-name">
-          <span class="logo-tn">TRÚC NGUYÊN</span> <span class="logo-p">PHÁT</span>
-        </div>
-        <div class="logo-tagline">Giải Pháp &amp; Dịch Vụ Bảo Hành Toàn Quốc</div>
+      <div class="logo-brands-divider" aria-hidden="true"></div>
+      <div class="logo-partners-group">
+        <img src="./images/logo_hikers.svg" alt="HIKERS Smart TV" class="logo-partner-img logo-hikers-img">
+        <img src="./images/logo_hxy.svg" alt="HXY Smart TV" class="logo-partner-img logo-hxy-img">
       </div>
     </a>
     <nav class="main-nav" role="navigation" aria-label="Menu chính">
@@ -255,7 +254,6 @@ function renderFooter() {
         </p>
         <div class="footer-company-meta">
           <div><i class="fas fa-id-card"></i> Mã số thuế: <strong>0318287851</strong></div>
-          <div><i class="fas fa-user-tie"></i> Đại diện pháp luật: <strong>Nguyễn Văn Hùng</strong></div>
           <div><i class="fas fa-building"></i> Trụ sở: 61/67 Võ Văn Kiệt, KP.3, P. An Lạc, Q. Tân Bình, TP.HCM</div>
           <div><i class="fas fa-map-marked-alt"></i> Văn phòng: Số 2 Hoàng Ngân, Phường 16, Quận 8, TP.HCM</div>
           <div><i class="fas fa-phone-alt"></i> Hotline: <a href="tel:02822422822" style="color:#60a5fa;font-weight:700;">028 22 422 822</a></div>

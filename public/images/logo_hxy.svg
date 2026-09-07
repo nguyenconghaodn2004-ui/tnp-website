@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 48" width="128" height="48">
+  <defs>
+    <linearGradient id="hxyBlueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="colorDot" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="40%" stop-color="#10b981"/>
+      <stop offset="75%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+  </defs>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&amp;family=Outfit:wght@600&amp;display=swap');
+    .hxy-brand-text {
+      font-family: 'Montserrat', 'Outfit', 'Inter', -apple-system, sans-serif;
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: 1.8px;
+      fill: url(#hxyBlueGrad);
+    }
+    .hxy-sub-text {
+      font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+      font-weight: 600;
+      font-size: 7.5px;
+      letter-spacing: 1.8px;
+      fill: #475569;
+    }
+  </style>
+  <g transform="translate(4, 2)">
+    <text x="60" y="27" text-anchor="middle" class="hxy-brand-text">HXY</text>
+    <circle cx="98" cy="9" r="2.5" fill="url(#colorDot)"/>
+    <text x="60" y="38" text-anchor="middle" class="hxy-sub-text">Colorful Life</text>
+  </g>
+</svg>
