@@ -1376,6 +1376,245 @@ async function handleDirectImageUpload(event, inputTargetId, previewTargetId) {
 }
 
 // ══════════════════════════════════════════════
+//  TRAFFIC ANALYTICS & STATS ENGINE
+// ══════════════════════════════════════════════
+let analyticsData = null;
+let trafficChartInstance = null;
+let currentAnalyticsDays = 7;
+
+async function loadAnalyticsData() {
+  const refreshIcon = document.getElementById('analyticsRefreshIcon');
+  if (refreshIcon) refreshIcon.classList.add('fa-spin');
+
+  try {
+    const res = await adminFetch(`/api/admin/analytics?_t=${Date.now()}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data) {
+        analyticsData = json.data;
+        renderAnalyticsUI(analyticsData);
+      }
+    }
+  } catch (err) {
+    console.warn('Không thể tải analytics từ server:', err);
+  } finally {
+    if (refreshIcon) {
+      setTimeout(() => refreshIcon.classList.remove('fa-spin'), 500);
+    }
+  }
+}
+
+function renderAnalyticsUI(data) {
+  if (!data) return;
+
+  // 1. Cập nhật 4 thẻ thống kê
+  const today = data.today || { views: 0, uniques: 0, diffPercent: 0 };
+  const statTodayViews = document.getElementById('statTodayViews');
+  const statTodayUniques = document.getElementById('statTodayUniques');
+  const statTodayTrend = document.getElementById('statTodayTrend');
+  const stat7DaysViews = document.getElementById('stat7DaysViews');
+  const statMonthViews = document.getElementById('statMonthViews');
+  const statTotalViews = document.getElementById('statTotalViews');
+
+  if (statTodayViews) statTodayViews.textContent = (today.views || 0).toLocaleString('vi-VN');
+  if (statTodayUniques) statTodayUniques.textContent = (today.uniques || 0).toLocaleString('vi-VN');
+  if (statTodayTrend) {
+    const isUp = (today.diffPercent || 0) >= 0;
+    statTodayTrend.className = `stat-trend ${isUp ? 'trend-up' : 'trend-down'}`;
+    statTodayTrend.innerHTML = `<i class="fas fa-arrow-${isUp ? 'up' : 'down'}"></i> ${Math.abs(today.diffPercent || 0)}%`;
+  }
+  if (stat7DaysViews) stat7DaysViews.textContent = (data.last7Days || 0).toLocaleString('vi-VN');
+  if (statMonthViews) statMonthViews.textContent = (data.thisMonth || 0).toLocaleString('vi-VN');
+  if (statTotalViews) statTotalViews.textContent = (data.totalVisits || 0).toLocaleString('vi-VN');
+
+  // 2. Vẽ biểu đồ biến động
+  renderTrafficChart(currentAnalyticsDays === 7 ? data.history7Days : data.history30Days);
+
+  // 3. Phân bổ thiết bị
+  const devices = data.devices || { desktop: 0, mobile: 0, tablet: 0, desktopPercent: 0, mobilePercent: 0, tabletPercent: 0 };
+  const mobPercent = devices.mobilePercent || 0;
+  const dskPercent = devices.desktopPercent || 0;
+  const tabPercent = devices.tabletPercent || 0;
+
+  const mobBar = document.getElementById('deviceMobileBar');
+  const dskBar = document.getElementById('deviceDesktopBar');
+  const tabBar = document.getElementById('deviceTabletBar');
+
+  if (mobBar) mobBar.style.width = `${mobPercent}%`;
+  if (dskBar) dskBar.style.width = `${dskPercent}%`;
+  if (tabBar) tabBar.style.width = `${tabPercent}%`;
+
+  const mobPercentEl = document.getElementById('deviceMobilePercent');
+  const dskPercentEl = document.getElementById('deviceDesktopPercent');
+  const tabPercentEl = document.getElementById('deviceTabletPercent');
+
+  if (mobPercentEl) mobPercentEl.textContent = `${mobPercent}%`;
+  if (dskPercentEl) dskPercentEl.textContent = `${dskPercent}%`;
+  if (tabPercentEl) tabPercentEl.textContent = `${tabPercent}%`;
+
+  const mobCount = document.getElementById('deviceMobileCount');
+  const dskCount = document.getElementById('deviceDesktopCount');
+  const tabCount = document.getElementById('deviceTabletCount');
+
+  if (mobCount) mobCount.textContent = `${(devices.mobile || 0).toLocaleString('vi-VN')} lượt xem`;
+  if (dskCount) dskCount.textContent = `${(devices.desktop || 0).toLocaleString('vi-VN')} lượt xem`;
+  if (tabCount) tabCount.textContent = `${(devices.tablet || 0).toLocaleString('vi-VN')} lượt xem`;
+
+  // 4. Top trang xem nhiều nhất
+  renderTopPagesTable(data.topPages || []);
+}
+
+function renderTrafficChart(history) {
+  const canvas = document.getElementById('trafficChart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const labels = (history || []).map(h => h.label || h.date);
+  const viewsData = (history || []).map(h => h.views || 0);
+  const uniquesData = (history || []).map(h => h.uniques || 0);
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+
+  if (trafficChartInstance) {
+    trafficChartInstance.destroy();
+  }
+
+  const ctx = canvas.getContext('2d');
+  
+  const gradientViews = ctx.createLinearGradient(0, 0, 0, 240);
+  gradientViews.addColorStop(0, 'rgba(37, 99, 235, 0.35)');
+  gradientViews.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
+
+  trafficChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Lượt xem trang (Pageviews)',
+          data: viewsData,
+          borderColor: '#2563eb',
+          backgroundColor: gradientViews,
+          borderWidth: 2.5,
+          tension: 0.35,
+          fill: true,
+          pointBackgroundColor: '#2563eb',
+          pointRadius: 4,
+          pointHoverRadius: 6
+        },
+        {
+          label: 'Khách duy nhất (Unique Visitors)',
+          data: uniquesData,
+          borderColor: '#10b981',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [4, 4],
+          tension: 0.35,
+          fill: false,
+          pointBackgroundColor: '#10b981',
+          pointRadius: 3,
+          pointHoverRadius: 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: textColor,
+            font: { size: 12, family: 'Inter' },
+            boxWidth: 12,
+            usePointStyle: true
+          }
+        },
+        tooltip: {
+          backgroundColor: isDark ? '#1e293b' : '#0f172a',
+          titleColor: '#fff',
+          bodyColor: '#cbd5e1',
+          borderColor: isDark ? '#334155' : '#e2e8f0',
+          borderWidth: 1,
+          padding: 10,
+          boxPadding: 4,
+          usePointStyle: true
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { size: 11, family: 'Inter' } }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { size: 11, family: 'Inter' }, precision: 0 }
+        }
+      }
+    }
+  });
+}
+
+function switchAnalyticsTimeframe(days) {
+  currentAnalyticsDays = days;
+  const btn7 = document.getElementById('btnTf7');
+  const btn30 = document.getElementById('btnTf30');
+  if (btn7) btn7.classList.toggle('active', days === 7);
+  if (btn30) btn30.classList.toggle('active', days === 30);
+
+  if (analyticsData) {
+    renderTrafficChart(days === 7 ? analyticsData.history7Days : analyticsData.history30Days);
+  }
+}
+
+function renderTopPagesTable(pages) {
+  const tbody = document.getElementById('topPagesTableBody');
+  if (!tbody) return;
+
+  if (!pages || pages.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--adm-text-muted);">Chưa có dữ liệu trang xem.</td></tr>`;
+    return;
+  }
+
+  const maxViews = Math.max(...pages.map(p => p.views || 1), 1);
+
+  tbody.innerHTML = pages.map((item, idx) => {
+    const percent = Math.round((item.views / maxViews) * 100);
+    return `
+      <tr>
+        <td><strong>${idx + 1}</strong></td>
+        <td>
+          <strong>${item.title || item.path}</strong>
+        </td>
+        <td>
+          <code style="background: var(--adm-border-light); padding: 2px 6px; border-radius: 4px; font-size: 11.5px;">${item.path}</code>
+        </td>
+        <td style="text-align: right;">
+          <strong style="color: var(--adm-accent);">${item.views.toLocaleString('vi-VN')}</strong> lượt
+        </td>
+        <td>
+          <div class="device-progress-bg" style="height: 6px;">
+            <div class="device-progress-bar" style="width: ${percent}%; background: var(--adm-accent);"></div>
+          </div>
+        </td>
+        <td style="text-align: center;">
+          <a href="..${item.path === '/' ? '/index.html' : item.path}" target="_blank" class="btn btn-secondary btn-sm" style="padding: 3px 8px;" title="Mở trang trong tab mới">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
 //  DARK / LIGHT THEME TOGGLE
 // ══════════════════════════════════════════════
 function initAdminTheme() {
