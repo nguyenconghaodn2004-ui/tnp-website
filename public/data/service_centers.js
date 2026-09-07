@@ -1050,6 +1050,16 @@ const TNP_SERVICE_CENTERS = [
     "phone": "028 22 422 822",
     "region": "north",
     "regionLabel": "Miền Bắc"
+  },
+  {
+    "id": "sc-lc",
+    "province": "Lai Châu",
+    "name": "Trạm TNP Care Lai Châu",
+    "address": "Số 158 Đường Trần Phú, P. Tân Phong, TP. Lai Châu, Tỉnh Lai Châu",
+    "phone": "028 22 422 822",
+    "region": "north",
+    "regionLabel": "Miền Bắc",
+    "hours": "8h00 - 18h00 (Thứ 2 - Thứ 7)"
   }
 ];
 

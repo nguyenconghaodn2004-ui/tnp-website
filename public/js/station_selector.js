@@ -19,20 +19,38 @@
       bookingFormInputId = 'service-target-station'
     } = config || {};
 
-    if (typeof TNP_SERVICE_CENTERS === 'undefined') {
+    let sourceData = typeof TNP_SERVICE_CENTERS !== 'undefined' ? [...TNP_SERVICE_CENTERS] : [];
+    const savedStations = localStorage.getItem('tnp_admin_stations_override');
+    if (savedStations) {
+      try {
+        const parsed = JSON.parse(savedStations);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (sourceData.length > 0) {
+            const existingIds = new Set(parsed.map(s => s.id));
+            const missing = sourceData.filter(s => !existingIds.has(s.id));
+            sourceData = [...parsed, ...missing];
+          } else {
+            sourceData = parsed;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (!sourceData || sourceData.length === 0) {
       console.warn('TNP_SERVICE_CENTERS data not found');
       return;
     }
 
     // 1. Group data by Province
     const provinceMap = new Map();
-    TNP_SERVICE_CENTERS.forEach(item => {
-      const p = item.province;
+    sourceData.forEach(item => {
+      const p = item.province ? item.province.trim() : '';
+      if (!p) return;
       if (!provinceMap.has(p)) {
         provinceMap.set(p, {
           province: p,
-          region: item.region,
-          regionLabel: item.regionLabel,
+          region: item.region || 'north',
+          regionLabel: item.regionLabel || (item.region === 'south' ? 'Miền Nam' : item.region === 'central' ? 'Miền Trung' : 'Miền Bắc'),
           stations: []
         });
       }
@@ -279,10 +297,10 @@
     }
 
     // Setup region tab listener & populate live station counts
-    const northCount = TNP_SERVICE_CENTERS.filter(s => s.region === 'north').length;
-    const centralCount = TNP_SERVICE_CENTERS.filter(s => s.region === 'central').length;
-    const southCount = TNP_SERVICE_CENTERS.filter(s => s.region === 'south').length;
-    const totalCount = TNP_SERVICE_CENTERS.length;
+    const northCount = sourceData.filter(s => s.region === 'north').length;
+    const centralCount = sourceData.filter(s => s.region === 'central').length;
+    const southCount = sourceData.filter(s => s.region === 'south').length;
+    const totalCount = sourceData.length;
 
     const regionButtons = document.querySelectorAll(regionTabsSelector);
     regionButtons.forEach(btn => {

@@ -169,6 +169,14 @@ function loadData() {
   if (savedStations) {
     try {
       serviceCentersList = JSON.parse(savedStations);
+      if (typeof TNP_SERVICE_CENTERS !== 'undefined' && Array.isArray(TNP_SERVICE_CENTERS)) {
+        const existingIds = new Set(serviceCentersList.map(s => s.id));
+        const missing = TNP_SERVICE_CENTERS.filter(s => !existingIds.has(s.id));
+        if (missing.length > 0) {
+          serviceCentersList = [...serviceCentersList, ...missing];
+          localStorage.setItem(STORAGE_STATIONS_KEY, JSON.stringify(serviceCentersList));
+        }
+      }
     } catch (e) {
       serviceCentersList = typeof TNP_SERVICE_CENTERS !== 'undefined' ? [...TNP_SERVICE_CENTERS] : [];
     }
