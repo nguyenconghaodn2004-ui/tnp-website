@@ -675,7 +675,7 @@ body {
 }
 
 .modal-dialog {
-  background: #fff;
+  background: var(--adm-card-bg, #fff);
   border-radius: var(--radius-xl);
   width: 100%;
   max-width: 650px;
@@ -684,6 +684,16 @@ body {
   flex-direction: column;
   box-shadow: var(--shadow-xl);
   animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-dialog > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 @keyframes modalPop {
@@ -692,11 +702,13 @@ body {
 }
 
 .modal-header {
-  padding: 20px 24px;
+  padding: 18px 24px;
   border-bottom: 1px solid var(--adm-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  background: var(--adm-card-bg, #fff);
 }
 
 .modal-title {
@@ -720,9 +732,10 @@ body {
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 20px 24px;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .modal-footer {
@@ -732,6 +745,8 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
+  flex-shrink: 0;
+  background: var(--adm-card-bg, #fff);
 }
 
 /* Form inputs */
