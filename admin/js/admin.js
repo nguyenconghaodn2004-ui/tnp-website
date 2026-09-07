@@ -932,7 +932,7 @@ async function fetchContactsFromServer() {
   if (!tbody) return;
 
   try {
-    const res = await adminFetch('/api/admin/contacts');
+    const res = await adminFetch(`/api/admin/contacts?_t=${Date.now()}`);
     if (res.ok) {
       const json = await res.json();
       if (json.data) {
@@ -2697,7 +2697,7 @@ async function loadAnalyticsData() {
   if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
   try {
-    const res = await adminFetch('/api/admin/analytics');
+    const res = await adminFetch(`/api/admin/analytics?_t=${Date.now()}`);
     if (res.ok) {
       const json = await res.json();
       if (json.data) {

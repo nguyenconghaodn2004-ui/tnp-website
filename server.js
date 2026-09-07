@@ -40,7 +40,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DOMAIN = process.env.DOMAIN || 'tnpcare.vn';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
-const MONGODB_URI = process.env.DATABASE_URL || process.env.MONGODB_URI;
+const DEFAULT_MONGO_URI = 'mongodb+srv://ruangonghuan2004_db_user:admintnp@cluster0.lez1zci.mongodb.net/tnp_db?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.DATABASE_URL || process.env.MONGODB_URI || DEFAULT_MONGO_URI;
 
 // Serve static files from the 'public' directory and fallback to root
 app.use(express.static(path.join(__dirname, 'public')));
@@ -259,22 +260,41 @@ async function autoSeedMongoData() {
   }
 }
 
-// Khởi tạo kết nối MongoDB
-if (MONGODB_URI) {
-  mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
-  })
-  .then(async () => {
-    isMongoConnected = true;
-    console.log('  🟢 ĐÃ KẾT NỐI THÀNH CÔNG CLOUD DATABASE MONGODB ATLAS!');
-    await autoSeedMongoData();
-  })
-  .catch(err => {
-    console.warn('  ⚠️ Không thể kết nối MongoDB Atlas (đang chạy CSDL JSON dự phòng):', err.message);
-  });
-} else {
-  console.log('  ℹ️ Chưa cấu hình DATABASE_URL trong .env, server đang chạy với CSDL JSON cục bộ.');
+let cachedMongoPromise = null;
+
+async function ensureMongoConnected() {
+  if (isMongoConnected && mongoose.connection && mongoose.connection.readyState === 1) {
+    return true;
+  }
+  if (!MONGODB_URI) return false;
+  if (!cachedMongoPromise) {
+    cachedMongoPromise = mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 8000,
+    }).then(async () => {
+      isMongoConnected = true;
+      console.log('  🟢 ĐÃ KẾT NỐI THÀNH CÔNG CLOUD DATABASE MONGODB ATLAS!');
+      await autoSeedMongoData();
+      return true;
+    }).catch(err => {
+      cachedMongoPromise = null;
+      isMongoConnected = false;
+      console.warn('  ⚠️ Không thể kết nối MongoDB Atlas:', err.message);
+      return false;
+    });
+  }
+  return cachedMongoPromise;
 }
+
+// Khởi tạo kết nối ngay khi nạp file
+ensureMongoConnected();
+
+// Middleware đảm bảo kết nối CSDL trước khi xử lý mọi API request
+app.use('/api', async (req, res, next) => {
+  try {
+    await ensureMongoConnected();
+  } catch (e) {}
+  next();
+});
 
 // ══════════════════════════════════════════════
 //  3. MIDDLEWARE BẢO VỆ API ADMIN & RATE LIMIT
@@ -532,6 +552,7 @@ app.post('/api/admin/login', (req, res) => {
 
 // 5. API Yêu cầu tư vấn & Liên hệ
 app.get('/api/admin/contacts', verifyAdminToken, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   try {
     if (isMongoConnected) {
       const contacts = await ContactModel.find().sort({ createdAt: -1 }).lean();
@@ -749,7 +770,7 @@ app.delete('/api/admin/articles/:id', verifyAdminToken, async (req, res) => {
 // ══════════════════════════════════════════════
 
 // Endpoint public nhận ping tự động từ các trang web
-app.post('/api/track-visit', (req, res) => {
+app.post('/api/track-visit', async (req, res) => {
   try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '127.0.0.1';
     const { path: rawPath, title, referrer, screenWidth } = req.body || {};
@@ -762,15 +783,24 @@ app.post('/api/track-visit', (req, res) => {
       return res.json({ success: false });
     }
 
+    // Đọc dữ liệu mới nhất từ MongoDB Atlas Cloud trước
+    let currentAnalytics = dbAnalytics;
+    if (isMongoConnected) {
+      try {
+        const doc = await AnalyticsModel.findOne({ id: 'analytics_data' }).lean();
+        if (doc) currentAnalytics = doc;
+      } catch (e) {}
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
     const sessionKey = `${ip}_${pagePath}`;
     const now = Date.now();
     const lastVisit = recentVisitorSessions.get(sessionKey);
     const isDebounced = lastVisit && (now - lastVisit < 5 * 60 * 1000); // 5 phút debounce chống F5
 
-    if (!dbAnalytics.daily) dbAnalytics.daily = {};
-    if (!dbAnalytics.daily[todayStr]) {
-      dbAnalytics.daily[todayStr] = {
+    if (!currentAnalytics.daily) currentAnalytics.daily = {};
+    if (!currentAnalytics.daily[todayStr]) {
+      currentAnalytics.daily[todayStr] = {
         views: 0,
         uniques: 0,
         devices: { desktop: 0, mobile: 0, tablet: 0 },
@@ -778,7 +808,7 @@ app.post('/api/track-visit', (req, res) => {
       };
     }
 
-    const dayData = dbAnalytics.daily[todayStr];
+    const dayData = currentAnalytics.daily[todayStr];
     
     // Phân loại thiết bị
     let deviceType = 'desktop';
@@ -787,8 +817,8 @@ app.post('/api/track-visit', (req, res) => {
 
     // Nếu không spam liên tục (< 10s)
     if (!lastVisit || (now - lastVisit > 10 * 1000)) {
-      dayData.views += 1;
-      dbAnalytics.totalVisits = (dbAnalytics.totalVisits || 0) + 1;
+      dayData.views = (dayData.views || 0) + 1;
+      currentAnalytics.totalVisits = (currentAnalytics.totalVisits || 0) + 1;
       
       // Top trang
       dayData.pages[pagePath] = (dayData.pages[pagePath] || 0) + 1;
@@ -799,20 +829,20 @@ app.post('/api/track-visit', (req, res) => {
 
       // Khách duy nhất (chưa truy cập trong 5 phút)
       if (!isDebounced) {
-        dayData.uniques += 1;
+        dayData.uniques = (dayData.uniques || 0) + 1;
       }
 
       // Lưu 15 sự kiện truy cập gần nhất
-      if (!dbAnalytics.recentVisits) dbAnalytics.recentVisits = [];
-      dbAnalytics.recentVisits.unshift({
+      if (!currentAnalytics.recentVisits) currentAnalytics.recentVisits = [];
+      currentAnalytics.recentVisits.unshift({
         time: new Date().toISOString(),
         path: pagePath,
         title: title || pagePath,
         device: deviceType,
         referrer: referrer || 'Trực tiếp'
       });
-      if (dbAnalytics.recentVisits.length > 20) {
-        dbAnalytics.recentVisits.pop();
+      if (currentAnalytics.recentVisits.length > 20) {
+        currentAnalytics.recentVisits.pop();
       }
 
       recentVisitorSessions.set(sessionKey, now);
@@ -824,11 +854,14 @@ app.post('/api/track-visit', (req, res) => {
         }
       }
 
+      dbAnalytics = currentAnalytics;
       writeDbFile('analytics.json', dbAnalytics);
       if (isMongoConnected) {
-        AnalyticsModel.updateOne({ id: 'analytics_data' }, { $set: dbAnalytics }, { upsert: true }).catch(err => {
+        try {
+          await AnalyticsModel.updateOne({ id: 'analytics_data' }, { $set: currentAnalytics }, { upsert: true });
+        } catch (err) {
           console.warn('Lỗi đồng bộ analytics lên MongoDB Atlas:', err.message);
-        });
+        }
       }
     }
 
@@ -840,12 +873,26 @@ app.post('/api/track-visit', (req, res) => {
 });
 
 // Endpoint trả về báo cáo thống kê cho trang quản trị
-app.get('/api/admin/analytics', verifyAdminToken, (req, res) => {
+app.get('/api/admin/analytics', verifyAdminToken, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   try {
+    let currentAnalytics = dbAnalytics;
+    if (isMongoConnected) {
+      try {
+        const doc = await AnalyticsModel.findOne({ id: 'analytics_data' }).lean();
+        if (doc) {
+          currentAnalytics = doc;
+          dbAnalytics = doc;
+        }
+      } catch (err) {
+        console.warn('Lỗi đọc analytics từ MongoDB:', err.message);
+      }
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-    const daily = dbAnalytics.daily || {};
+    const daily = currentAnalytics.daily || {};
     const todayData = daily[todayStr] || { views: 0, uniques: 0, devices: { desktop: 0, mobile: 0, tablet: 0 }, pages: {} };
     const yesterdayData = daily[yesterday] || { views: 0, uniques: 0 };
 
