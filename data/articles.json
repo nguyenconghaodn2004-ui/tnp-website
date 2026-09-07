@@ -1,0 +1,26 @@
+[
+  {
+    "id": "art-1",
+    "title": "Khoảng Cách Xem Tivi Chuẩn Khoa Học Bảo Vệ Mắt Cho Gia Đình",
+    "category": "support",
+    "categoryLabel": "Hướng dẫn & Hỗ trợ",
+    "author": "Chuyên gia Kỹ thuật TNP",
+    "date": "04/09/2026",
+    "thumbnail": "./images/banner_tnp_care.jpg",
+    "summary": "Bảng tra cứu kích thước màn hình TV 32 - 100 inch và khoảng cách ngồi xem tối ưu giúp bảo vệ thị lực và trải nghiệm điện ảnh chân thực.",
+    "content": "Việc lựa chọn khoảng cách xem TV phù hợp không chỉ mang lại trải nghiệm hình ảnh tốt nhất mà còn bảo vệ mắt cho cả gia đình...",
+    "status": "published"
+  },
+  {
+    "id": "art-2",
+    "title": "Công Nghệ QLED & Mini LED Trên Smart TV HXY - Đỉnh Cao Điện Ảnh",
+    "category": "tech",
+    "categoryLabel": "Công nghệ & Đổi mới",
+    "author": "Ban Công Nghệ TNP",
+    "date": "03/09/2026",
+    "thumbnail": "./images/banner_hxy_100.jpg",
+    "summary": "Khám phá sự khác biệt vượt bậc của 1000+ vùng làm mờ cục bộ (Local Dimming) và độ sáng 1200 nit trên dòng Flagship Cinema.",
+    "content": "Tấm nền QLED kết hợp hạt lượng tử ánh sáng mang lại phổ màu đạt 98% chuẩn rạp chiếu phim DCI-P3...",
+    "status": "published"
+  }
+]

@@ -13,6 +13,8 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- Admin CSS -->
   <link rel="stylesheet" href="./css/style.css">
+  <!-- Chart.js for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -112,9 +114,23 @@
       </div>
 
       <div class="topbar-right">
+        <!-- Quick Search Trigger -->
+        <button class="btn-topbar-tool" id="btnQuickSearch" onclick="openQuickSearchModal()" title="Tìm kiếm nhanh (Phím tắt: Ctrl + K)">
+          <i class="fas fa-search"></i>
+          <span class="kbd-badge">Ctrl K</span>
+        </button>
+        <!-- Dark/Light Mode Switcher -->
+        <button class="btn-topbar-tool" id="btnThemeToggle" onclick="toggleAdminTheme()" title="Đổi chế độ Sáng / Tối">
+          <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+        <!-- Quick Backup Download -->
+        <button class="btn-topbar-tool" onclick="downloadBackupJson()" title="Tải nhanh bản sao lưu toàn bộ hệ thống">
+          <i class="fas fa-cloud-download-alt"></i>
+        </button>
+        <!-- Database Connection Status -->
         <div class="topbar-status">
           <span class="status-dot"></span>
-          <span>Hệ thống trực tuyến</span>
+          <span id="topbarDbStatus">Hệ thống trực tuyến</span>
         </div>
         <a href="../index.html" target="_blank" class="btn-view-site">
           <i class="fas fa-external-link-alt"></i> Xem Website
@@ -127,6 +143,161 @@
 
       <!-- ── TAB: DASHBOARD ── -->
       <section class="tab-panel active" id="tab-dashboard">
+        <!-- ══════════════════════════════════════════════
+             KHỐI THỐNG KÊ LƯU LƯỢNG TRUY CẬP WEBSITE
+             ══════════════════════════════════════════════ -->
+        <div class="analytics-section-header">
+          <div class="analytics-title-wrap">
+            <h2 class="analytics-section-title">
+              <i class="fas fa-chart-line" style="color: var(--adm-accent);"></i> Thống kê lưu lượng truy cập Website
+            </h2>
+            <span class="analytics-badge-live">
+              <span class="live-pulse"></span> Thời gian thực
+            </span>
+          </div>
+          <div class="analytics-actions">
+            <button class="btn btn-secondary btn-sm" onclick="loadAnalyticsData()" title="Làm mới số liệu thống kê">
+              <i class="fas fa-sync-alt" id="analyticsRefreshIcon"></i> Làm mới
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Thẻ Thống Kê Lưu Lượng -->
+        <div class="stats-grid" style="margin-bottom: 20px;">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon-wrap"><i class="fas fa-eye"></i></div>
+            <div class="stat-details">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span class="stat-number" id="statTodayViews">0</span>
+                <span class="stat-trend trend-up" id="statTodayTrend"><i class="fas fa-arrow-up"></i> 0%</span>
+              </div>
+              <span class="stat-label">Truy cập hôm nay (<span id="statTodayUniques">0</span> khách)</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-purple">
+            <div class="stat-icon-wrap"><i class="fas fa-calendar-week"></i></div>
+            <div class="stat-details">
+              <span class="stat-number" id="stat7DaysViews">0</span>
+              <span class="stat-label">7 ngày gần nhất</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-green">
+            <div class="stat-icon-wrap"><i class="fas fa-calendar-alt"></i></div>
+            <div class="stat-details">
+              <span class="stat-number" id="statMonthViews">0</span>
+              <span class="stat-label">Tháng này (Tổng lượt)</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-amber">
+            <div class="stat-icon-wrap"><i class="fas fa-globe-asia"></i></div>
+            <div class="stat-details">
+              <span class="stat-number" id="statTotalViews">0</span>
+              <span class="stat-label">Tổng lượt xem tích lũy</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Biểu đồ & Phân Tích Kênh Truy Cập -->
+        <div class="analytics-charts-grid">
+          <!-- Biểu đồ lưu lượng -->
+          <div class="admin-card">
+            <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+              <h3 class="card-title"><i class="fas fa-chart-area"></i> Biến động lưu lượng người xem</h3>
+              <div class="timeframe-toggle-wrap">
+                <button type="button" class="btn-timeframe active" id="btnTf7" onclick="switchAnalyticsTimeframe(7)">7 ngày</button>
+                <button type="button" class="btn-timeframe" id="btnTf30" onclick="switchAnalyticsTimeframe(30)">30 ngày</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 16px 20px 20px 20px;">
+              <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="trafficChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phân bổ thiết bị & Nền tảng -->
+          <div class="admin-card">
+            <div class="card-header">
+              <h3 class="card-title"><i class="fas fa-mobile-alt"></i> Thiết bị truy cập</h3>
+            </div>
+            <div class="card-body" style="padding: 16px 20px;">
+              <div class="device-stat-item">
+                <div class="device-stat-header">
+                  <span><i class="fas fa-mobile-alt" style="color: #2563eb;"></i> Điện thoại (Mobile)</span>
+                  <strong id="deviceMobilePercent">0%</strong>
+                </div>
+                <div class="device-progress-bg">
+                  <div class="device-progress-bar" id="deviceMobileBar" style="width: 0%; background: #2563eb;"></div>
+                </div>
+                <small class="text-muted" id="deviceMobileCount">0 lượt xem</small>
+              </div>
+
+              <div class="device-stat-item" style="margin-top: 16px;">
+                <div class="device-stat-header">
+                  <span><i class="fas fa-desktop" style="color: #16a34a;"></i> Máy tính (Desktop)</span>
+                  <strong id="deviceDesktopPercent">0%</strong>
+                </div>
+                <div class="device-progress-bg">
+                  <div class="device-progress-bar" id="deviceDesktopBar" style="width: 0%; background: #16a34a;"></div>
+                </div>
+                <small class="text-muted" id="deviceDesktopCount">0 lượt xem</small>
+              </div>
+
+              <div class="device-stat-item" style="margin-top: 16px;">
+                <div class="device-stat-header">
+                  <span><i class="fas fa-tablet-alt" style="color: #d97706;"></i> Máy tính bảng (Tablet)</span>
+                  <strong id="deviceTabletPercent">0%</strong>
+                </div>
+                <div class="device-progress-bg">
+                  <div class="device-progress-bar" id="deviceTabletBar" style="width: 0%; background: #d97706;"></div>
+                </div>
+                <small class="text-muted" id="deviceTabletCount">0 lượt xem</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Trang Được Xem Nhiều Nhất -->
+        <div class="admin-card" style="margin-bottom: 24px;">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-fire" style="color: #ef4444;"></i> Top trang được khách hàng quan tâm nhất</h3>
+            <span class="badge badge-info" style="font-size: 11px;">Thống kê thời gian thực</span>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>Tên trang &amp; Nội dung</th>
+                    <th style="width: 200px;">Đường dẫn URL</th>
+                    <th style="width: 140px; text-align: right;">Lượt xem</th>
+                    <th style="width: 160px;">Mức độ quan tâm</th>
+                    <th style="width: 80px; text-align: center;">Mở</th>
+                  </tr>
+                </thead>
+                <tbody id="topPagesTableBody">
+                  <!-- Injected via JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════
+             KHỐI THỐNG KÊ DỮ LIỆU SẢN PHẨM & TRẠM BẢO HÀNH
+             ══════════════════════════════════════════════ -->
+        <div class="analytics-section-header" style="margin-top: 28px;">
+          <div class="analytics-title-wrap">
+            <h2 class="analytics-section-title">
+              <i class="fas fa-database" style="color: var(--adm-primary);"></i> Dữ liệu hệ thống TNP Care
+            </h2>
+          </div>
+        </div>
+
         <!-- Stat Cards -->
         <div class="stats-grid">
           <div class="stat-card stat-blue">
@@ -694,10 +865,19 @@
               </p>
             </div>
             <div class="card-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <div class="timeframe-toggle-wrap" style="margin-right: 4px;">
+                <button type="button" class="btn-timeframe active" id="filterStationRegionAll" onclick="filterStationsByRegion('all')">Tất cả</button>
+                <button type="button" class="btn-timeframe" id="filterStationRegionBac" onclick="filterStationsByRegion('bac')">Miền Bắc</button>
+                <button type="button" class="btn-timeframe" id="filterStationRegionTrung" onclick="filterStationsByRegion('trung')">Miền Trung</button>
+                <button type="button" class="btn-timeframe" id="filterStationRegionNam" onclick="filterStationsByRegion('nam')">Miền Nam</button>
+              </div>
               <div class="search-input-wrap">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Tìm theo tỉnh thành, tên trạm..." oninput="filterStations(this.value)">
               </div>
+              <button class="btn btn-secondary btn-sm" onclick="exportStationsCSV()" title="Xuất danh sách 80-100 trạm bảo hành ra Excel / CSV">
+                <i class="fas fa-file-excel" style="color: #16a34a;"></i> Xuất Excel
+              </button>
               <button class="btn btn-primary btn-sm" onclick="openAddStationModal()">
                 <i class="fas fa-plus-circle"></i> Thêm Trạm Mới
               </button>
@@ -800,13 +980,22 @@
       <!-- ── TAB: CONTACTS ── -->
       <section class="tab-panel" id="tab-contacts">
         <div class="admin-card">
-          <div class="card-header">
+          <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
             <h2 class="card-title"><i class="fas fa-headset"></i> Yêu cầu tư vấn & Liên hệ từ khách hàng</h2>
-            <div class="card-actions">
+            <div class="card-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <select id="contactStatusFilter" class="form-control" style="width: auto; padding: 6px 12px; font-size: 13px;" onchange="filterContactsByStatus(this.value)">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="pending">Chưa xử lý (Mới)</option>
+                <option value="contacting">Đang tư vấn</option>
+                <option value="resolved">Đã hoàn tất</option>
+              </select>
               <div class="search-input-wrap">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Tìm theo tên, SĐT..." oninput="filterContacts(this.value)">
               </div>
+              <button class="btn btn-secondary btn-sm" onclick="exportContactsCSV()" title="Xuất danh sách khách hàng ra file Excel / CSV">
+                <i class="fas fa-file-excel" style="color: #16a34a;"></i> Xuất Excel
+              </button>
               <button class="btn btn-secondary btn-sm" onclick="fetchContactsFromServer()">
                 <i class="fas fa-sync-alt"></i> Làm mới
               </button>
@@ -870,6 +1059,27 @@
             <button class="btn btn-primary" onclick="showToast('Đã lưu cấu hình cài đặt!', 'success')">
               <i class="fas fa-save"></i> Lưu thông tin
             </button>
+          </div>
+        </div>
+
+        <!-- Thẻ Sao Lưu & Khôi Phục Dữ Liệu -->
+        <div class="admin-card" style="margin-top: 24px;">
+          <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-database"></i> Sao lưu & Khôi phục Cơ Sở Dữ Liệu (Backup & Restore)</h2>
+          </div>
+          <div class="card-body">
+            <p style="color: var(--adm-text-secondary); margin-bottom: 16px; font-size: 13.5px;">
+              Xuất toàn bộ dữ liệu hệ thống (sản phẩm TV, trạm bảo hành, banner, bài viết, cấu hình trang chủ, khách hàng liên hệ và thống kê) thành 1 tệp JSON lưu trữ ngoại tuyến an toàn. Bạn cũng có thể tải tệp sao lưu này lên để phục hồi dữ liệu bất cứ lúc nào.
+            </p>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary" onclick="downloadBackupJson()">
+                <i class="fas fa-cloud-download-alt"></i> Tải bản sao lưu hệ thống (.json)
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="triggerRestoreUpload()">
+                <i class="fas fa-cloud-upload-alt"></i> Khôi phục dữ liệu từ file .json
+              </button>
+              <input type="file" id="restoreFileInput" accept=".json" style="display: none;" onchange="handleRestoreFileSelected(event)">
+            </div>
           </div>
         </div>
       </section>
@@ -1309,6 +1519,28 @@
         <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu Model Tag</button>
       </div>
     </form>
+  </div>
+<!-- ══════════════════════════════════════════
+     MODAL: TÌM KIẾM NHANH HỆ THỐNG (CTRL + K)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="quickSearchModal" onclick="handleQuickSearchBackdropClick(event)">
+  <div class="modal-dialog quicksearch-dialog">
+    <div class="quicksearch-input-wrap">
+      <i class="fas fa-search quicksearch-icon"></i>
+      <input type="text" id="quickSearchInput" class="quicksearch-input" placeholder="Tìm nhanh model TV, trạm bảo hành, bài viết, chức năng... (Esc để đóng)" autocomplete="off" oninput="handleQuickSearchInput(this.value)">
+      <span class="quicksearch-esc" onclick="closeQuickSearchModal()">ESC</span>
+    </div>
+    <div class="quicksearch-results" id="quickSearchResults">
+      <div class="quicksearch-empty">
+        <i class="fas fa-keyboard" style="font-size: 24px; color: var(--adm-text-muted); margin-bottom: 8px; display: block;"></i>
+        Gõ tên sản phẩm, mã model, tỉnh thành hoặc tên chức năng để nhảy nhanh...
+      </div>
+    </div>
+    <div class="quicksearch-footer">
+      <span><kbd>↑</kbd> <kbd>↓</kbd> Di chuyển</span>
+      <span><kbd>Enter</kbd> Mở</span>
+      <span><kbd>Esc</kbd> Đóng</span>
+    </div>
   </div>
 </div>
 

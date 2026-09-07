@@ -517,8 +517,41 @@ document.addEventListener('click', (e) => {
 
 // Run as soon as DOM is interactive
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', injectComponents);
+  document.addEventListener('DOMContentLoaded', () => {
+    injectComponents();
+    initAnalyticsTracker();
+  });
 } else {
   injectComponents();
+  initAnalyticsTracker();
+}
+
+// ══════════════════════════════════════════════
+//  VISIT TRACKER (Tự động ghi nhận lượt truy cập)
+// ══════════════════════════════════════════════
+function initAnalyticsTracker() {
+  if (typeof window === 'undefined') return;
+  const p = window.location.pathname.toLowerCase();
+  // Bỏ qua trang admin và đăng nhập
+  if (p.includes('/admin/') || p.includes('login.html')) return;
+
+  let cleanPath = window.location.pathname;
+  if (cleanPath.endsWith('/index.html') || cleanPath === '') cleanPath = '/';
+
+  const payload = {
+    path: cleanPath,
+    title: document.title || 'TNP Care',
+    referrer: document.referrer || 'Trực tiếp',
+    screenWidth: window.innerWidth || 1200
+  };
+
+  try {
+    fetch('/api/track-visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true
+    }).catch(() => {});
+  } catch (err) {}
 }
 
