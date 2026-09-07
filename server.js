@@ -420,7 +420,7 @@ app.post('/api/admin/homepage', async (req, res) => {
 });
 
 // 3. API Trạm bảo hành
-app.get('/api/admin/stations', async (req, res) => {
+app.get(['/api/stations', '/api/admin/stations'], async (req, res) => {
   try {
     if (isMongoConnected) {
       const stations = await StationModel.find().lean();

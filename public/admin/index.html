@@ -250,9 +250,19 @@
 
             <!-- ── SUB-PANEL 1: LAYOUT & ORDER ── -->
             <div class="cms-panel active" id="cms-panel-layout">
-              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #166534; display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-info-circle" style="font-size: 18px;"></i>
-                <span>Sử dụng nút <strong>Lên / Xuống</strong> để sắp xếp lại vị trí xuất hiện của các khối trên trang chủ. Gạt công tắc <strong>Bật / Tắt</strong> để ẩn hoặc hiện khối tương ứng.</span>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px; color: #166534; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px;">
+                  <i class="fas fa-info-circle" style="font-size: 16px;"></i>
+                  <span>Dùng nút <strong>Lên / Xuống</strong> để đổi thứ tự, <strong>Bật / Tắt</strong> để ẩn/hiện, và nút <strong>Sửa / Xóa</strong> để quản lý từng khối.</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-primary btn-sm" onclick="openAddLayoutSectionModal()">
+                    <i class="fas fa-plus-circle"></i> Thêm Khối Mới
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="resetLayoutDefault()">
+                    <i class="fas fa-undo"></i> Khôi phục gốc
+                  </button>
+                </div>
               </div>
               <div class="layout-list" id="layoutListContainer">
                 <!-- Injected via JavaScript -->
@@ -293,9 +303,26 @@
                 <label class="form-label">Tiêu đề dải thương hiệu</label>
                 <input type="text" id="cmsBrandsLabel" class="form-control" value="Thương hiệu đồng hành">
               </div>
-              <label class="form-label" style="margin-top: 16px;">Danh sách thương hiệu đang hiển thị</label>
-              <div id="cmsBrandChipsList" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 12px; background: #f8fafc; border: 1px solid var(--adm-border); border-radius: var(--radius-md);">
-                <!-- Dynamic chips -->
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0;">
+                <label class="form-label" style="margin: 0;">Danh sách thương hiệu đối tác (Bấm Sửa / Xóa bên dưới)</label>
+              </div>
+              
+              <div class="table-responsive" style="margin-bottom: 20px;">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 50px;">STT</th>
+                      <th>Thương hiệu</th>
+                      <th style="width: 130px;">Màu chấm LED</th>
+                      <th>Đường dẫn Link</th>
+                      <th style="width: 100px; text-align: center;">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cmsBrandsTableBody">
+                    <!-- Dynamic brands rows -->
+                  </tbody>
+                </table>
               </div>
               
               <!-- Thêm thương hiệu mới -->
@@ -312,6 +339,7 @@
                       <option value="blue">Xanh dương (Blue)</option>
                       <option value="red">Đỏ (Red)</option>
                       <option value="green">Xanh lá (Green)</option>
+                      <option value="amber">Vàng hổ phách (Amber)</option>
                     </select>
                   </div>
                 </div>
@@ -371,9 +399,24 @@
                     <label class="form-label">Chú thích ảnh (Caption)</label>
                     <input type="text" id="cmsHxyCaption" class="form-control">
                   </div>
-                  <h4 style="font-size: 13.5px; margin: 16px 0 8px 0; color: var(--adm-text);">4 Thẻ thế mạnh độc quyền HXY:</h4>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0;">
+                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Thế mạnh độc quyền HXY:</h4>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepdiveFeature('hxy')">
+                      <i class="fas fa-plus"></i> Thêm thế mạnh
+                    </button>
+                  </div>
                   <div id="cmsHxyFeaturesWrap">
-                    <!-- Dynamic feature inputs -->
+                    <!-- Dynamic feature inputs with delete buttons -->
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 8px 0;">
+                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Dòng TV tiêu biểu HXY:</h4>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="openAddTvModelModal('hxy')">
+                      <i class="fas fa-plus"></i> Thêm Model TV
+                    </button>
+                  </div>
+                  <div id="cmsHxyModelsWrap" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #f8fafc; border: 1px solid var(--adm-border); border-radius: var(--radius-sm);">
+                    <!-- Dynamic model tag badges -->
                   </div>
                 </div>
 
@@ -403,9 +446,24 @@
                     <label class="form-label">Chú thích ảnh (Caption)</label>
                     <input type="text" id="cmsHikersCaption" class="form-control">
                   </div>
-                  <h4 style="font-size: 13.5px; margin: 16px 0 8px 0; color: var(--adm-text);">4 Thẻ thế mạnh độc quyền HIKERS:</h4>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0;">
+                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Thế mạnh độc quyền HIKERS:</h4>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepdiveFeature('hikers')">
+                      <i class="fas fa-plus"></i> Thêm thế mạnh
+                    </button>
+                  </div>
                   <div id="cmsHikersFeaturesWrap">
-                    <!-- Dynamic feature inputs -->
+                    <!-- Dynamic feature inputs with delete buttons -->
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 8px 0;">
+                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Dòng TV tiêu biểu HIKERS:</h4>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="openAddTvModelModal('hikers')">
+                      <i class="fas fa-plus"></i> Thêm Model TV
+                    </button>
+                  </div>
+                  <div id="cmsHikersModelsWrap" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #f8fafc; border: 1px solid var(--adm-border); border-radius: var(--radius-sm);">
+                    <!-- Dynamic model tag badges -->
                   </div>
                 </div>
               </div>
@@ -440,9 +498,9 @@
                   <thead>
                     <tr>
                       <th style="width: 25%;">Tiêu chí so sánh</th>
-                      <th style="width: 35%; color: #1e40af;"><i class="fas fa-tv"></i> Nội dung TV HXY</th>
-                      <th style="width: 35%; color: #991b1b;"><i class="fas fa-tv"></i> Nội dung TV HIKERS</th>
-                      <th style="width: 5%; text-align: center;">Xóa</th>
+                      <th style="width: 33%; color: #1e40af;"><i class="fas fa-tv"></i> Nội dung TV HXY</th>
+                      <th style="width: 33%; color: #991b1b;"><i class="fas fa-tv"></i> Nội dung TV HIKERS</th>
+                      <th style="width: 9%; text-align: center;">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody id="cmsCompareTableBody">
@@ -455,9 +513,14 @@
             <!-- ── SUB-PANEL 6: STATS BAR ── -->
             <div class="cms-panel" id="cms-panel-stats">
               <div class="cms-card-box">
-                <div class="cms-card-box-title"><i class="fas fa-chart-line"></i> 4 Khối Số Liệu Nổi Bật (Stats Bar)</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                  <div class="cms-card-box-title"><i class="fas fa-chart-line"></i> Khối Số Liệu Nổi Bật (Stats Bar)</div>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="addStatItem()">
+                    <i class="fas fa-plus"></i> Thêm chỉ số thống kê
+                  </button>
+                </div>
                 <div class="form-row" id="cmsStatsWrap" style="margin-top: 16px;">
-                  <!-- Dynamic 4 stat cards -->
+                  <!-- Dynamic stat cards -->
                 </div>
               </div>
             </div>
@@ -511,11 +574,27 @@
                 </div>
               </div>
 
+              <!-- Danh sách các TV đang được ghim -->
+              <div class="cms-card-box" style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div class="cms-card-box-title" style="margin: 0;">
+                    <i class="fas fa-thumbtack" style="color: var(--adm-accent);"></i> Thứ tự các TV đang ghim trên Trang Chủ
+                  </div>
+                  <span class="badge badge-brand-hxy" id="cmsPinnedCountBadge">0 TV</span>
+                </div>
+                <p style="font-size: 12.5px; color: var(--adm-text-muted); margin: 0 0 12px 0;">
+                  Bấm nút <strong>Lên / Xuống</strong> để đổi vị trí, hoặc nút <strong>Bỏ ghim (Xóa)</strong> để gỡ TV khỏi trang chủ.
+                </p>
+                <div id="cmsPinnedProductsList" style="display: flex; flex-direction: column; gap: 8px;">
+                  <!-- Injected via JavaScript -->
+                </div>
+              </div>
+
               <div style="margin-top: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                   <div>
-                    <h3 style="font-size: 14.5px; font-weight: 700; margin: 0;"><i class="fas fa-check-circle" style="color: var(--adm-accent);"></i> Tích chọn TV được ghim lên Trang Chủ</h3>
-                    <small style="color: var(--adm-text-muted);">Các sản phẩm có dấu tích xanh sẽ xuất hiện tại mục Sản phẩm nổi bật ở trang chủ.</small>
+                    <h3 style="font-size: 14.5px; font-weight: 700; margin: 0;"><i class="fas fa-check-circle" style="color: var(--adm-accent);"></i> Tích chọn thêm TV từ kho để ghim</h3>
+                    <small style="color: var(--adm-text-muted);">Bấm vào TV để bật/tắt ghim hiển thị lên trang chủ.</small>
                   </div>
                   <div class="search-input-wrap" style="width: 220px;">
                     <i class="fas fa-search"></i>
@@ -607,13 +686,21 @@
       <!-- ── TAB: STATIONS ── -->
       <section class="tab-panel" id="tab-stations">
         <div class="admin-card">
-          <div class="card-header">
-            <h2 class="card-title"><i class="fas fa-map-marker-alt"></i> Hệ thống trạm bảo hành toàn quốc (80-100 trạm)</h2>
-            <div class="card-actions">
+          <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 class="card-title"><i class="fas fa-map-marker-alt"></i> Hệ thống trạm bảo hành toàn quốc (80-100 trạm)</h2>
+              <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--adm-text-muted);">
+                Quản lý thêm, sửa, xóa toàn bộ mạng lưới trạm bảo hành kỹ thuật trên 63 tỉnh thành.
+              </p>
+            </div>
+            <div class="card-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <div class="search-input-wrap">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Tìm theo tỉnh thành, tên trạm..." oninput="filterStations(this.value)">
               </div>
+              <button class="btn btn-primary btn-sm" onclick="openAddStationModal()">
+                <i class="fas fa-plus-circle"></i> Thêm Trạm Mới
+              </button>
             </div>
           </div>
           <div class="card-body" style="padding: 0;">
@@ -626,7 +713,7 @@
                     <th>Tỉnh / Thành phố</th>
                     <th>Địa chỉ chi tiết</th>
                     <th>Hotline</th>
-                    <th style="width: 80px; text-align: center;">Xóa</th>
+                    <th style="width: 100px; text-align: center;">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody id="stationsTableBody">
@@ -1051,6 +1138,175 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeArticleModal()">Hủy bỏ</button>
         <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu bài viết</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA TRẠM BẢO HÀNH (STATION)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="modalStation">
+  <div class="modal-dialog" style="max-width: 650px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalStationTitle"><i class="fas fa-map-marker-alt"></i> Thêm Trạm Bảo Hành Mới</h3>
+      <button class="modal-close" onclick="closeStationModal()">&times;</button>
+    </div>
+    <form onsubmit="saveStationForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="stationId">
+        <div class="form-group">
+          <label class="form-label">Tên trạm bảo hành *</label>
+          <input type="text" id="stationName" class="form-control" placeholder="VD: Trung Tâm Kỹ Thuật TNP Care Cầu Giấy" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tỉnh / Thành phố *</label>
+            <input type="text" id="stationProvince" class="form-control" placeholder="VD: Hà Nội, TP.HCM, Đà Nẵng..." required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Khu vực / Miền *</label>
+            <select id="stationRegion" class="form-control">
+              <option value="north">Miền Bắc</option>
+              <option value="central">Miền Trung & Tây Nguyên</option>
+              <option value="south">Miền Nam</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Địa chỉ chi tiết *</label>
+          <input type="text" id="stationAddress" class="form-control" placeholder="VD: Số 123 Đường Cầu Giấy, P. Dịch Vọng, Q. Cầu Giấy" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Hotline / Số điện thoại *</label>
+            <input type="text" id="stationPhone" class="form-control" placeholder="VD: 028 22 422 822 hoặc 0908 123 456" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Giờ làm việc</label>
+            <input type="text" id="stationHours" class="form-control" placeholder="VD: 8h00 - 18h00 (Thứ 2 - Thứ 7)">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ghi chú / Dịch vụ tiếp nhận</label>
+          <input type="text" id="stationNote" class="form-control" placeholder="VD: Tiếp nhận bảo hành TV HXY, TV HIKERS, thay thế linh kiện chính hãng...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeStationModal()">Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu thông tin trạm</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA KHỐI BỐ CỤC (LAYOUT SECTION)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="modalLayoutSection">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalLayoutTitle"><i class="fas fa-layer-group"></i> Thêm / Sửa Khối Bố Cục</h3>
+      <button class="modal-close" onclick="closeLayoutModal()">&times;</button>
+    </div>
+    <form onsubmit="saveLayoutSectionForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="layoutSecIndex">
+        <div class="form-group">
+          <label class="form-label">Mã định danh (Section ID) *</label>
+          <input type="text" id="layoutSecId" class="form-control" placeholder="VD: custom-reviews, video-showcase..." required>
+          <small style="color: #64748b;">Mã viết liền không dấu, dùng gạch nối để gắn thẻ trên trang chủ.</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tên hiển thị khối *</label>
+          <input type="text" id="layoutSecName" class="form-control" placeholder="VD: Đánh giá của khách hàng" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả ngắn chức năng</label>
+          <textarea id="layoutSecDesc" class="form-control" rows="2" placeholder="VD: Khối phản hồi 5 sao và đánh giá trải nghiệm của người dùng..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trạng thái ban đầu</label>
+          <select id="layoutSecEnabled" class="form-control">
+            <option value="true">Bật (Hiển thị ngay trên trang chủ)</option>
+            <option value="false">Tắt (Tạm ẩn)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeLayoutModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu khối bố cục</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA THƯƠNG HIỆU ĐỐI TÁC (BRAND)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="modalBrand">
+  <div class="modal-dialog" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalBrandTitle"><i class="fas fa-handshake"></i> Chỉnh Sửa Thương Hiệu Đối Tác</h3>
+      <button class="modal-close" onclick="closeBrandModal()">&times;</button>
+    </div>
+    <form onsubmit="saveBrandModalForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="brandIndex">
+        <div class="form-group">
+          <label class="form-label">Tên thương hiệu đối tác *</label>
+          <input type="text" id="brandModalName" class="form-control" placeholder="VD: Sony, Sharp, TCL..." required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Màu chấm tín hiệu LED</label>
+            <select id="brandModalColor" class="form-control">
+              <option value="blue">Xanh dương (Blue)</option>
+              <option value="red">Đỏ (Red)</option>
+              <option value="green">Xanh lá (Green)</option>
+              <option value="amber">Vàng hổ phách (Amber)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Đường dẫn liên kết (Link)</label>
+            <input type="text" id="brandModalLink" class="form-control" placeholder="./san-pham.html hoặc URL">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeBrandModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu thương hiệu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA DÒNG TV TIÊU BIỂU (MODEL TAG)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="modalTvModel">
+  <div class="modal-dialog" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTvModelTitle"><i class="fas fa-tv"></i> Thêm / Sửa Model TV Tiêu Biểu</h3>
+      <button class="modal-close" onclick="closeTvModelModal()">&times;</button>
+    </div>
+    <form onsubmit="saveTvModelForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="tvModelBrandKey">
+        <input type="hidden" id="tvModelIndex">
+        <div class="form-group">
+          <label class="form-label">Tên hiển thị Model TV *</label>
+          <input type="text" id="tvModelName" class="form-control" placeholder="VD: HXY 100&quot; S950 hoặc HIKERS Mini LED 75&quot;" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mã sản phẩm liên kết (Product ID)</label>
+          <input type="text" id="tvModelProductId" class="form-control" placeholder="VD: hxy-tv-s950, hikers-dong-s700...">
+          <small style="color: #64748b;">Khi khách bấm vào tag này ở trang chủ, pop-up chi tiết TV sẽ tự động hiển thị.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeTvModelModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu Model Tag</button>
       </div>
     </form>
   </div>

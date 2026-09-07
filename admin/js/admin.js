@@ -307,6 +307,17 @@ async function saveStations() {
 
 async function saveBanners() {
   localStorage.setItem(STORAGE_BANNERS_KEY, JSON.stringify(bannersList));
+  if (typeof homepageConfig !== 'undefined' && homepageConfig) {
+    homepageConfig.heroBanners = [...bannersList];
+    try {
+      localStorage.setItem(STORAGE_HOMEPAGE_KEY, JSON.stringify(homepageConfig));
+      await fetch('/api/admin/homepage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(homepageConfig)
+      });
+    } catch (e) {}
+  }
   try {
     await fetch('/api/admin/banners', {
       method: 'POST',
@@ -442,30 +453,45 @@ function renderStationsTable(filterQuery = '') {
   const tbody = document.getElementById('stationsTableBody');
   if (!tbody) return;
 
-  let filtered = serviceCentersList;
+  let filtered = serviceCentersList || [];
   if (filterQuery) {
     const q = filterQuery.toLowerCase();
     filtered = filtered.filter(s => 
       (s.name && s.name.toLowerCase().includes(q)) ||
       (s.province && s.province.toLowerCase().includes(q)) ||
-      (s.address && s.address.toLowerCase().includes(q))
+      (s.address && s.address.toLowerCase().includes(q)) ||
+      (s.phone && s.phone.toLowerCase().includes(q))
     );
   }
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--adm-text-muted);">Không tìm thấy trạm bảo hành nào.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--adm-text-muted);">Không tìm thấy trạm bảo hành nào. Bấm "Thêm Trạm Mới" để tạo.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.slice(0, 100).map((s, idx) => `
     <tr>
-      <td>${idx + 1}</td>
-      <td><strong>${s.name}</strong></td>
-      <td><span class="badge badge-secondary">${s.province}</span></td>
-      <td><small>${s.address}</small></td>
-      <td><a href="tel:${s.phone || '028 22 422 822'}" style="color: var(--adm-accent); text-decoration: none; font-weight: 600;">${s.phone || '028 22 422 822'}</a></td>
+      <td style="font-weight: 600; color: var(--adm-text-secondary);">${idx + 1}</td>
       <td>
-        <div class="action-btn-group">
+        <strong>${s.name}</strong>
+        ${s.note ? `<br><small style="color: #64748b;">${s.note}</small>` : ''}
+      </td>
+      <td>
+        <span class="badge badge-secondary">${s.province || 'Chưa cập nhật'}</span>
+        ${s.region ? `<br><small style="color: #94a3b8; font-size: 11px;">${s.region === 'north' ? 'Miền Bắc' : s.region === 'central' ? 'Miền Trung' : 'Miền Nam'}</small>` : ''}
+      </td>
+      <td><small style="color: var(--adm-text);">${s.address}</small></td>
+      <td>
+        <a href="tel:${(s.phone || '028 22 422 822').replace(/\s+/g, '')}" style="color: var(--adm-accent); text-decoration: none; font-weight: 600;">
+          ${s.phone || '028 22 422 822'}
+        </a>
+        ${s.hours ? `<br><small style="color: #64748b; font-size: 11px;">${s.hours}</small>` : ''}
+      </td>
+      <td>
+        <div class="action-btn-group" style="justify-content: center;">
+          <button class="btn-icon" title="Chỉnh sửa trạm" onclick="openEditStationModal('${s.id}')">
+            <i class="fas fa-pen"></i>
+          </button>
           <button class="btn-icon btn-icon-delete" title="Xóa trạm" onclick="deleteStation('${s.id}')">
             <i class="fas fa-trash"></i>
           </button>
@@ -473,6 +499,101 @@ function renderStationsTable(filterQuery = '') {
       </td>
     </tr>
   `).join('');
+}
+
+function openAddStationModal() {
+  document.getElementById('stationId').value = '';
+  document.getElementById('stationName').value = '';
+  document.getElementById('stationProvince').value = '';
+  document.getElementById('stationRegion').value = 'north';
+  document.getElementById('stationAddress').value = '';
+  document.getElementById('stationPhone').value = '028 22 422 822';
+  document.getElementById('stationHours').value = '8h00 - 18h00 (Thứ 2 - Thứ 7)';
+  document.getElementById('stationNote').value = '';
+
+  const titleEl = document.getElementById('modalStationTitle');
+  if (titleEl) titleEl.innerHTML = '<i class="fas fa-map-marker-alt"></i> Thêm Trạm Bảo Hành Mới';
+
+  const modal = document.getElementById('modalStation');
+  if (modal) modal.classList.add('open');
+}
+
+function openEditStationModal(id) {
+  const station = serviceCentersList.find(s => String(s.id) === String(id));
+  if (!station) {
+    alert('Không tìm thấy thông tin trạm bảo hành này.');
+    return;
+  }
+
+  document.getElementById('stationId').value = station.id || '';
+  document.getElementById('stationName').value = station.name || '';
+  document.getElementById('stationProvince').value = station.province || '';
+  document.getElementById('stationRegion').value = station.region || 'north';
+  document.getElementById('stationAddress').value = station.address || '';
+  document.getElementById('stationPhone').value = station.phone || '';
+  document.getElementById('stationHours').value = station.hours || '8h00 - 18h00 (Thứ 2 - Thứ 7)';
+  document.getElementById('stationNote').value = station.note || '';
+
+  const titleEl = document.getElementById('modalStationTitle');
+  if (titleEl) titleEl.innerHTML = '<i class="fas fa-edit"></i> Chỉnh Sửa Trạm Bảo Hành';
+
+  const modal = document.getElementById('modalStation');
+  if (modal) modal.classList.add('open');
+}
+
+function closeStationModal() {
+  const modal = document.getElementById('modalStation');
+  if (modal) modal.classList.remove('open');
+}
+
+function saveStationForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('stationId').value.trim();
+  const name = document.getElementById('stationName').value.trim();
+  const province = document.getElementById('stationProvince').value.trim();
+  const region = document.getElementById('stationRegion').value;
+  const address = document.getElementById('stationAddress').value.trim();
+  const phone = document.getElementById('stationPhone').value.trim();
+  const hours = document.getElementById('stationHours').value.trim();
+  const note = document.getElementById('stationNote').value.trim();
+
+  if (!name || !province || !address) {
+    alert('Vui lòng nhập đầy đủ tên trạm, tỉnh thành và địa chỉ.');
+    return;
+  }
+
+  const existingIdx = serviceCentersList.findIndex(s => String(s.id) === String(id));
+  const stationObj = {
+    id: id || `station-${Date.now()}`,
+    name,
+    province,
+    region,
+    address,
+    phone: phone || '028 22 422 822',
+    hours: hours || '8h00 - 18h00 (Thứ 2 - Thứ 7)',
+    note
+  };
+
+  if (existingIdx >= 0) {
+    serviceCentersList[existingIdx] = stationObj;
+    showToast(`Đã cập nhật trạm "${name}"`, 'success');
+  } else {
+    serviceCentersList.unshift(stationObj);
+    showToast(`Đã thêm trạm mới "${name}"`, 'success');
+  }
+
+  closeStationModal();
+  saveStations();
+}
+
+function deleteStation(id) {
+  const station = serviceCentersList.find(s => String(s.id) === String(id));
+  const name = station ? station.name : 'trạm này';
+  if (confirm(`Bạn có chắc chắn muốn xóa "${name}" khỏi hệ thống?`)) {
+    serviceCentersList = serviceCentersList.filter(s => String(s.id) !== String(id));
+    saveStations();
+    showToast(`Đã xóa "${name}"`, 'info');
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1373,6 +1494,14 @@ function renderLayoutManager() {
                   onclick="moveLayoutSection(${idx}, 1)" ${isLast ? 'disabled' : ''}>
             <i class="fas fa-arrow-down"></i>
           </button>
+          <button type="button" class="layout-nav-btn" title="Chỉnh sửa tên & mô tả khối" 
+                  onclick="openEditLayoutSectionModal(${idx})">
+            <i class="fas fa-pen"></i>
+          </button>
+          <button type="button" class="layout-nav-btn btn-del" title="Xóa khối khỏi trang chủ" 
+                  onclick="deleteLayoutSection(${idx})" style="color: #ef4444;">
+            <i class="fas fa-trash"></i>
+          </button>
           <label class="switch-toggle" title="${isEnabled ? 'Đang bật - Nhấn để ẩn' : 'Đang ẩn - Nhấn để bật'}">
             <input type="checkbox" ${isEnabled ? 'checked' : ''} onchange="toggleLayoutSection(${idx}, this.checked)">
             <span class="switch-slider"></span>
@@ -1381,6 +1510,101 @@ function renderLayoutManager() {
       </div>
     `;
   }).join('');
+}
+
+function openAddLayoutSectionModal() {
+  document.getElementById('layoutSecIndex').value = '';
+  document.getElementById('layoutSecId').value = 'section-' + Date.now();
+  document.getElementById('layoutSecName').value = '';
+  document.getElementById('layoutSecDesc').value = '';
+  document.getElementById('layoutSecEnabled').value = 'true';
+
+  const titleEl = document.getElementById('modalLayoutTitle');
+  if (titleEl) titleEl.innerHTML = '<i class="fas fa-plus-circle"></i> Thêm Khối Bố Cục Mới';
+
+  const modal = document.getElementById('modalLayoutSection');
+  if (modal) modal.classList.add('open');
+}
+
+function openEditLayoutSectionModal(index) {
+  if (!homepageConfig || !homepageConfig.layout || !homepageConfig.layout[index]) return;
+  const sec = homepageConfig.layout[index];
+
+  document.getElementById('layoutSecIndex').value = index;
+  document.getElementById('layoutSecId').value = sec.id || '';
+  document.getElementById('layoutSecName').value = sec.name || '';
+  document.getElementById('layoutSecDesc').value = sec.desc || '';
+  document.getElementById('layoutSecEnabled').value = sec.enabled !== false ? 'true' : 'false';
+
+  const titleEl = document.getElementById('modalLayoutTitle');
+  if (titleEl) titleEl.innerHTML = '<i class="fas fa-pen"></i> Chỉnh Sửa Khối Bố Cục';
+
+  const modal = document.getElementById('modalLayoutSection');
+  if (modal) modal.classList.add('open');
+}
+
+function closeLayoutModal() {
+  const modal = document.getElementById('modalLayoutSection');
+  if (modal) modal.classList.remove('open');
+}
+
+function saveLayoutSectionForm(e) {
+  e.preventDefault();
+  const idxVal = document.getElementById('layoutSecIndex').value;
+  const id = document.getElementById('layoutSecId').value.trim();
+  const name = document.getElementById('layoutSecName').value.trim();
+  const desc = document.getElementById('layoutSecDesc').value.trim();
+  const enabled = document.getElementById('layoutSecEnabled').value === 'true';
+
+  if (!id || !name) {
+    alert('Vui lòng nhập đầy đủ mã ID và tên khối bố cục.');
+    return;
+  }
+
+  if (!homepageConfig.layout) homepageConfig.layout = [];
+
+  if (idxVal !== '') {
+    const idx = parseInt(idxVal, 10);
+    if (homepageConfig.layout[idx]) {
+      homepageConfig.layout[idx].id = id;
+      homepageConfig.layout[idx].name = name;
+      homepageConfig.layout[idx].desc = desc;
+      homepageConfig.layout[idx].enabled = enabled;
+      showToast(`Đã cập nhật khối "${name}"`, 'success');
+    }
+  } else {
+    homepageConfig.layout.push({
+      id,
+      name,
+      desc,
+      enabled,
+      order: homepageConfig.layout.length + 1
+    });
+    showToast(`Đã thêm khối mới "${name}"`, 'success');
+  }
+
+  closeLayoutModal();
+  renderLayoutManager();
+}
+
+function deleteLayoutSection(index) {
+  if (!homepageConfig || !homepageConfig.layout || !homepageConfig.layout[index]) return;
+  const sec = homepageConfig.layout[index];
+  if (confirm(`Bạn có chắc chắn muốn xóa khối "${sec.name}" khỏi bố cục trang chủ?`)) {
+    homepageConfig.layout.splice(index, 1);
+    homepageConfig.layout.forEach((s, idx) => { s.order = idx + 1; });
+    renderLayoutManager();
+    showToast(`Đã xóa khối "${sec.name}"`, 'info');
+  }
+}
+
+function resetLayoutDefault() {
+  if (confirm('Khôi phục danh sách và thứ tự khối trang chủ về mặc định chuẩn?')) {
+    const def = getDefaultHomepageConfig();
+    homepageConfig.layout = def.layout;
+    renderLayoutManager();
+    showToast('Đã khôi phục bố cục trang chủ về mặc định.', 'success');
+  }
 }
 
 function moveLayoutSection(index, direction) {
@@ -1441,10 +1665,10 @@ function renderCmsHeroTable() {
       </td>
       <td>
         <div class="action-btn-group">
-          <button class="btn-icon" title="Chỉnh sửa" onclick="openEditBannerModal('${b.id}')">
+          <button class="btn-icon" title="Chỉnh sửa slide" onclick="openEditBannerModal('${b.id}')">
             <i class="fas fa-pen"></i>
           </button>
-          <button class="btn-icon btn-icon-delete" title="Xóa" onclick="deleteBanner('${b.id}')">
+          <button class="btn-icon btn-icon-delete" title="Xóa slide" onclick="deleteBanner('${b.id}')">
             <i class="fas fa-trash"></i>
           </button>
         </div>
@@ -1455,9 +1679,10 @@ function renderCmsHeroTable() {
 
 // ── 3. Brands Strip CMS ──
 function renderCmsBrands() {
-  const container = document.getElementById('cmsBrandChipsList');
+  const chipsContainer = document.getElementById('cmsBrandChipsList');
+  const tbody = document.getElementById('cmsBrandsTableBody');
   const labelInput = document.getElementById('cmsBrandsLabel');
-  if (!container || !homepageConfig) return;
+  if (!homepageConfig) return;
 
   if (homepageConfig.brandsStrip) {
     if (labelInput && homepageConfig.brandsStrip.label) {
@@ -1468,13 +1693,112 @@ function renderCmsBrands() {
   }
 
   const brands = homepageConfig.brandsStrip.brands || [];
-  container.innerHTML = brands.map((b, idx) => `
-    <span class="badge-brand-chip">
-      <span class="dot ${b.color || 'blue'}"></span>
-      <span>${b.name}</span>
-      <i class="fas fa-times badge-brand-chip-del" title="Xóa thương hiệu này" onclick="removeBrandChip(${idx})"></i>
-    </span>
-  `).join('');
+
+  // 1. Render chips nếu có container
+  if (chipsContainer) {
+    chipsContainer.innerHTML = brands.map((b, idx) => `
+      <span class="badge-brand-chip">
+        <span class="dot ${b.color || 'blue'}"></span>
+        <span>${b.name}</span>
+        <i class="fas fa-times badge-brand-chip-del" title="Xóa thương hiệu này" onclick="removeBrandChip(${idx})"></i>
+      </span>
+    `).join('');
+  }
+
+  // 2. Render bảng chi tiết với nút Sửa & Xóa
+  if (tbody) {
+    if (brands.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--adm-text-muted);">Chưa có thương hiệu nào. Nhấn "+ Thêm Thương Hiệu Mới" để tạo.</td></tr>`;
+    } else {
+      const colorNames = { blue: 'Xanh dương', red: 'Đỏ', green: 'Xanh lá', amber: 'Vàng hổ phách' };
+      tbody.innerHTML = brands.map((b, idx) => `
+        <tr>
+          <td style="font-weight: 600; color: var(--adm-text-secondary); text-align: center;">${idx + 1}</td>
+          <td><strong>${b.name}</strong></td>
+          <td>
+            <span class="dot ${b.color || 'blue'}" style="display:inline-block; vertical-align:middle; margin-right:6px;"></span>
+            <span style="font-size: 12px; color: var(--adm-text-secondary);">${colorNames[b.color] || b.color}</span>
+          </td>
+          <td>
+            <code style="font-size: 11.5px; color: #0284c7;">${b.link || '(Không gắn link)'}</code>
+          </td>
+          <td style="text-align: center;">
+            <div class="action-btn-group" style="justify-content: center;">
+              <button type="button" class="btn-icon" title="Chỉnh sửa thương hiệu" onclick="openEditBrandModal(${idx})">
+                <i class="fas fa-pen"></i>
+              </button>
+              <button type="button" class="btn-icon btn-icon-delete" title="Xóa thương hiệu" onclick="removeBrandChip(${idx})">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+  }
+}
+
+function openAddBrandModal() {
+  document.getElementById('brandIndex').value = '';
+  document.getElementById('brandModalName').value = '';
+  document.getElementById('brandModalColor').value = 'blue';
+  document.getElementById('brandModalLink').value = '';
+
+  const titleEl = document.getElementById('modalBrandTitle');
+  if (titleEl) titleEl.innerHTML = '<i class="fas fa-plus-circle"></i> Thêm Thương Hiệu Đối Tác Mới';
+
+  const modal = document.getElementById('modalBrand');
+  if (modal) modal.classList.add('open');
+}
+
+function openEditBrandModal(index) {
+  if (!homepageConfig || !homepageConfig.brandsStrip || !homepageConfig.brandsStrip.brands[index]) return;
+  const b = homepageConfig.brandsStrip.brands[index];
+
+  document.getElementById('brandIndex').value = index;
+  document.getElementById('brandModalName').value = b.name || '';
+  document.getElementById('brandModalColor').value = b.color || 'blue';
+  document.getElementById('brandModalLink').value = b.link || '';
+
+  const titleEl = document.getElementById('modalBrandTitle');
+  if (titleEl) titleEl.innerHTML = '<i class="fas fa-pen"></i> Chỉnh Sửa Thương Hiệu';
+
+  const modal = document.getElementById('modalBrand');
+  if (modal) modal.classList.add('open');
+}
+
+function closeBrandModal() {
+  const modal = document.getElementById('modalBrand');
+  if (modal) modal.classList.remove('open');
+}
+
+function saveBrandModalForm(e) {
+  e.preventDefault();
+  const idxVal = document.getElementById('brandIndex').value;
+  const name = document.getElementById('brandModalName').value.trim();
+  const color = document.getElementById('brandModalColor').value || 'blue';
+  const link = document.getElementById('brandModalLink').value.trim();
+
+  if (!name) {
+    alert('Vui lòng nhập tên thương hiệu.');
+    return;
+  }
+
+  if (!homepageConfig.brandsStrip) homepageConfig.brandsStrip = { label: 'Thương hiệu đồng hành', brands: [] };
+
+  if (idxVal !== '') {
+    const idx = parseInt(idxVal, 10);
+    if (homepageConfig.brandsStrip.brands[idx]) {
+      homepageConfig.brandsStrip.brands[idx] = { name, color, link };
+      showToast(`Đã cập nhật thương hiệu "${name}"`, 'success');
+    }
+  } else {
+    homepageConfig.brandsStrip.brands.push({ name, color, link });
+    showToast(`Đã thêm thương hiệu "${name}"`, 'success');
+  }
+
+  closeBrandModal();
+  renderCmsBrands();
 }
 
 function addBrandChip() {
@@ -1534,8 +1858,8 @@ function populateCmsDeepdiveForm() {
     if (elImage) elImage.value = bd.hxy.image || '';
     if (elCaption) elCaption.value = bd.hxy.caption || '';
 
-    // Render 4 features
     renderDeepdiveFeaturesInputs('cmsHxyFeaturesWrap', bd.hxy.features || [], 'hxy');
+    renderDeepdiveModels('hxy');
   }
 
   // HIKERS
@@ -1551,8 +1875,8 @@ function populateCmsDeepdiveForm() {
     if (elImage) elImage.value = bd.hikers.image || '';
     if (elCaption) elCaption.value = bd.hikers.caption || '';
 
-    // Render 4 features
     renderDeepdiveFeaturesInputs('cmsHikersFeaturesWrap', bd.hikers.features || [], 'hikers');
+    renderDeepdiveModels('hikers');
   }
 }
 
@@ -1560,15 +1884,148 @@ function renderDeepdiveFeaturesInputs(wrapId, features, brandKey) {
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
 
+  if (!features || features.length === 0) {
+    wrap.innerHTML = `<p style="font-size: 12px; color: var(--adm-text-muted); margin: 6px 0;">Chưa có thế mạnh nào. Bấm "+ Thêm thế mạnh" để tạo.</p>`;
+    return;
+  }
+
   wrap.innerHTML = features.map((f, idx) => `
     <div style="background: #f8fafc; border: 1px solid var(--adm-border); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 8px;">
-      <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+      <div style="display: flex; gap: 8px; margin-bottom: 6px; align-items: center;">
         <input type="text" class="form-control feat-icon-${brandKey}" value="${f.icon || 'fas fa-tv'}" placeholder="Icon fa" style="width: 140px; font-size: 12px;">
         <input type="text" class="form-control feat-title-${brandKey}" value="${f.title || ''}" placeholder="Tiêu đề thế mạnh" style="flex: 1; font-weight: 600; font-size: 12.5px;">
+        <button type="button" class="btn-icon btn-icon-delete" title="Xóa thế mạnh này" onclick="deleteDeepdiveFeature('${brandKey}', ${idx})">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
       <textarea class="form-control feat-desc-${brandKey}" rows="2" placeholder="Mô tả chi tiết" style="font-size: 12px;">${f.desc || ''}</textarea>
     </div>
   `).join('');
+}
+
+function addDeepdiveFeature(brandKey) {
+  collectCmsDeepdiveForm();
+  if (!homepageConfig.brandDeepdive) homepageConfig.brandDeepdive = {};
+  if (!homepageConfig.brandDeepdive[brandKey]) homepageConfig.brandDeepdive[brandKey] = {};
+  if (!homepageConfig.brandDeepdive[brandKey].features) homepageConfig.brandDeepdive[brandKey].features = [];
+
+  homepageConfig.brandDeepdive[brandKey].features.push({
+    icon: 'fas fa-check-circle',
+    title: 'Thế mạnh công nghệ mới',
+    desc: 'Mô tả chi tiết công nghệ, tính năng hoặc giải pháp nổi bật...'
+  });
+
+  const wrapId = brandKey === 'hxy' ? 'cmsHxyFeaturesWrap' : 'cmsHikersFeaturesWrap';
+  renderDeepdiveFeaturesInputs(wrapId, homepageConfig.brandDeepdive[brandKey].features, brandKey);
+}
+
+function deleteDeepdiveFeature(brandKey, index) {
+  collectCmsDeepdiveForm();
+  if (!homepageConfig.brandDeepdive || !homepageConfig.brandDeepdive[brandKey] || !homepageConfig.brandDeepdive[brandKey].features) return;
+  homepageConfig.brandDeepdive[brandKey].features.splice(index, 1);
+  const wrapId = brandKey === 'hxy' ? 'cmsHxyFeaturesWrap' : 'cmsHikersFeaturesWrap';
+  renderDeepdiveFeaturesInputs(wrapId, homepageConfig.brandDeepdive[brandKey].features, brandKey);
+  showToast('Đã xóa thế mạnh.', 'info');
+}
+
+// TV Models Tag CRUD
+function renderDeepdiveModels(brandKey) {
+  const wrapId = brandKey === 'hxy' ? 'cmsHxyModelsWrap' : 'cmsHikersModelsWrap';
+  const wrap = document.getElementById(wrapId);
+  if (!wrap || !homepageConfig || !homepageConfig.brandDeepdive) return;
+  const brand = homepageConfig.brandDeepdive[brandKey];
+  const models = (brand && brand.models) ? brand.models : [];
+
+  if (models.length === 0) {
+    wrap.innerHTML = `<span style="font-size: 12px; color: var(--adm-text-muted);">Chưa có Model TV nào. Nhấn "+ Thêm Model TV" để tạo tag.</span>`;
+    return;
+  }
+
+  wrap.innerHTML = models.map((m, idx) => `
+    <span class="badge" style="background: #ffffff; border: 1px solid var(--adm-border); color: var(--adm-text); font-size: 12px; padding: 6px 10px; display: inline-flex; align-items: center; gap: 6px; border-radius: 20px;">
+      <i class="fas fa-tv" style="color: ${brandKey === 'hxy' ? 'var(--hxy-blue)' : 'var(--hikers-red)'};"></i>
+      <strong>${m.name}</strong>
+      ${m.id ? `<small style="color: #64748b;">(${m.id})</small>` : ''}
+      <i class="fas fa-pen" style="cursor: pointer; color: #0284c7; margin-left: 4px;" title="Sửa Model" onclick="openEditTvModelModal('${brandKey}', ${idx})"></i>
+      <i class="fas fa-times" style="cursor: pointer; color: #ef4444;" title="Xóa Model" onclick="deleteTvModel('${brandKey}', ${idx})"></i>
+    </span>
+  `).join('');
+}
+
+function openAddTvModelModal(brandKey) {
+  document.getElementById('tvModelBrandKey').value = brandKey;
+  document.getElementById('tvModelIndex').value = '';
+  document.getElementById('tvModelName').value = '';
+  document.getElementById('tvModelProductId').value = '';
+
+  const titleEl = document.getElementById('modalTvModelTitle');
+  if (titleEl) titleEl.innerHTML = `<i class="fas fa-tv"></i> Thêm Model TV (${brandKey.toUpperCase()})`;
+
+  const modal = document.getElementById('modalTvModel');
+  if (modal) modal.classList.add('open');
+}
+
+function openEditTvModelModal(brandKey, index) {
+  if (!homepageConfig.brandDeepdive || !homepageConfig.brandDeepdive[brandKey] || !homepageConfig.brandDeepdive[brandKey].models) return;
+  const m = homepageConfig.brandDeepdive[brandKey].models[index];
+  if (!m) return;
+
+  document.getElementById('tvModelBrandKey').value = brandKey;
+  document.getElementById('tvModelIndex').value = index;
+  document.getElementById('tvModelName').value = m.name || '';
+  document.getElementById('tvModelProductId').value = m.id || '';
+
+  const titleEl = document.getElementById('modalTvModelTitle');
+  if (titleEl) titleEl.innerHTML = `<i class="fas fa-edit"></i> Chỉnh Sửa Model TV (${brandKey.toUpperCase()})`;
+
+  const modal = document.getElementById('modalTvModel');
+  if (modal) modal.classList.add('open');
+}
+
+function closeTvModelModal() {
+  const modal = document.getElementById('modalTvModel');
+  if (modal) modal.classList.remove('open');
+}
+
+function saveTvModelForm(e) {
+  e.preventDefault();
+  const brandKey = document.getElementById('tvModelBrandKey').value;
+  const idxVal = document.getElementById('tvModelIndex').value;
+  const name = document.getElementById('tvModelName').value.trim();
+  const id = document.getElementById('tvModelProductId').value.trim();
+
+  if (!name) {
+    alert('Vui lòng nhập tên hiển thị Model TV.');
+    return;
+  }
+
+  if (!homepageConfig.brandDeepdive) homepageConfig.brandDeepdive = {};
+  if (!homepageConfig.brandDeepdive[brandKey]) homepageConfig.brandDeepdive[brandKey] = {};
+  if (!homepageConfig.brandDeepdive[brandKey].models) homepageConfig.brandDeepdive[brandKey].models = [];
+
+  const modelObj = { id: id || `model-${Date.now()}`, name };
+
+  if (idxVal !== '') {
+    const idx = parseInt(idxVal, 10);
+    homepageConfig.brandDeepdive[brandKey].models[idx] = modelObj;
+    showToast(`Đã cập nhật model "${name}"`, 'success');
+  } else {
+    homepageConfig.brandDeepdive[brandKey].models.push(modelObj);
+    showToast(`Đã thêm model "${name}"`, 'success');
+  }
+
+  closeTvModelModal();
+  renderDeepdiveModels(brandKey);
+}
+
+function deleteTvModel(brandKey, index) {
+  if (!homepageConfig.brandDeepdive || !homepageConfig.brandDeepdive[brandKey] || !homepageConfig.brandDeepdive[brandKey].models) return;
+  const m = homepageConfig.brandDeepdive[brandKey].models[index];
+  if (confirm(`Bạn có chắc chắn muốn xóa model tag "${m.name}"?`)) {
+    homepageConfig.brandDeepdive[brandKey].models.splice(index, 1);
+    renderDeepdiveModels(brandKey);
+    showToast('Đã xóa model tag.', 'info');
+  }
 }
 
 function collectCmsDeepdiveForm() {
@@ -1637,15 +2094,29 @@ function renderCmsCompareTable() {
   if (descEl && ct.desc) descEl.value = ct.desc;
   if (polEl && ct.policyText) polEl.value = ct.policyText;
 
-  tbody.innerHTML = (ct.rows || []).map((r, idx) => `
+  const rows = ct.rows || [];
+  if (rows.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--adm-text-muted);">Chưa có tiêu chí so sánh nào. Nhấn "+ Thêm tiêu chí" để tạo.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map((r, idx) => `
     <tr>
-      <td><textarea class="cmp-criteria" rows="2">${r.criteria || ''}</textarea></td>
+      <td><textarea class="cmp-criteria" rows="2" style="font-weight: 600;">${r.criteria || ''}</textarea></td>
       <td><textarea class="cmp-hxy" rows="2">${r.hxy || ''}</textarea></td>
       <td><textarea class="cmp-hikers" rows="2">${r.hikers || ''}</textarea></td>
       <td style="text-align: center;">
-        <button type="button" class="btn-icon btn-icon-delete" onclick="deleteCompareRow(${idx})" title="Xóa dòng tiêu chí này">
-          <i class="fas fa-trash"></i>
-        </button>
+        <div class="action-btn-group" style="justify-content: center;">
+          <button type="button" class="btn-icon" onclick="moveCompareRow(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Di chuyển lên">
+            <i class="fas fa-arrow-up"></i>
+          </button>
+          <button type="button" class="btn-icon" onclick="moveCompareRow(${idx}, 1)" ${idx === rows.length - 1 ? 'disabled' : ''} title="Di chuyển xuống">
+            <i class="fas fa-arrow-down"></i>
+          </button>
+          <button type="button" class="btn-icon btn-icon-delete" onclick="deleteCompareRow(${idx})" title="Xóa dòng tiêu chí này">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
       </td>
     </tr>
   `).join('');
@@ -1655,7 +2126,7 @@ function addCompareRow() {
   if (!homepageConfig.comparisonTable) homepageConfig.comparisonTable = { rows: [] };
   collectCmsCompareForm();
   homepageConfig.comparisonTable.rows.push({
-    criteria: 'Tiêu chí mới',
+    criteria: 'Tiêu chí so sánh mới',
     hxy: '',
     hikers: ''
   });
@@ -1666,6 +2137,19 @@ function deleteCompareRow(index) {
   if (!homepageConfig.comparisonTable || !homepageConfig.comparisonTable.rows) return;
   collectCmsCompareForm();
   homepageConfig.comparisonTable.rows.splice(index, 1);
+  renderCmsCompareTable();
+}
+
+function moveCompareRow(index, direction) {
+  collectCmsCompareForm();
+  const targetIndex = index + direction;
+  const rows = homepageConfig.comparisonTable.rows || [];
+  if (targetIndex < 0 || targetIndex >= rows.length) return;
+
+  const temp = rows[index];
+  rows[index] = rows[targetIndex];
+  rows[targetIndex] = temp;
+
   renderCmsCompareTable();
 }
 
@@ -1698,18 +2182,47 @@ function renderCmsStats() {
   if (!wrap || !homepageConfig) return;
 
   const stats = homepageConfig.stats || [];
+  if (stats.length === 0) {
+    wrap.innerHTML = `<p style="color: var(--adm-text-muted); padding: 15px;">Chưa có chỉ số nào. Nhấn "+ Thêm chỉ số thống kê" để tạo.</p>`;
+    return;
+  }
+
   wrap.innerHTML = stats.map((s, idx) => `
-    <div class="cms-card-box" style="flex: 1; min-width: 200px;">
-      <div class="form-group">
-        <label class="form-label">Chỉ số số liệu #${idx + 1}</label>
+    <div class="cms-card-box" style="flex: 1; min-width: 220px; position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-weight: 700; font-size: 13px; color: var(--adm-accent);">Chỉ số #${idx + 1}</span>
+        <button type="button" class="btn-icon btn-icon-delete" title="Xóa chỉ số này" onclick="deleteStatItem(${idx})">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      <div class="form-group" style="margin-bottom: 8px;">
+        <label class="form-label" style="font-size: 12px;">Số liệu hiển thị</label>
         <input type="text" class="form-control cms-stat-num" value="${s.number || ''}" placeholder="VD: 80-100, 63, 100%">
       </div>
-      <div class="form-group">
-        <label class="form-label">Nhãn mô tả</label>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="font-size: 12px;">Nhãn mô tả</label>
         <input type="text" class="form-control cms-stat-lbl" value="${s.label || ''}" placeholder="VD: Trạm bảo hành toàn quốc">
       </div>
     </div>
   `).join('');
+}
+
+function addStatItem() {
+  collectCmsStats();
+  if (!homepageConfig.stats) homepageConfig.stats = [];
+  homepageConfig.stats.push({
+    number: '100+',
+    label: 'Chỉ số mới'
+  });
+  renderCmsStats();
+}
+
+function deleteStatItem(index) {
+  collectCmsStats();
+  if (!homepageConfig.stats) return;
+  homepageConfig.stats.splice(index, 1);
+  renderCmsStats();
+  showToast('Đã xóa chỉ số thống kê.', 'info');
 }
 
 function collectCmsStats() {
@@ -1764,13 +2277,17 @@ function renderCmsFeaturedPicker(filterQuery = '') {
   const titleEl = document.getElementById('cmsFeaturedTitle');
   const descEl  = document.getElementById('cmsFeaturedDesc');
 
-  if (!grid || !homepageConfig) return;
+  if (!homepageConfig) return;
   const fp = homepageConfig.featuredProducts || { productIds: [] };
 
   if (badgeEl && fp.badge) badgeEl.value = fp.badge;
   if (titleEl && fp.title) titleEl.value = fp.title;
   if (descEl && fp.desc) descEl.value = fp.desc;
 
+  // Render danh sách các sản phẩm đang được ghim (có thứ tự & nút xóa)
+  renderPinnedFeaturedList();
+
+  if (!grid) return;
   const selectedIds = fp.productIds || [];
 
   let list = productsList || [];
@@ -1792,6 +2309,76 @@ function renderCmsFeaturedPicker(filterQuery = '') {
       </div>
     `;
   }).join('');
+}
+
+function renderPinnedFeaturedList() {
+  const container = document.getElementById('cmsPinnedProductsList');
+  if (!container || !homepageConfig) return;
+
+  const fp = homepageConfig.featuredProducts || { productIds: [] };
+  const pinnedIds = fp.productIds || [];
+
+  if (pinnedIds.length === 0) {
+    container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--adm-text-muted); background: #f8fafc; border-radius: var(--radius-sm); font-size: 13px;">Chưa có sản phẩm TV nào được ghim. Hãy tích chọn sản phẩm ở danh sách dưới.</div>`;
+    return;
+  }
+
+  container.innerHTML = pinnedIds.map((pid, idx) => {
+    const p = (productsList || []).find(prod => String(prod.id) === String(pid)) || {
+      id: pid,
+      name: `Sản phẩm (${pid})`,
+      brand: 'TV',
+      model: pid,
+      thumbnail: '../images/products/placeholder.svg'
+    };
+
+    const isFirst = idx === 0;
+    const isLast = idx === pinnedIds.length - 1;
+
+    return `
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid var(--adm-border); border-radius: var(--radius-sm); padding: 8px 12px; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+          <span style="font-weight: 700; color: var(--adm-accent); font-size: 13px; min-width: 24px;">#${idx + 1}</span>
+          <img src="${p.thumbnail || '../images/products/placeholder.svg'}" alt="${p.name}" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid var(--adm-border);" onerror="this.src='../images/products/placeholder.svg'">
+          <div style="min-width: 0;">
+            <div style="font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.name}</div>
+            <div style="font-size: 11px; color: #64748b;">${p.brand} · ${p.model || ''}</div>
+          </div>
+        </div>
+        <div class="action-btn-group" style="flex-shrink: 0;">
+          <button type="button" class="btn-icon" title="Đẩy lên trước" onclick="movePinnedProduct(${idx}, -1)" ${isFirst ? 'disabled' : ''}>
+            <i class="fas fa-arrow-up"></i>
+          </button>
+          <button type="button" class="btn-icon" title="Đẩy xuống sau" onclick="movePinnedProduct(${idx}, 1)" ${isLast ? 'disabled' : ''}>
+            <i class="fas fa-arrow-down"></i>
+          </button>
+          <button type="button" class="btn-icon btn-icon-delete" title="Bỏ ghim (Xóa khỏi nổi bật)" onclick="unpinFeaturedProduct('${pid}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function movePinnedProduct(index, direction) {
+  if (!homepageConfig.featuredProducts || !homepageConfig.featuredProducts.productIds) return;
+  const ids = homepageConfig.featuredProducts.productIds;
+  const targetIndex = index + direction;
+  if (targetIndex < 0 || targetIndex >= ids.length) return;
+
+  const temp = ids[index];
+  ids[index] = ids[targetIndex];
+  ids[targetIndex] = temp;
+
+  renderCmsFeaturedPicker();
+}
+
+function unpinFeaturedProduct(productId) {
+  if (!homepageConfig.featuredProducts || !homepageConfig.featuredProducts.productIds) return;
+  homepageConfig.featuredProducts.productIds = homepageConfig.featuredProducts.productIds.filter(id => String(id) !== String(productId));
+  renderCmsFeaturedPicker();
+  showToast('Đã bỏ ghim sản phẩm khỏi trang chủ.', 'info');
 }
 
 function filterFeaturedPicker(query) {
@@ -1904,4 +2491,3 @@ function resetHomepageDefault() {
     showToast('Đã khôi phục cài đặt mặc định cho trang chủ!', 'success');
   }
 }
-
