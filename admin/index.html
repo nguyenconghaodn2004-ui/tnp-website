@@ -77,6 +77,12 @@
         <span class="nav-badge" id="badgeContactsCount" style="background: #dc2626;">0</span>
       </a>
 
+      <a class="nav-item" data-tab="users">
+        <i class="fas fa-user-shield"></i>
+        <span>Tài khoản & Phân quyền</span>
+        <span class="nav-badge" id="badgeUsersCount" style="background: var(--adm-accent);">1</span>
+      </a>
+
       <a class="nav-item" data-tab="settings">
         <i class="fas fa-sliders-h"></i>
         <span>Cài đặt hệ thống</span>
@@ -84,7 +90,7 @@
     </nav>
 
     <div class="sidebar-footer">
-      <div class="sidebar-user">
+      <div class="sidebar-user" onclick="openChangePasswordModal()" style="cursor: pointer;" title="Nhấp để đổi mật khẩu tài khoản cá nhân">
         <div class="user-avatar" id="sidebarUserAvatar">AD</div>
         <div class="user-meta">
           <span class="user-name" id="sidebarUserName">Quản Trị Viên</span>
@@ -1025,6 +1031,72 @@
         </div>
       </section>
 
+      <!-- ── TAB: USERS & RBAC PERMISSIONS ── -->
+      <section class="tab-panel" id="tab-users">
+        <div class="admin-card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h2 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-user-shield" style="color: var(--adm-accent);"></i> Quản Lý Tài Khoản & Phân Quyền Quản Trị
+              </h2>
+              <p style="margin: 4px 0 0 0; color: var(--adm-text-secondary); font-size: 13px;">
+                Hệ thống phân quyền Role-Based Access Control (RBAC) với 4 cấp độ: Super Admin, Quản lý Trạm, Biên tập viên, CSKH
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-secondary btn-sm" onclick="loadUsersList()" title="Làm mới danh sách">
+                <i class="fas fa-sync-alt" id="usersRefreshIcon"></i> Làm mới
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">
+                <i class="fas fa-user-plus"></i> Thêm tài khoản mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Bảng giải thích các vai trò -->
+          <div style="padding: 12px 20px; background: var(--adm-bg); border-bottom: 1px solid var(--adm-border); display: flex; flex-wrap: wrap; gap: 16px; font-size: 12.5px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="badge" style="background:#fee2e2;color:#b91c1c;font-weight:600;"><i class="fas fa-crown"></i> Super Admin</span>
+              <span style="color: var(--adm-text-muted);">Toàn quyền hệ thống & Tài khoản</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="badge" style="background:#dbeafe;color:#1d4ed8;font-weight:600;"><i class="fas fa-tools"></i> Quản lý Trạm</span>
+              <span style="color: var(--adm-text-muted);">Quản lý Trạm & Sản phẩm TV</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="badge" style="background:#f3e8ff;color:#7e22ce;font-weight:600;"><i class="fas fa-feather-alt"></i> Biên tập viên</span>
+              <span style="color: var(--adm-text-muted);">Bài viết, Banners & Trang chủ</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="badge" style="background:#dcfce7;color:#15803d;font-weight:600;"><i class="fas fa-headset"></i> CSKH & Hỗ trợ</span>
+              <span style="color: var(--adm-text-muted);">Tiếp nhận & xử lý tư vấn</span>
+            </div>
+          </div>
+
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px; text-align: center;">STT</th>
+                    <th>Họ và Tên</th>
+                    <th>Tên đăng nhập</th>
+                    <th>Email liên kết</th>
+                    <th>Vai trò / Phân quyền</th>
+                    <th>Trạng thái</th>
+                    <th>Đăng nhập cuối</th>
+                    <th style="width: 130px; text-align: center;">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <!-- Injected via admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── TAB: SETTINGS ── -->
       <section class="tab-panel" id="tab-settings">
         <div class="admin-card">
@@ -1520,6 +1592,122 @@
       </div>
     </form>
   </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: THÊM / SỬA TÀI KHOẢN (USER)
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="modalUser">
+  <div class="modal-dialog" style="max-width: 540px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalUserTitle"><i class="fas fa-user-plus"></i> Thêm Tài Khoản Quản Trị Mới</h3>
+      <button class="modal-close" onclick="closeUserModal()">&times;</button>
+    </div>
+    <form onsubmit="saveUserForm(event)">
+      <div class="modal-body">
+        <input type="hidden" id="userId">
+        
+        <div class="form-group">
+          <label class="form-label">Họ và tên người dùng *</label>
+          <input type="text" id="userFullName" class="form-control" placeholder="VD: Nguyễn Văn An" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tên đăng nhập (Username) *</label>
+            <input type="text" id="userUsername" class="form-control" placeholder="VD: an.nguyen" required autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email liên kết *</label>
+            <input type="email" id="userEmail" class="form-control" placeholder="VD: an.nguyen@tnpcare.vn" required>
+          </div>
+        </div>
+
+        <div class="form-group" id="userPasswordGroup">
+          <label class="form-label" id="userPasswordLabel">Mật khẩu khởi tạo * (tối thiểu 6 ký tự)</label>
+          <div style="position: relative;">
+            <input type="password" id="userPassword" class="form-control" placeholder="••••••••" style="padding-right: 40px;" autocomplete="new-password">
+            <span onclick="toggleModalPwdVisibility('userPassword', 'userPwdEye')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;">
+              <i class="fas fa-eye" id="userPwdEye"></i>
+            </span>
+          </div>
+          <small id="userPasswordHelp" style="color: var(--adm-text-muted); display: none;">Để trống nếu không muốn đổi mật khẩu của tài khoản này.</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vai trò & Phân quyền (Role) *</label>
+            <select id="userRole" class="form-control" required>
+              <option value="superadmin">👑 Super Admin (Toàn quyền hệ thống)</option>
+              <option value="station_manager">🛠️ Quản lý Trạm (Trạm BH & Sản phẩm TV)</option>
+              <option value="editor" selected>✍️ Biên tập viên (Bài viết, Banner, CMS)</option>
+              <option value="support">🎧 CSKH & Hỗ trợ (Yêu cầu tư vấn)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trạng thái tài khoản</label>
+            <select id="userStatus" class="form-control">
+              <option value="active">🟢 Đang hoạt động</option>
+              <option value="locked">🔴 Khóa tài khoản</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveUser"><i class="fas fa-check"></i> Lưu tài khoản</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: ĐỔI MẬT KHẨU CÁ NHÂN
+     ══════════════════════════════════════════ -->
+<div class="admin-modal" id="modalChangePassword">
+  <div class="modal-dialog" style="max-width: 440px;">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="fas fa-key"></i> Đổi Mật Khẩu Cá Nhân</h3>
+      <button class="modal-close" onclick="closeChangePasswordModal()">&times;</button>
+    </div>
+    <form onsubmit="saveChangePasswordForm(event)">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Mật khẩu hiện tại *</label>
+          <div style="position: relative;">
+            <input type="password" id="cpOldPassword" class="form-control" placeholder="Nhập mật khẩu đang dùng..." required style="padding-right: 40px;">
+            <span onclick="toggleModalPwdVisibility('cpOldPassword', 'cpOldEye')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;">
+              <i class="fas fa-eye" id="cpOldEye"></i>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu mới * (từ 6 ký tự trở lên)</label>
+          <div style="position: relative;">
+            <input type="password" id="cpNewPassword" class="form-control" placeholder="Nhập mật khẩu mới..." required minlength="6" style="padding-right: 40px;">
+            <span onclick="toggleModalPwdVisibility('cpNewPassword', 'cpNewEye')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;">
+              <i class="fas fa-eye" id="cpNewEye"></i>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Xác nhận mật khẩu mới *</label>
+          <div style="position: relative;">
+            <input type="password" id="cpConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu mới..." required minlength="6" style="padding-right: 40px;">
+            <span onclick="toggleModalPwdVisibility('cpConfirmPassword', 'cpConfirmEye')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94a3b8;">
+              <i class="fas fa-eye" id="cpConfirmEye"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveChangePassword"><i class="fas fa-check"></i> Cập nhật mật khẩu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════
      MODAL: TÌM KIẾM NHANH HỆ THỐNG (CTRL + K)
      ══════════════════════════════════════════ -->

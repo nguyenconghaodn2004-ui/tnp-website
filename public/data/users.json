@@ -1,0 +1,14 @@
+[
+  {
+    "id": "usr_superadmin",
+    "username": "admin",
+    "email": "admin@tnpcare.vn",
+    "fullName": "Quản Trị Viên Tối Cao",
+    "passwordHash": "049e5b1c33b0da872a09705c36613ef5:4c6ab363cbcda7b0d1242e71b4bcad0071fcf21b9f1b6cea30e856554f9b979725d71e6dce0c93fa0d1bc20af70eb7fc2104688cc073ff088bf8eb175f103bc3",
+    "role": "superadmin",
+    "status": "active",
+    "createdAt": "2026-09-07T08:55:36.389Z",
+    "updatedAt": "2026-09-07T08:55:36.390Z",
+    "lastLogin": "2026-09-07T08:55:57.004Z"
+  }
+]

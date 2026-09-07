@@ -116,15 +116,6 @@
     .login-footer-text a:hover {
       text-decoration: underline;
     }
-    .login-hint {
-      margin-top: 18px;
-      padding: 12px;
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-      font-size: 11.5px;
-      color: #64748b;
-    }
   </style>
 </head>
 <body class="login-body">
@@ -144,7 +135,7 @@
   <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
     <div class="form-group">
       <label class="form-label">Tài khoản / Email quản trị</label>
-      <input type="text" id="loginUsername" class="form-control" placeholder="admin@tnpcare.vn" required autofocus>
+      <input type="text" id="loginUsername" class="form-control" placeholder="Nhập tên tài khoản hoặc email..." required autofocus>
     </div>
 
     <div class="form-group">
@@ -168,12 +159,6 @@
       <i class="fas fa-sign-in-alt"></i> Đăng Nhập Hệ Thống
     </button>
   </form>
-
-  <div class="login-hint">
-    <strong><i class="fas fa-info-circle"></i> Thông tin đăng nhập mặc định:</strong><br>
-    • Tài khoản: <code>admin@tnpcare.vn</code> (hoặc <code>admin</code>)<br>
-    • Mật khẩu: <code>tnpcare@2026</code>
-  </div>
 
   <div class="login-footer-text">
     <a href="../index.html"><i class="fas fa-arrow-left"></i> Quay lại trang chủ TNP Care</a>
@@ -251,23 +236,11 @@
         throw new Error(data.message || 'Tài khoản hoặc mật khẩu không chính xác!');
       }
     } catch (err) {
-      // Fallback offline xác thực cục bộ nếu server chưa restart
-      if (
-        (username === 'admin@tnpcare.vn' || username === 'admin') &&
-        (password === 'tnpcare@2026' || password === 'admin')
-      ) {
-        localStorage.setItem('tnp_admin_auth', JSON.stringify({
-          token: 'tnp_local_token_' + Date.now(),
-          user: { name: 'Quản Trị Viên TNP', email: 'admin@tnpcare.vn', role: 'Super Admin' },
-          loginAt: new Date().toISOString()
-        }));
-        window.location.href = './index.html';
-        return;
-      }
-
       alertBox.style.display = 'flex';
-      alertText.textContent = err.message || 'Đăng nhập thất bại. Vui lòng thử lại.';
+      alertText.textContent = err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản và mật khẩu.';
       btnSubmit.disabled = false;
+      btnSubmit.classList.remove('btn-success');
+      btnSubmit.classList.add('btn-primary');
       btnSubmit.innerHTML = '<i class="fas fa-sign-in-alt"></i> Đăng Nhập Hệ Thống';
     }
   }

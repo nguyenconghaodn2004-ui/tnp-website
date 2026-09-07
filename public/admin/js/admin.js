@@ -70,11 +70,26 @@ function checkAdminAuth() {
       const nameEl = document.getElementById('sidebarUserName');
       const roleEl = document.getElementById('sidebarUserRole');
       const avatarEl = document.getElementById('sidebarUserAvatar');
-      if (nameEl) nameEl.textContent = auth.user.name || 'Quản Trị Viên';
-      if (roleEl) roleEl.textContent = auth.user.email || 'admin@tnpcare.vn';
-      if (avatarEl && auth.user.name) {
-        avatarEl.textContent = auth.user.name.substring(0, 2).toUpperCase();
+      const displayName = auth.user.fullName || auth.user.name || auth.user.username || 'Quản Trị Viên';
+      if (nameEl) nameEl.textContent = displayName;
+
+      const roleNames = {
+        superadmin: 'Quản Trị Tối Cao',
+        station_manager: 'Quản Lý Trạm & SP',
+        editor: 'Biên Tập Viên',
+        support: 'Hỗ Trợ & CSKH'
+      };
+      const displayRole = roleNames[auth.user.role] || auth.user.role || 'Quản Trị';
+      if (roleEl) roleEl.textContent = `${displayRole} (${auth.user.username || auth.user.email})`;
+      if (avatarEl) {
+        avatarEl.textContent = displayName.substring(0, 2).toUpperCase();
+        if (auth.user.role === 'superadmin') {
+          avatarEl.style.background = '#ef4444';
+        }
       }
+
+      // Áp dụng phân quyền hiển thị giao diện theo vai trò
+      applyRolePermissions(auth.user.role || 'editor');
     }
     return true;
   } catch (e) {
@@ -159,12 +174,17 @@ function switchTab(tabId) {
     banners: 'Quản lý Banner & Hero Slide',
     articles: 'Quản lý Bài viết & Hướng dẫn kỹ thuật',
     contacts: 'Yêu cầu tư vấn & Liên hệ',
+    users: 'Quản lý Tài khoản & Phân quyền',
     settings: 'Cài đặt hệ thống'
   };
 
   const titleText = titles[tabId] || 'Quản trị';
   document.getElementById('pageTitle').textContent = titleText;
   document.getElementById('breadcrumbCurrent').textContent = titleText;
+
+  if (tabId === 'users') {
+    loadUsersList();
+  }
 }
 
 // ── Mobile Sidebar Toggle ──
@@ -3230,3 +3250,325 @@ async function checkSystemStatus() {
     }
   } catch (err) {}
 }
+
+// ══════════════════════════════════════════════
+//  ROLE-BASED ACCESS CONTROL (RBAC) & PERMISSIONS
+// ══════════════════════════════════════════════
+function getRoleBadge(role) {
+  switch (role) {
+    case 'superadmin':
+      return '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-weight:600;"><i class="fas fa-crown"></i> Super Admin</span>';
+    case 'station_manager':
+      return '<span class="badge" style="background:#dbeafe;color:#1d4ed8;font-weight:600;"><i class="fas fa-tools"></i> Quản lý Trạm</span>';
+    case 'editor':
+      return '<span class="badge" style="background:#f3e8ff;color:#7e22ce;font-weight:600;"><i class="fas fa-feather-alt"></i> Biên tập viên</span>';
+    case 'support':
+      return '<span class="badge" style="background:#dcfce7;color:#15803d;font-weight:600;"><i class="fas fa-headset"></i> CSKH & Hỗ trợ</span>';
+    default:
+      return `<span class="badge" style="background:#f1f5f9;color:#475569;">${role || 'Thành viên'}</span>`;
+  }
+}
+
+function applyRolePermissions(role) {
+  const roleTabs = {
+    superadmin: ['dashboard', 'products', 'stations', 'banners', 'articles', 'contacts', 'users', 'settings'],
+    station_manager: ['dashboard', 'products', 'stations'],
+    editor: ['dashboard', 'banners', 'articles'],
+    support: ['dashboard', 'contacts']
+  };
+
+  const allowedTabs = roleTabs[role] || ['dashboard'];
+
+  // Ẩn / hiện các mục trong sidebar theo quyền hạn
+  document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+    const tabName = item.getAttribute('data-tab');
+    if (allowedTabs.includes(tabName)) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+
+  // Nếu tab hiện tại không được phép, chuyển về dashboard an toàn
+  if (!allowedTabs.includes(currentTab)) {
+    switchTab('dashboard');
+  }
+}
+
+// ══════════════════════════════════════════════
+//  QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN (USERS CRUD)
+// ══════════════════════════════════════════════
+let usersList = [];
+
+async function loadUsersList() {
+  const tbody = document.getElementById('usersTableBody');
+  const icon = document.getElementById('usersRefreshIcon');
+  if (icon) icon.classList.add('fa-spin');
+  if (tbody) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 32px;"><i class="fas fa-spinner fa-spin"></i> Đang nạp danh sách tài khoản...</td></tr>';
+  }
+
+  try {
+    const res = await adminFetch('/api/admin/users');
+    const data = await res.json();
+    if (res.ok && data.success) {
+      usersList = data.data || [];
+      renderUsersTable();
+      const badge = document.getElementById('badgeUsersCount');
+      if (badge) badge.textContent = usersList.length;
+    } else {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc2626; padding: 24px;">${data.message || 'Bạn không có quyền xem danh sách này.'}</td></tr>`;
+    }
+  } catch (err) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #dc2626; padding: 24px;">Lỗi kết nối máy chủ khi nạp tài khoản.</td></tr>';
+  } finally {
+    if (icon) icon.classList.remove('fa-spin');
+  }
+}
+
+function renderUsersTable() {
+  const tbody = document.getElementById('usersTableBody');
+  if (!tbody) return;
+
+  if (usersList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--adm-text-muted); padding: 32px;">Chưa có tài khoản người dùng nào.</td></tr>';
+    return;
+  }
+
+  const authData = localStorage.getItem('tnp_admin_auth');
+  let currentUserId = '';
+  if (authData) {
+    try { currentUserId = JSON.parse(authData)?.user?.id || ''; } catch (e) {}
+  }
+
+  tbody.innerHTML = usersList.map((user, idx) => {
+    const roleBadge = getRoleBadge(user.role);
+    const isSelf = user.id === currentUserId;
+    const isLocked = user.status === 'locked';
+    const statusBadge = isLocked
+      ? '<span class="badge" style="background:#fee2e2;color:#dc2626;font-weight:600;"><i class="fas fa-lock"></i> Đã khóa</span>'
+      : '<span class="badge" style="background:#dcfce7;color:#16a34a;font-weight:600;"><i class="fas fa-check-circle"></i> Hoạt động</span>';
+
+    const lastLoginText = user.lastLogin 
+      ? new Date(user.lastLogin).toLocaleString('vi-VN')
+      : '<span style="color: var(--adm-text-muted); font-style: italic;">Chưa từng</span>';
+
+    return `
+      <tr>
+        <td style="text-align: center; font-weight: 600;">${idx + 1}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="user-avatar" style="width: 34px; height: 34px; font-size: 13px; background: ${user.role === 'superadmin' ? '#ef4444' : 'var(--adm-accent)'};">
+              ${(user.fullName || user.username).substring(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <strong style="color: var(--adm-text); font-size: 14px;">${user.fullName}</strong>
+              ${isSelf ? '<span style="margin-left: 6px; font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Bạn</span>' : ''}
+            </div>
+          </div>
+        </td>
+        <td><code style="font-size: 13px; color: var(--adm-accent); font-weight: 600;">${user.username}</code></td>
+        <td><span style="font-size: 13px; color: var(--adm-text-secondary);">${user.email}</span></td>
+        <td>${roleBadge}</td>
+        <td>${statusBadge}</td>
+        <td style="font-size: 12px; color: var(--adm-text-secondary);">${lastLoginText}</td>
+        <td style="text-align: center;">
+          <div style="display: flex; justify-content: center; gap: 6px;">
+            <button class="btn btn-secondary btn-sm" onclick="openEditUserModal('${user.id}')" title="Sửa thông tin hoặc đổi mật khẩu">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteUser('${user.id}', '${user.username}')" title="Xóa tài khoản" ${isSelf ? 'disabled style="opacity: 0.35; cursor: not-allowed;"' : ''}>
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openAddUserModal() {
+  document.getElementById('modalUserTitle').innerHTML = '<i class="fas fa-user-plus"></i> Thêm Tài Khoản Quản Trị Mới';
+  document.getElementById('userId').value = '';
+  document.getElementById('userFullName').value = '';
+  document.getElementById('userUsername').value = '';
+  document.getElementById('userUsername').readOnly = false;
+  document.getElementById('userEmail').value = '';
+  document.getElementById('userPassword').value = '';
+  document.getElementById('userPassword').required = true;
+  document.getElementById('userPasswordLabel').textContent = 'Mật khẩu khởi tạo * (tối thiểu 6 ký tự)';
+  document.getElementById('userPasswordHelp').style.display = 'none';
+  document.getElementById('userRole').value = 'editor';
+  document.getElementById('userStatus').value = 'active';
+
+  document.getElementById('modalUser').classList.add('open');
+}
+
+function openEditUserModal(id) {
+  const user = usersList.find(u => u.id === id);
+  if (!user) return;
+
+  document.getElementById('modalUserTitle').innerHTML = '<i class="fas fa-user-edit"></i> Chỉnh Sửa Tài Khoản';
+  document.getElementById('userId').value = user.id;
+  document.getElementById('userFullName').value = user.fullName || '';
+  document.getElementById('userUsername').value = user.username || '';
+  document.getElementById('userUsername').readOnly = true;
+  document.getElementById('userEmail').value = user.email || '';
+  document.getElementById('userPassword').value = '';
+  document.getElementById('userPassword').required = false;
+  document.getElementById('userPasswordLabel').textContent = 'Đổi mật khẩu mới (nếu muốn)';
+  document.getElementById('userPasswordHelp').style.display = 'block';
+  document.getElementById('userRole').value = user.role || 'editor';
+  document.getElementById('userStatus').value = user.status || 'active';
+
+  document.getElementById('modalUser').classList.add('open');
+}
+
+function closeUserModal() {
+  document.getElementById('modalUser').classList.remove('open');
+}
+
+async function saveUserForm(e) {
+  e.preventDefault();
+  const id = document.getElementById('userId').value;
+  const fullName = document.getElementById('userFullName').value.trim();
+  const username = document.getElementById('userUsername').value.trim();
+  const email = document.getElementById('userEmail').value.trim();
+  const password = document.getElementById('userPassword').value;
+  const role = document.getElementById('userRole').value;
+  const status = document.getElementById('userStatus').value;
+
+  const btn = document.getElementById('btnSaveUser');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+  try {
+    let res;
+    if (!id) {
+      if (password.length < 6) {
+        showToast('Mật khẩu phải từ 6 ký tự trở lên!', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Lưu tài khoản';
+        return;
+      }
+      res = await adminFetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName, username, email, password, role, status })
+      });
+    } else {
+      const payload = { fullName, email, role, status };
+      if (password && password.trim().length >= 6) {
+        payload.password = password.trim();
+      }
+      res = await adminFetch(`/api/admin/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(data.message || 'Lưu tài khoản thành công!', 'success');
+      closeUserModal();
+      loadUsersList();
+    } else {
+      showToast(data.message || 'Lỗi lưu tài khoản!', 'error');
+    }
+  } catch (err) {
+    showToast(err.message || 'Lỗi kết nối máy chủ!', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check"></i> Lưu tài khoản';
+  }
+}
+
+async function deleteUser(id, username) {
+  if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản [${username}]? Thao tác này không thể hoàn tác!`)) {
+    return;
+  }
+
+  try {
+    const res = await adminFetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(data.message || 'Đã xóa tài khoản thành công!', 'success');
+      loadUsersList();
+    } else {
+      showToast(data.message || 'Không thể xóa tài khoản này!', 'error');
+    }
+  } catch (err) {
+    showToast(err.message || 'Lỗi xóa tài khoản!', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════
+//  ĐỔI MẬT KHẨU CÁ NHÂN (CHANGE PASSWORD)
+// ══════════════════════════════════════════════
+function openChangePasswordModal() {
+  document.getElementById('cpOldPassword').value = '';
+  document.getElementById('cpNewPassword').value = '';
+  document.getElementById('cpConfirmPassword').value = '';
+  document.getElementById('modalChangePassword').classList.add('open');
+}
+
+function closeChangePasswordModal() {
+  document.getElementById('modalChangePassword').classList.remove('open');
+}
+
+async function saveChangePasswordForm(e) {
+  e.preventDefault();
+  const oldPassword = document.getElementById('cpOldPassword').value;
+  const newPassword = document.getElementById('cpNewPassword').value;
+  const confirmPassword = document.getElementById('cpConfirmPassword').value;
+
+  if (newPassword !== confirmPassword) {
+    showToast('Xác nhận mật khẩu mới không khớp!', 'error');
+    return;
+  }
+  if (newPassword.length < 6) {
+    showToast('Mật khẩu mới phải có ít nhất 6 ký tự!', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btnSaveChangePassword');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang đổi mật khẩu...';
+
+  try {
+    const res = await adminFetch('/api/admin/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oldPassword, newPassword })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.', 'success');
+      closeChangePasswordModal();
+    } else {
+      showToast(data.message || 'Mật khẩu cũ không chính xác!', 'error');
+    }
+  } catch (err) {
+    showToast(err.message || 'Lỗi máy chủ khi đổi mật khẩu!', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check"></i> Cập nhật mật khẩu';
+  }
+}
+
+function toggleModalPwdVisibility(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (!input || !icon) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+}
+

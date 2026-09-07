@@ -8,6 +8,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const dns = require('dns');
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 // Cấu hình DNS Server chuẩn quốc tế (Google & Cloudflare) để giải quyết lỗi querySrv ECONNREFUSED khi kết nối MongoDB Atlas
@@ -84,6 +85,46 @@ function writeDbFile(filename, data) {
     console.error(`❌ Lỗi ghi file ${filename}:`, e);
     return false;
   }
+}
+
+// ══════════════════════════════════════════════
+//  HÀM BĂM MẬT KHẨU MẬT MÃ AN TOÀN (PBKDF2 + SALT)
+// ══════════════════════════════════════════════
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(String(password), salt, 10000, 64, 'sha512').toString('hex');
+  return `${salt}:${hash}`;
+}
+
+function verifyPassword(password, storedHash) {
+  if (!storedHash || typeof storedHash !== 'string' || !storedHash.includes(':')) return false;
+  const [salt, hash] = storedHash.split(':');
+  try {
+    const checkHash = crypto.pbkdf2Sync(String(password), salt, 10000, 64, 'sha512').toString('hex');
+    return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(checkHash, 'hex'));
+  } catch (e) {
+    return false;
+  }
+}
+
+// Khởi tạo danh sách tài khoản quản trị viên (CSDL JSON Dự phòng)
+let dbUsers = readDbFile('users.json', null);
+if (!dbUsers || !Array.isArray(dbUsers) || dbUsers.length === 0) {
+  dbUsers = [
+    {
+      id: 'usr_superadmin',
+      username: 'admin',
+      email: 'admin@tnpcare.vn',
+      fullName: 'Quản Trị Viên Tối Cao',
+      passwordHash: hashPassword('tnpcare@2026'),
+      role: 'superadmin',
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastLogin: null
+    }
+  ];
+  writeDbFile('users.json', dbUsers);
 }
 
 // Khởi tạo State ban đầu từ các file lưu trữ
@@ -203,6 +244,24 @@ const ArticleSchema = new mongoose.Schema({ id: { type: String, unique: true, in
 const HomepageSchema = new mongoose.Schema({ id: { type: String, default: 'homepage_config', unique: true } }, { strict: false, timestamps: true });
 const AnalyticsSchema = new mongoose.Schema({ id: { type: String, default: 'analytics_data', unique: true } }, { strict: false, timestamps: true });
 
+// Schema Quản lý tài khoản quản trị & Phân quyền RBAC
+const UserSchema = new mongoose.Schema({
+  id: { type: String, unique: true, index: true },
+  username: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  email: { type: String, required: true, lowercase: true, trim: true },
+  fullName: { type: String, required: true },
+  passwordHash: { type: String, required: true },
+  role: { 
+    type: String, 
+    enum: ['superadmin', 'station_manager', 'editor', 'support'], 
+    default: 'editor' 
+  },
+  status: { type: String, enum: ['active', 'locked'], default: 'active' },
+  createdAt: { type: String, default: () => new Date().toISOString() },
+  updatedAt: { type: String, default: () => new Date().toISOString() },
+  lastLogin: { type: String, default: null }
+}, { strict: false, timestamps: true });
+
 const ProductModel = mongoose.model('Product', ProductSchema);
 const StationModel = mongoose.model('Station', StationSchema);
 const BannerModel  = mongoose.model('Banner', BannerSchema);
@@ -210,6 +269,7 @@ const ContactModel = mongoose.model('Contact', ContactSchema);
 const ArticleModel = mongoose.model('Article', ArticleSchema);
 const HomepageModel = mongoose.model('Homepage', HomepageSchema);
 const AnalyticsModel = mongoose.model('Analytics', AnalyticsSchema);
+const UserModel = mongoose.model('User', UserSchema);
 
 let isMongoConnected = false;
 
@@ -255,6 +315,12 @@ async function autoSeedMongoData() {
       writeDbFile('analytics.json', dbAnalytics);
       console.log('  📊 Đã đồng bộ dữ liệu Thống kê từ MongoDB Atlas về máy chủ.');
     }
+
+    const userCount = await UserModel.countDocuments();
+    if (userCount === 0 && dbUsers && dbUsers.length > 0) {
+      await UserModel.insertMany(dbUsers);
+      console.log(`  🌱 Đã tự động nạp ${dbUsers.length} tài khoản quản trị vào MongoDB Atlas.`);
+    }
   } catch (err) {
     console.warn('  ⚠️ Lỗi trong quá trình tự động nạp dữ liệu ban đầu vào MongoDB:', err.message);
   }
@@ -297,18 +363,73 @@ app.use('/api', async (req, res, next) => {
 });
 
 // ══════════════════════════════════════════════
-//  3. MIDDLEWARE BẢO VỆ API ADMIN & RATE LIMIT
+//  3. TOKEN XÁC THỰC & PHÂN QUYỀN RBAC MIDDLEWARE
 // ══════════════════════════════════════════════
+const JWT_SECRET = process.env.JWT_SECRET || 'tnpcare_rbac_secret_key_2026_x99';
+
+function createAuthToken(user) {
+  const payload = {
+    id: user.id,
+    username: user.username,
+    fullName: user.fullName,
+    email: user.email,
+    role: user.role,
+    exp: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 ngày
+  };
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', JWT_SECRET).update(payloadB64).digest('base64url');
+  return `tnp_jwt_${payloadB64}.${signature}`;
+}
+
+function verifyTokenPayload(token) {
+  if (!token) return null;
+  if (token === 'tnp_admin_dev_token') {
+    return { id: 'usr_superadmin', username: 'admin', fullName: 'Quản Trị Viên Tối Cao', role: 'superadmin' };
+  }
+  if (!token.startsWith('tnp_jwt_')) return null;
+  const raw = token.substring(8);
+  const parts = raw.split('.');
+  if (parts.length !== 2) return null;
+  const [payloadB64, signature] = parts;
+  const expectedSig = crypto.createHmac('sha256', JWT_SECRET).update(payloadB64).digest('base64url');
+  if (signature !== expectedSig) return null;
+  try {
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (payload.exp && Date.now() > payload.exp) return null; // Token hết hạn
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
 function verifyAdminToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
-  if (!token || (!token.startsWith('tnp_jwt_') && token !== 'tnp_admin_dev_token')) {
+  const user = verifyTokenPayload(token);
+  if (!user) {
     return res.status(401).json({
       success: false,
       message: 'Phiên làm việc quản trị đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại!'
     });
   }
+  req.adminUser = user;
   next();
+}
+
+function requireRole(allowedRoles) {
+  return (req, res, next) => {
+    if (!req.adminUser) {
+      return res.status(401).json({ success: false, message: 'Chưa xác thực danh tính người dùng.' });
+    }
+    // superadmin luôn có toàn quyền tối cao trên mọi chức năng
+    if (req.adminUser.role === 'superadmin' || allowedRoles.includes(req.adminUser.role)) {
+      return next();
+    }
+    return res.status(403).json({
+      success: false,
+      message: `Bạn không có quyền thực hiện chức năng này (Yêu cầu vai trò: ${allowedRoles.join(', ')}).`
+    });
+  };
 }
 
 // Memory session cache để chống spam F5 khi thống kê lượt truy cập
@@ -344,7 +465,7 @@ app.get('/api/products', async (req, res) => {
   res.json({ success: true, data: dbProducts, source: 'local' });
 });
 
-app.post('/api/admin/products', verifyAdminToken, async (req, res) => {
+app.post('/api/admin/products', verifyAdminToken, requireRole(['station_manager']), async (req, res) => {
   const newProducts = req.body;
   if (!Array.isArray(newProducts)) {
     return res.status(400).json({ success: false, message: 'Dữ liệu sản phẩm phải là một danh sách mảng (Array).' });
@@ -401,7 +522,7 @@ app.get('/api/admin/banners', async (req, res) => {
   res.json({ success: true, data: dbBanners, source: 'local' });
 });
 
-app.post('/api/admin/banners', verifyAdminToken, async (req, res) => {
+app.post('/api/admin/banners', verifyAdminToken, requireRole(['editor']), async (req, res) => {
   const newBanners = req.body;
   if (!Array.isArray(newBanners)) {
     return res.status(400).json({ success: false, message: 'Dữ liệu banners phải là một danh sách mảng (Array).' });
@@ -449,7 +570,7 @@ app.get('/api/homepage', async (req, res) => {
   res.json({ success: true, data: dbHomepage, source: 'local' });
 });
 
-app.post('/api/admin/homepage', verifyAdminToken, async (req, res) => {
+app.post('/api/admin/homepage', verifyAdminToken, requireRole(['editor']), async (req, res) => {
   const newConfig = req.body;
   if (!newConfig || typeof newConfig !== 'object') {
     return res.status(400).json({ success: false, message: 'Dữ liệu cấu hình trang chủ không hợp lệ.' });
@@ -499,7 +620,7 @@ app.get(['/api/stations', '/api/admin/stations'], async (req, res) => {
   res.json({ success: true, data: dbStations, source: 'local' });
 });
 
-app.post('/api/admin/stations', verifyAdminToken, async (req, res) => {
+app.post('/api/admin/stations', verifyAdminToken, requireRole(['station_manager']), async (req, res) => {
   const newStations = req.body;
   if (!Array.isArray(newStations)) {
     return res.status(400).json({ success: false, message: 'Dữ liệu trạm bảo hành phải là một mảng.' });
@@ -523,35 +644,324 @@ app.post('/api/admin/stations', verifyAdminToken, async (req, res) => {
   res.json({ success: true, message: 'Đã lưu danh sách trạm bảo hành!' });
 });
 
-// 4. API Đăng nhập quản trị viên
-app.post('/api/admin/login', (req, res) => {
-  const { username, password } = req.body;
-  const adminUser = process.env.ADMIN_USER || 'admin@tnpcare.vn';
-  const adminPass = process.env.ADMIN_PASS || 'tnpcare@2026';
+// 4. API Đăng nhập quản trị viên (Xác thực Mật Khẩu Băm PBKDF2)
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    if (!username || !password) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập tên đăng nhập và mật khẩu.' });
+    }
 
-  if (
-    (username === adminUser || username === 'admin') &&
-    (password === adminPass || password === 'admin')
-  ) {
+    const cleanUsername = String(username).trim().toLowerCase();
+
+    // 1. Tìm tài khoản từ MongoDB Atlas hoặc JSON cục bộ
+    let user = null;
+    if (isMongoConnected) {
+      try {
+        user = await UserModel.findOne({
+          $or: [{ username: cleanUsername }, { email: cleanUsername }]
+        }).lean();
+      } catch (err) {
+        console.warn('Lỗi tìm user trên MongoDB:', err.message);
+      }
+    }
+
+    if (!user) {
+      user = dbUsers.find(u => 
+        (u.username && u.username.toLowerCase() === cleanUsername) || 
+        (u.email && u.email.toLowerCase() === cleanUsername)
+      );
+    }
+
+    // Tự động khôi phục tài khoản superadmin nếu cơ sở dữ liệu trống
+    if (!user && (cleanUsername === 'admin' || cleanUsername === 'admin@tnpcare.vn')) {
+      const initialSuperAdmin = {
+        id: 'usr_superadmin',
+        username: 'admin',
+        email: 'admin@tnpcare.vn',
+        fullName: 'Quản Trị Viên Tối Cao',
+        passwordHash: hashPassword('tnpcare@2026'),
+        role: 'superadmin',
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastLogin: null
+      };
+      if (verifyPassword(password, initialSuperAdmin.passwordHash)) {
+        user = initialSuperAdmin;
+        dbUsers.push(user);
+        writeDbFile('users.json', dbUsers);
+        if (isMongoConnected) {
+          UserModel.create(user).catch(() => {});
+        }
+      }
+    }
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Tên đăng nhập hoặc mật khẩu không chính xác!'
+      });
+    }
+
+    // Kiểm tra trạng thái tài khoản
+    if (user.status === 'locked') {
+      return res.status(403).json({
+        success: false,
+        message: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Quản trị viên cấp cao!'
+      });
+    }
+
+    // 2. Xác thực mật khẩu băm mật mã an toàn
+    const isValid = verifyPassword(password, user.passwordHash);
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Tên đăng nhập hoặc mật khẩu không chính xác!'
+      });
+    }
+
+    // 3. Cập nhật thời điểm đăng nhập gần nhất
+    const nowIso = new Date().toISOString();
+    user.lastLogin = nowIso;
+    const localIdx = dbUsers.findIndex(u => u.id === user.id);
+    if (localIdx >= 0) {
+      dbUsers[localIdx].lastLogin = nowIso;
+      writeDbFile('users.json', dbUsers);
+    }
+    if (isMongoConnected) {
+      UserModel.updateOne({ id: user.id }, { $set: { lastLogin: nowIso } }).catch(() => {});
+    }
+
+    // 4. Tạo JWT Token bảo mật kèm Role
+    const token = createAuthToken(user);
+
     return res.json({
       success: true,
-      token: 'tnp_jwt_' + Buffer.from(`${username}:${Date.now()}`).toString('base64'),
+      token,
       user: {
-        name: 'Quản Trị Viên TNP',
-        email: 'admin@tnpcare.vn',
-        role: 'Super Admin'
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role
       }
     });
+  } catch (err) {
+    console.error('Lỗi login admin:', err);
+    res.status(500).json({ success: false, message: 'Lỗi máy chủ trong quá trình xác thực.' });
   }
+});
 
-  return res.status(401).json({
-    success: false,
-    message: 'Tài khoản hoặc mật khẩu quản trị không chính xác!'
-  });
+// 4.1. Lấy thông tin cá nhân của phiên đăng nhập hiện tại
+app.get('/api/admin/me', verifyAdminToken, (req, res) => {
+  res.json({ success: true, user: req.adminUser });
+});
+
+// 4.2. Đổi mật khẩu tài khoản cá nhân
+app.post('/api/admin/change-password', verifyAdminToken, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body || {};
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới.' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Mật khẩu mới phải có độ dài ít nhất 6 ký tự.' });
+    }
+
+    let user = null;
+    if (isMongoConnected) {
+      user = await UserModel.findOne({ id: req.adminUser.id }).lean();
+    }
+    if (!user) {
+      user = dbUsers.find(u => u.id === req.adminUser.id);
+    }
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản người dùng.' });
+    }
+
+    if (!verifyPassword(oldPassword, user.passwordHash)) {
+      return res.status(400).json({ success: false, message: 'Mật khẩu hiện tại không chính xác!' });
+    }
+
+    const newHash = hashPassword(newPassword);
+    const nowIso = new Date().toISOString();
+
+    const localIdx = dbUsers.findIndex(u => u.id === user.id);
+    if (localIdx >= 0) {
+      dbUsers[localIdx].passwordHash = newHash;
+      dbUsers[localIdx].updatedAt = nowIso;
+      writeDbFile('users.json', dbUsers);
+    }
+    if (isMongoConnected) {
+      await UserModel.updateOne({ id: user.id }, { $set: { passwordHash: newHash, updatedAt: nowIso } });
+    }
+
+    res.json({ success: true, message: 'Đổi mật khẩu thành công!' });
+  } catch (err) {
+    console.error('Lỗi đổi mật khẩu:', err);
+    res.status(500).json({ success: false, message: 'Lỗi máy chủ khi đổi mật khẩu.' });
+  }
+});
+
+// 4.3. Quản lý danh sách tài khoản (Chỉ dành cho superadmin)
+app.get('/api/admin/users', verifyAdminToken, requireRole(['superadmin']), async (req, res) => {
+  try {
+    let users = [];
+    if (isMongoConnected) {
+      users = await UserModel.find({}, { passwordHash: 0 }).sort({ createdAt: -1 }).lean();
+    }
+    if (!users || users.length === 0) {
+      users = dbUsers.map(u => {
+        const { passwordHash, ...safe } = u;
+        return safe;
+      });
+    }
+    res.json({ success: true, data: users });
+  } catch (err) {
+    console.error('Lỗi lấy danh sách user:', err);
+    res.status(500).json({ success: false, message: 'Lỗi tải danh sách tài khoản.' });
+  }
+});
+
+// 4.4. Thêm tài khoản quản trị mới (Chỉ dành cho superadmin)
+app.post('/api/admin/users', verifyAdminToken, requireRole(['superadmin']), async (req, res) => {
+  try {
+    const { username, password, email, fullName, role, status } = req.body || {};
+    if (!username || !password || !email || !fullName) {
+      return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ: Tên đăng nhập, Mật khẩu, Email và Họ tên.' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Mật khẩu phải có độ dài từ 6 ký tự trở lên.' });
+    }
+
+    const cleanUsername = String(username).trim().toLowerCase();
+    const cleanEmail = String(email).trim().toLowerCase();
+
+    // Kiểm tra trùng username hoặc email
+    let exists = false;
+    if (isMongoConnected) {
+      const found = await UserModel.findOne({ $or: [{ username: cleanUsername }, { email: cleanEmail }] });
+      if (found) exists = true;
+    }
+    if (!exists) {
+      exists = dbUsers.some(u => 
+        (u.username && u.username.toLowerCase() === cleanUsername) || 
+        (u.email && u.email.toLowerCase() === cleanEmail)
+      );
+    }
+    if (exists) {
+      return res.status(400).json({ success: false, message: 'Tên đăng nhập hoặc Email này đã tồn tại trên hệ thống.' });
+    }
+
+    const validRoles = ['superadmin', 'station_manager', 'editor', 'support'];
+    const assignedRole = validRoles.includes(role) ? role : 'editor';
+
+    const newUser = {
+      id: 'usr_' + Date.now(),
+      username: cleanUsername,
+      email: cleanEmail,
+      fullName: String(fullName).trim(),
+      passwordHash: hashPassword(password),
+      role: assignedRole,
+      status: status === 'locked' ? 'locked' : 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastLogin: null
+    };
+
+    dbUsers.push(newUser);
+    writeDbFile('users.json', dbUsers);
+
+    if (isMongoConnected) {
+      await UserModel.create(newUser);
+    }
+
+    const { passwordHash: _, ...safeUser } = newUser;
+    res.json({ success: true, data: safeUser, message: 'Tạo tài khoản người dùng thành công!' });
+  } catch (err) {
+    console.error('Lỗi tạo user:', err);
+    res.status(500).json({ success: false, message: 'Lỗi máy chủ khi tạo tài khoản.' });
+  }
+});
+
+// 4.5. Cập nhật thông tin tài khoản (Chỉ dành cho superadmin)
+app.put('/api/admin/users/:id', verifyAdminToken, requireRole(['superadmin']), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fullName, email, role, status, password } = req.body || {};
+
+    const localIdx = dbUsers.findIndex(u => u.id === id);
+    if (localIdx === -1 && !isMongoConnected) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản.' });
+    }
+
+    // Không cho phép tự khóa hoặc tự hạ quyền tài khoản của chính mình nếu là superadmin
+    if (req.adminUser.id === id && status === 'locked') {
+      return res.status(400).json({ success: false, message: 'Bạn không thể tự khóa tài khoản của chính mình.' });
+    }
+    if (req.adminUser.id === id && role && role !== 'superadmin') {
+      return res.status(400).json({ success: false, message: 'Bạn không thể tự hạ quyền Quản trị viên tối cao của chính mình.' });
+    }
+
+    const updateFields = { updatedAt: new Date().toISOString() };
+    if (fullName) updateFields.fullName = String(fullName).trim();
+    if (email) updateFields.email = String(email).trim().toLowerCase();
+    if (role && ['superadmin', 'station_manager', 'editor', 'support'].includes(role)) {
+      updateFields.role = role;
+    }
+    if (status && ['active', 'locked'].includes(status)) {
+      updateFields.status = status;
+    }
+    if (password && String(password).trim().length >= 6) {
+      updateFields.passwordHash = hashPassword(String(password).trim());
+    }
+
+    if (localIdx >= 0) {
+      dbUsers[localIdx] = { ...dbUsers[localIdx], ...updateFields };
+      writeDbFile('users.json', dbUsers);
+    }
+
+    if (isMongoConnected) {
+      await UserModel.findOneAndUpdate({ id }, { $set: updateFields });
+    }
+
+    res.json({ success: true, message: 'Cập nhật thông tin tài khoản thành công!' });
+  } catch (err) {
+    console.error('Lỗi cập nhật user:', err);
+    res.status(500).json({ success: false, message: 'Lỗi máy chủ khi cập nhật tài khoản.' });
+  }
+});
+
+// 4.6. Xóa tài khoản (Chỉ dành cho superadmin)
+app.delete('/api/admin/users/:id', verifyAdminToken, requireRole(['superadmin']), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Không cho phép tự xóa chính mình
+    if (req.adminUser.id === id) {
+      return res.status(400).json({ success: false, message: 'Bạn không thể tự xóa tài khoản đang đăng nhập của chính mình.' });
+    }
+
+    const localIdx = dbUsers.findIndex(u => u.id === id);
+    if (localIdx >= 0) {
+      dbUsers.splice(localIdx, 1);
+      writeDbFile('users.json', dbUsers);
+    }
+
+    if (isMongoConnected) {
+      await UserModel.findOneAndDelete({ id });
+    }
+
+    res.json({ success: true, message: 'Đã xóa tài khoản thành công.' });
+  } catch (err) {
+    console.error('Lỗi xóa user:', err);
+    res.status(500).json({ success: false, message: 'Lỗi máy chủ khi xóa tài khoản.' });
+  }
 });
 
 // 5. API Yêu cầu tư vấn & Liên hệ
-app.get('/api/admin/contacts', verifyAdminToken, async (req, res) => {
+app.get('/api/admin/contacts', verifyAdminToken, requireRole(['support']), async (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   try {
     if (isMongoConnected) {
@@ -564,7 +974,7 @@ app.get('/api/admin/contacts', verifyAdminToken, async (req, res) => {
   res.json({ success: true, data: dbContacts, source: 'local' });
 });
 
-app.put('/api/admin/contacts/:id', verifyAdminToken, async (req, res) => {
+app.put('/api/admin/contacts/:id', verifyAdminToken, requireRole(['support']), async (req, res) => {
   const { id } = req.params;
   const { status, notes } = req.body;
 
@@ -589,7 +999,7 @@ app.put('/api/admin/contacts/:id', verifyAdminToken, async (req, res) => {
   res.json({ success: true, data: lead, message: 'Đã cập nhật trạng thái liên hệ!' });
 });
 
-app.delete('/api/admin/contacts/:id', verifyAdminToken, async (req, res) => {
+app.delete('/api/admin/contacts/:id', verifyAdminToken, requireRole(['support']), async (req, res) => {
   const { id } = req.params;
   const idx = dbContacts.findIndex(c => c.id === id);
   if (idx !== -1) {
@@ -642,7 +1052,7 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // 6. API Upload ảnh (Base64)
-app.post('/api/admin/upload', verifyAdminToken, (req, res) => {
+app.post('/api/admin/upload', verifyAdminToken, requireRole(['editor', 'station_manager']), (req, res) => {
   const { filename, dataUrl } = req.body;
   if (!dataUrl) {
     return res.status(400).json({ success: false, message: 'Không có dữ liệu ảnh tải lên.' });
@@ -704,7 +1114,7 @@ app.get('/api/admin/articles', verifyAdminToken, async (req, res) => {
   res.json({ success: true, data: articlesList, source: 'local' });
 });
 
-app.post('/api/admin/articles', verifyAdminToken, async (req, res) => {
+app.post('/api/admin/articles', verifyAdminToken, requireRole(['editor']), async (req, res) => {
   const { id, title, category, categoryLabel, thumbnail, summary, content, status } = req.body;
   if (!title) {
     return res.status(400).json({ success: false, message: 'Vui lòng nhập tiêu đề bài viết.' });
@@ -746,7 +1156,7 @@ app.post('/api/admin/articles', verifyAdminToken, async (req, res) => {
   res.json({ success: true, data: articleObj, message: 'Đã lưu bài viết thành công!' });
 });
 
-app.delete('/api/admin/articles/:id', verifyAdminToken, async (req, res) => {
+app.delete('/api/admin/articles/:id', verifyAdminToken, requireRole(['editor']), async (req, res) => {
   const { id } = req.params;
   const idx = articlesList.findIndex(a => a.id === id);
   if (idx !== -1) {
@@ -1012,13 +1422,14 @@ app.get('/api/admin/analytics', verifyAdminToken, async (req, res) => {
 //  9. API SAO LƯU & KHÔI PHỤC DỮ LIỆU (BACKUP & RESTORE)
 // ══════════════════════════════════════════════
 
-// Tải về file JSON toàn bộ cơ sở dữ liệu
-app.get('/api/admin/backup', verifyAdminToken, (req, res) => {
+// Tải về file JSON toàn bộ cơ sở dữ liệu (Chỉ dành cho superadmin)
+app.get('/api/admin/backup', verifyAdminToken, requireRole(['superadmin']), (req, res) => {
   try {
     const backupData = {
       exportedAt: new Date().toISOString(),
-      version: '1.0',
+      version: '2.0',
       system: 'TNP Care Management System',
+      users: dbUsers.map(u => ({ ...u })),
       products: dbProducts,
       stations: dbStations,
       banners: dbBanners,
@@ -1036,14 +1447,23 @@ app.get('/api/admin/backup', verifyAdminToken, (req, res) => {
   }
 });
 
-// Khôi phục dữ liệu từ file backup JSON
-app.post('/api/admin/restore', verifyAdminToken, (req, res) => {
+// Khôi phục dữ liệu từ file backup JSON (Chỉ dành cho superadmin)
+app.post('/api/admin/restore', verifyAdminToken, requireRole(['superadmin']), (req, res) => {
   try {
     const { backup } = req.body;
     if (!backup || typeof backup !== 'object') {
       return res.status(400).json({ success: false, message: 'Dữ liệu sao lưu không đúng định dạng!' });
     }
 
+    if (Array.isArray(backup.users)) {
+      dbUsers = backup.users;
+      writeDbFile('users.json', dbUsers);
+      if (isMongoConnected) {
+        for (const u of dbUsers) {
+          UserModel.updateOne({ id: u.id }, { $set: u }, { upsert: true }).catch(() => {});
+        }
+      }
+    }
     if (Array.isArray(backup.products)) {
       dbProducts = backup.products;
       writeDbFile('products.json', dbProducts);
