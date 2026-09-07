@@ -5,20 +5,62 @@
   "createdAt": "2026-09-07T07:21:37.660Z",
   "daily": {
     "2026-09-07": {
-      "views": 2,
-      "uniques": 2,
+      "views": 8,
+      "uniques": 7,
       "devices": {
-        "desktop": 2,
-        "mobile": 0,
+        "desktop": 7,
+        "mobile": 1,
         "tablet": 0
       },
       "pages": {
-        "/": 1,
+        "/": 7,
         "/tram-bao-hanh.html": 1
       }
     }
   },
   "recentVisits": [
+    {
+      "time": "2026-09-07T08:41:24.008Z",
+      "path": "/",
+      "title": "Trúc Nguyên Phát (TNP Care) | Giải Pháp & Dịch Vụ Bảo Hành Toàn Quốc",
+      "device": "desktop",
+      "referrer": "Trực tiếp"
+    },
+    {
+      "time": "2026-09-07T08:41:04.161Z",
+      "path": "/",
+      "title": "Trúc Nguyên Phát (TNP Care) | Giải Pháp & Dịch Vụ Bảo Hành Toàn Quốc",
+      "device": "desktop",
+      "referrer": "Trực tiếp"
+    },
+    {
+      "time": "2026-09-07T08:41:00.980Z",
+      "path": "/",
+      "title": "Trúc Nguyên Phát (TNP Care) | Giải Pháp & Dịch Vụ Bảo Hành Toàn Quốc",
+      "device": "desktop",
+      "referrer": "Trực tiếp"
+    },
+    {
+      "time": "2026-09-07T08:40:56.690Z",
+      "path": "/",
+      "title": "Trúc Nguyên Phát (TNP Care) | Giải Pháp & Dịch Vụ Bảo Hành Toàn Quốc",
+      "device": "desktop",
+      "referrer": "Trực tiếp"
+    },
+    {
+      "time": "2026-09-07T08:40:19.540Z",
+      "path": "/",
+      "title": "Trúc Nguyên Phát (TNP Care) | Giải Pháp & Dịch Vụ Bảo Hành Toàn Quốc",
+      "device": "desktop",
+      "referrer": "Trực tiếp"
+    },
+    {
+      "time": "2026-09-07T08:36:35.613Z",
+      "path": "/",
+      "title": "Trúc Nguyên Phát (TNP Care) | Giải Pháp & Dịch Vụ Bảo Hành Toàn Quốc",
+      "device": "mobile",
+      "referrer": "Trực tiếp"
+    },
     {
       "time": "2026-09-07T08:28:56.268Z",
       "path": "/tram-bao-hanh.html",
@@ -34,6 +76,6 @@
       "referrer": "Trực tiếp"
     }
   ],
-  "totalVisits": 2,
-  "updatedAt": "2026-09-07T08:18:38.071Z"
+  "totalVisits": 8,
+  "updatedAt": "2026-09-07T08:41:24.009Z"
 }

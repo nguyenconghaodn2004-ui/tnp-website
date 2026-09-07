@@ -39,12 +39,6 @@
         <span>Tổng quan</span>
       </a>
 
-      <a class="nav-item" data-tab="homepage">
-        <i class="fas fa-laptop-code"></i>
-        <span>Quản lý Trang Chủ</span>
-        <span class="nav-badge" style="background: var(--adm-accent);">CMS</span>
-      </a>
-
       <a class="nav-item" data-tab="products">
         <i class="fas fa-tv"></i>
         <span>Sản phẩm TV</span>
@@ -84,8 +78,8 @@
       </a>
 
       <a class="nav-item" data-tab="settings">
-        <i class="fas fa-sliders-h"></i>
-        <span>Cài đặt hệ thống</span>
+        <i class="fas fa-database"></i>
+        <span>Hệ thống & Sao lưu</span>
       </a>
     </nav>
 
@@ -120,18 +114,9 @@
       </div>
 
       <div class="topbar-right">
-        <!-- Quick Search Trigger -->
-        <button class="btn-topbar-tool" id="btnQuickSearch" onclick="openQuickSearchModal()" title="Tìm kiếm nhanh (Phím tắt: Ctrl + K)">
-          <i class="fas fa-search"></i>
-          <span class="kbd-badge">Ctrl K</span>
-        </button>
         <!-- Dark/Light Mode Switcher -->
         <button class="btn-topbar-tool" id="btnThemeToggle" onclick="toggleAdminTheme()" title="Đổi chế độ Sáng / Tối">
           <i class="fas fa-moon" id="themeIcon"></i>
-        </button>
-        <!-- Quick Backup Download -->
-        <button class="btn-topbar-tool" onclick="downloadBackupJson()" title="Tải nhanh bản sao lưu toàn bộ hệ thống">
-          <i class="fas fa-cloud-download-alt"></i>
         </button>
         <!-- Database Connection Status -->
         <div class="topbar-status">
@@ -294,27 +279,27 @@
         </div>
 
         <!-- ══════════════════════════════════════════════
-             KHỐI THỐNG KÊ DỮ LIỆU SẢN PHẨM & TRẠM BẢO HÀNH
+             KHỐI THỐNG KÊ TỔNG QUAN HỆ THỐNG
              ══════════════════════════════════════════════ -->
         <div class="analytics-section-header" style="margin-top: 28px;">
           <div class="analytics-title-wrap">
             <h2 class="analytics-section-title">
-              <i class="fas fa-database" style="color: var(--adm-primary);"></i> Dữ liệu hệ thống TNP Care
+              <i class="fas fa-cubes" style="color: var(--adm-primary);"></i> Tổng quan Dữ liệu TNP Care
             </h2>
           </div>
         </div>
 
         <!-- Stat Cards -->
         <div class="stats-grid">
-          <div class="stat-card stat-blue">
+          <div class="stat-card stat-blue" style="cursor: pointer;" onclick="switchTab('products')" title="Bấm để xem chi tiết sản phẩm">
             <div class="stat-icon-wrap"><i class="fas fa-tv"></i></div>
             <div class="stat-details">
               <span class="stat-number" id="statTotalProducts">0</span>
-              <span class="stat-label">Tổng sản phẩm TV</span>
+              <span class="stat-label">Sản phẩm TV đang quản lý</span>
             </div>
           </div>
 
-          <div class="stat-card stat-purple">
+          <div class="stat-card stat-purple" style="cursor: pointer;" onclick="switchTab('stations')" title="Bấm để xem các trạm bảo hành">
             <div class="stat-icon-wrap"><i class="fas fa-warehouse"></i></div>
             <div class="stat-details">
               <span class="stat-number" id="statTotalStations">0</span>
@@ -322,502 +307,20 @@
             </div>
           </div>
 
-          <div class="stat-card stat-green">
-            <div class="stat-icon-wrap"><i class="fas fa-tags"></i></div>
+          <div class="stat-card stat-amber" style="cursor: pointer;" onclick="switchTab('contacts')" title="Bấm để xem danh sách khách hàng liên hệ">
+            <div class="stat-icon-wrap"><i class="fas fa-envelope-open-text"></i></div>
             <div class="stat-details">
-              <span class="stat-number" id="statBrandRatio">0 / 0</span>
-              <span class="stat-label">HXY / HIKERS</span>
+              <span class="stat-number" id="statPendingContacts">0</span>
+              <span class="stat-label">Yêu cầu liên hệ chờ xử lý</span>
             </div>
           </div>
 
-          <div class="stat-card stat-amber">
-            <div class="stat-icon-wrap"><i class="fas fa-shield-alt"></i></div>
+          <div class="stat-card stat-green" style="cursor: pointer;" onclick="switchTab('users')" title="Bấm để quản lý tài khoản & phân quyền">
+            <div class="stat-icon-wrap"><i class="fas fa-users-cog"></i></div>
             <div class="stat-details">
-              <span class="stat-number">63/63</span>
-              <span class="stat-label">Tỉnh thành phủ sóng</span>
+              <span class="stat-number" id="statTotalUsers">0</span>
+              <span class="stat-label">Tài khoản quản trị viên</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Recent Products Card -->
-        <div class="admin-card">
-          <div class="card-header">
-            <h2 class="card-title"><i class="fas fa-star"></i> Sản phẩm TV mới nhất</h2>
-            <div class="card-actions">
-              <button class="btn btn-primary btn-sm" onclick="switchTab('products')">
-                <i class="fas fa-list"></i> Xem tất cả
-              </button>
-            </div>
-          </div>
-          <div class="card-body" style="padding: 0;">
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th style="width: 50px;">#</th>
-                    <th style="width: 70px;">Ảnh</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Thương hiệu</th>
-                    <th>Tấm nền</th>
-                    <th>Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody id="dashboardProductsBody">
-                  <!-- Dynamic content -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── TAB: HOMEPAGE CMS & LAYOUT ── -->
-      <section class="tab-panel" id="tab-homepage">
-        <div class="admin-card" style="margin-bottom: 20px;">
-          <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
-            <div>
-              <h2 class="card-title"><i class="fas fa-sliders-h" style="color: var(--adm-accent);"></i> Quản lý Toàn Bộ Bố Cục &amp; Nội Dung Trang Chủ</h2>
-              <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--adm-text-muted);">
-                Tùy chỉnh thứ tự các phần, bật/tắt hiển thị và cập nhật mọi câu chữ, hình ảnh, thông số trên trang chủ theo thời gian thực.
-              </p>
-            </div>
-            <div class="card-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-secondary btn-sm" onclick="resetHomepageDefault()" title="Khôi phục toàn bộ trang chủ về thiết kế và nội dung gốc ban đầu">
-                <i class="fas fa-undo"></i> Khôi phục mặc định
-              </button>
-              <a href="../index.html" target="_blank" class="btn btn-secondary btn-sm" title="Mở trang chủ ở tab mới để xem trước">
-                <i class="fas fa-external-link-alt"></i> Xem Trang Chủ
-              </a>
-              <button class="btn btn-primary btn-sm" onclick="saveHomepageConfig()" title="Lưu và đồng bộ lên Database & Trang chủ">
-                <i class="fas fa-save"></i> Lưu toàn bộ thay đổi
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <!-- Sub Navigation Tabs -->
-            <div class="cms-subtabs">
-              <button type="button" class="cms-subtab-btn active" data-subtab="layout">
-                <i class="fas fa-layer-group"></i> 1. Bố cục &amp; Thứ tự
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="hero">
-                <i class="fas fa-images"></i> 2. Hero Banner Slider
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="brands">
-                <i class="fas fa-tags"></i> 3. Dải đối tác
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="deepdive">
-                <i class="fas fa-tv"></i> 4. HXY &amp; HIKERS
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="compare">
-                <i class="fas fa-balance-scale"></i> 5. Bảng so sánh
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="stats">
-                <i class="fas fa-chart-line"></i> 6. Thống kê năng lực
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="network">
-                <i class="fas fa-map-marker-alt"></i> 7. Khối Trạm bảo hành
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="featured">
-                <i class="fas fa-star"></i> 8. TV nổi bật ghim
-              </button>
-              <button type="button" class="cms-subtab-btn" data-subtab="cta">
-                <i class="fas fa-bullhorn"></i> 9. Khối kêu gọi CTA
-              </button>
-            </div>
-
-            <!-- ── SUB-PANEL 1: LAYOUT & ORDER ── -->
-            <div class="cms-panel active" id="cms-panel-layout">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px;">
-                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); padding: 10px 14px; font-size: 13px; color: #166534; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px;">
-                  <i class="fas fa-info-circle" style="font-size: 16px;"></i>
-                  <span>Dùng nút <strong>Lên / Xuống</strong> để đổi thứ tự, <strong>Bật / Tắt</strong> để ẩn/hiện, và nút <strong>Sửa / Xóa</strong> để quản lý từng khối.</span>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                  <button type="button" class="btn btn-primary btn-sm" onclick="openAddLayoutSectionModal()">
-                    <i class="fas fa-plus-circle"></i> Thêm Khối Mới
-                  </button>
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="resetLayoutDefault()">
-                    <i class="fas fa-undo"></i> Khôi phục gốc
-                  </button>
-                </div>
-              </div>
-              <div class="layout-list" id="layoutListContainer">
-                <!-- Injected via JavaScript -->
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 2: HERO BANNER ── -->
-            <div class="cms-panel" id="cms-panel-hero">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="font-size: 15px; font-weight: 700; margin: 0;"><i class="fas fa-images"></i> Danh sách Slide Hero Cinematic</h3>
-                <button class="btn btn-primary btn-sm" onclick="openAddBannerModal()">
-                  <i class="fas fa-plus-circle"></i> Thêm Slide Mới
-                </button>
-              </div>
-              <div class="table-responsive">
-                <table class="admin-table">
-                  <thead>
-                    <tr>
-                      <th style="width: 50px;">Thứ tự</th>
-                      <th style="width: 140px;">Ảnh nền</th>
-                      <th>Tiêu đề Slide</th>
-                      <th>Nhãn Badge</th>
-                      <th>Thương hiệu Tab</th>
-                      <th>Trạng thái</th>
-                      <th style="width: 100px; text-align: center;">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody id="cmsHeroTableBody">
-                    <!-- Injected via JavaScript -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 3: BRANDS STRIP ── -->
-            <div class="cms-panel" id="cms-panel-brands">
-              <div class="form-group">
-                <label class="form-label">Tiêu đề dải thương hiệu</label>
-                <input type="text" id="cmsBrandsLabel" class="form-control" value="Thương hiệu đồng hành">
-              </div>
-
-              <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0;">
-                <label class="form-label" style="margin: 0;">Danh sách thương hiệu đối tác (Bấm Sửa / Xóa bên dưới)</label>
-              </div>
-              
-              <div class="table-responsive" style="margin-bottom: 20px;">
-                <table class="admin-table">
-                  <thead>
-                    <tr>
-                      <th style="width: 50px;">STT</th>
-                      <th>Thương hiệu</th>
-                      <th style="width: 130px;">Màu chấm LED</th>
-                      <th>Đường dẫn Link</th>
-                      <th style="width: 100px; text-align: center;">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody id="cmsBrandsTableBody">
-                    <!-- Dynamic brands rows -->
-                  </tbody>
-                </table>
-              </div>
-              
-              <!-- Thêm thương hiệu mới -->
-              <div class="cms-card-box">
-                <div class="cms-card-box-title"><i class="fas fa-plus-circle"></i> Thêm thương hiệu đối tác mới</div>
-                <div class="form-row" style="margin-top: 12px;">
-                  <div class="form-group">
-                    <label class="form-label">Tên thương hiệu *</label>
-                    <input type="text" id="cmsNewBrandName" class="form-control" placeholder="VD: Sony, Sharp, TCL...">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Màu chấm tín hiệu</label>
-                    <select id="cmsNewBrandColor" class="form-control">
-                      <option value="blue">Xanh dương (Blue)</option>
-                      <option value="red">Đỏ (Red)</option>
-                      <option value="green">Xanh lá (Green)</option>
-                      <option value="amber">Vàng hổ phách (Amber)</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Đường dẫn liên kết (tùy chọn)</label>
-                  <input type="text" id="cmsNewBrandLink" class="form-control" placeholder="./san-pham.html hoặc link trang web">
-                </div>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="addBrandChip()">
-                  <i class="fas fa-plus"></i> Thêm thương hiệu vào danh sách
-                </button>
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 4: HXY & HIKERS DEEPDIVE ── -->
-            <div class="cms-panel" id="cms-panel-deepdive">
-              <div class="cms-card-box">
-                <div class="cms-card-box-title"><i class="fas fa-heading"></i> Tiêu đề chung mục Giới thiệu thương hiệu</div>
-                <div class="form-group" style="margin-top: 12px;">
-                  <label class="form-label">Nhãn Badge phụ</label>
-                  <input type="text" id="cmsDeepdiveBadge" class="form-control" value="Thông tin chi tiết thương hiệu">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Tiêu đề chính</label>
-                  <input type="text" id="cmsDeepdiveTitle" class="form-control" value="Tìm hiểu về TV HXY & TV HIKERS">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Mô tả mở đầu</label>
-                  <textarea id="cmsDeepdiveDesc" class="form-control" rows="2"></textarea>
-                </div>
-              </div>
-
-              <!-- 2 Khối Thương Hiệu -->
-              <div class="form-row">
-                <!-- KHỐI HXY -->
-                <div class="cms-card-box">
-                  <div class="cms-card-box-header">
-                    <span class="cms-card-box-title" style="color: #1e40af;"><i class="fas fa-tv"></i> Khối Thương hiệu TV HXY</span>
-                    <span class="badge badge-brand-hxy">Màu chủ đạo: Blue</span>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Tiêu đề phụ Badge</label>
-                    <input type="text" id="cmsHxyBadge" class="form-control">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Tiêu đề chính</label>
-                    <input type="text" id="cmsHxyHeading" class="form-control">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Đoạn giới thiệu Lead</label>
-                    <textarea id="cmsHxyLead" class="form-control" rows="3"></textarea>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Ảnh đại diện TV</label>
-                    <input type="text" id="cmsHxyImage" class="form-control">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Chú thích ảnh (Caption)</label>
-                    <input type="text" id="cmsHxyCaption" class="form-control">
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0;">
-                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Thế mạnh độc quyền HXY:</h4>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepdiveFeature('hxy')">
-                      <i class="fas fa-plus"></i> Thêm thế mạnh
-                    </button>
-                  </div>
-                  <div id="cmsHxyFeaturesWrap">
-                    <!-- Dynamic feature inputs with delete buttons -->
-                  </div>
-
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 8px 0;">
-                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Dòng TV tiêu biểu HXY:</h4>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="openAddTvModelModal('hxy')">
-                      <i class="fas fa-plus"></i> Thêm Model TV
-                    </button>
-                  </div>
-                  <div id="cmsHxyModelsWrap" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #f8fafc; border: 1px solid var(--adm-border); border-radius: var(--radius-sm);">
-                    <!-- Dynamic model tag badges -->
-                  </div>
-                </div>
-
-                <!-- KHỐI HIKERS -->
-                <div class="cms-card-box">
-                  <div class="cms-card-box-header">
-                    <span class="cms-card-box-title" style="color: #991b1b;"><i class="fas fa-tv"></i> Khối Thương hiệu TV HIKERS</span>
-                    <span class="badge badge-brand-hikers">Màu chủ đạo: Red</span>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Tiêu đề phụ Badge</label>
-                    <input type="text" id="cmsHikersBadge" class="form-control">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Tiêu đề chính</label>
-                    <input type="text" id="cmsHikersHeading" class="form-control">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Đoạn giới thiệu Lead</label>
-                    <textarea id="cmsHikersLead" class="form-control" rows="3"></textarea>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Ảnh đại diện TV</label>
-                    <input type="text" id="cmsHikersImage" class="form-control">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Chú thích ảnh (Caption)</label>
-                    <input type="text" id="cmsHikersCaption" class="form-control">
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px 0;">
-                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Thế mạnh độc quyền HIKERS:</h4>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="addDeepdiveFeature('hikers')">
-                      <i class="fas fa-plus"></i> Thêm thế mạnh
-                    </button>
-                  </div>
-                  <div id="cmsHikersFeaturesWrap">
-                    <!-- Dynamic feature inputs with delete buttons -->
-                  </div>
-
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 8px 0;">
-                    <h4 style="font-size: 13.5px; margin: 0; color: var(--adm-text);">Dòng TV tiêu biểu HIKERS:</h4>
-                    <button type="button" class="btn btn-secondary btn-sm" onclick="openAddTvModelModal('hikers')">
-                      <i class="fas fa-plus"></i> Thêm Model TV
-                    </button>
-                  </div>
-                  <div id="cmsHikersModelsWrap" style="display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; background: #f8fafc; border: 1px solid var(--adm-border); border-radius: var(--radius-sm);">
-                    <!-- Dynamic model tag badges -->
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 5: COMPARISON TABLE ── -->
-            <div class="cms-panel" id="cms-panel-compare">
-              <div class="cms-card-box">
-                <div class="form-group">
-                  <label class="form-label">Tiêu đề bảng so sánh</label>
-                  <input type="text" id="cmsCompareTitle" class="form-control" value="Nên Chọn TV HXY Hay TV HIKERS?">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Đoạn mô tả mở đầu</label>
-                  <input type="text" id="cmsCompareDesc" class="form-control">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Cam kết chính sách cuối bảng</label>
-                  <input type="text" id="cmsComparePolicy" class="form-control">
-                </div>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="font-size: 14.5px; font-weight: 700; margin: 0;"><i class="fas fa-list-alt"></i> Các dòng tiêu chí so sánh trực tiếp</h3>
-                <button type="button" class="btn btn-secondary btn-sm" onclick="addCompareRow()">
-                  <i class="fas fa-plus"></i> Thêm tiêu chí so sánh
-                </button>
-              </div>
-
-              <div class="table-responsive">
-                <table class="compare-editor-table">
-                  <thead>
-                    <tr>
-                      <th style="width: 25%;">Tiêu chí so sánh</th>
-                      <th style="width: 33%; color: #1e40af;"><i class="fas fa-tv"></i> Nội dung TV HXY</th>
-                      <th style="width: 33%; color: #991b1b;"><i class="fas fa-tv"></i> Nội dung TV HIKERS</th>
-                      <th style="width: 9%; text-align: center;">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody id="cmsCompareTableBody">
-                    <!-- Dynamic comparison rows -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 6: STATS BAR ── -->
-            <div class="cms-panel" id="cms-panel-stats">
-              <div class="cms-card-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                  <div class="cms-card-box-title"><i class="fas fa-chart-line"></i> Khối Số Liệu Nổi Bật (Stats Bar)</div>
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="addStatItem()">
-                    <i class="fas fa-plus"></i> Thêm chỉ số thống kê
-                  </button>
-                </div>
-                <div class="form-row" id="cmsStatsWrap" style="margin-top: 16px;">
-                  <!-- Dynamic stat cards -->
-                </div>
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 7: NETWORK / STATIONS INFO ── -->
-            <div class="cms-panel" id="cms-panel-network">
-              <div class="cms-card-box">
-                <div class="cms-card-box-title"><i class="fas fa-map-marker-alt"></i> Thông tin khối Tra Cứu Trạm Bảo Hành Trang Chủ</div>
-                <div class="form-group" style="margin-top: 12px;">
-                  <label class="form-label">Nhãn Badge</label>
-                  <input type="text" id="cmsNetworkBadge" class="form-control" value="MẠNG LƯỚI TOÀN QUỐC">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Tiêu đề mục</label>
-                  <input type="text" id="cmsNetworkTitle" class="form-control" value="Hệ Thống 80 – 100 Trạm Bảo Hành Trúc Nguyên Phát">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Mô tả hướng dẫn người dùng</label>
-                  <textarea id="cmsNetworkDesc" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Hotline hỗ trợ kỹ thuật</label>
-                    <input type="text" id="cmsNetworkHotline" class="form-control" value="028 22 422 822">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Chữ nút xem trang trạm</label>
-                    <input type="text" id="cmsNetworkBtnText" class="form-control" value="Xem Trang Chi Tiết 80 – 100 Trạm &amp; Quy Trình Dịch Vụ">
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 8: FEATURED PRODUCTS ── -->
-            <div class="cms-panel" id="cms-panel-featured">
-              <div class="cms-card-box">
-                <div class="cms-card-box-title"><i class="fas fa-star"></i> Tiêu đề khối Sản phẩm TV nổi bật</div>
-                <div class="form-row" style="margin-top: 12px;">
-                  <div class="form-group">
-                    <label class="form-label">Nhãn Badge</label>
-                    <input type="text" id="cmsFeaturedBadge" class="form-control" value="Sản phẩm nổi bật">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Tiêu đề chính</label>
-                    <input type="text" id="cmsFeaturedTitle" class="form-control" value="TV được quan tâm nhiều nhất">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Đoạn mô tả ngắn</label>
-                  <input type="text" id="cmsFeaturedDesc" class="form-control" value="Chọn lọc các mẫu TV nổi bật từ HXY và HIKERS, phù hợp mọi không gian và ngân sách.">
-                </div>
-              </div>
-
-              <!-- Danh sách các TV đang được ghim -->
-              <div class="cms-card-box" style="margin-top: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                  <div class="cms-card-box-title" style="margin: 0;">
-                    <i class="fas fa-thumbtack" style="color: var(--adm-accent);"></i> Thứ tự các TV đang ghim trên Trang Chủ
-                  </div>
-                  <span class="badge badge-brand-hxy" id="cmsPinnedCountBadge">0 TV</span>
-                </div>
-                <p style="font-size: 12.5px; color: var(--adm-text-muted); margin: 0 0 12px 0;">
-                  Bấm nút <strong>Lên / Xuống</strong> để đổi vị trí, hoặc nút <strong>Bỏ ghim (Xóa)</strong> để gỡ TV khỏi trang chủ.
-                </p>
-                <div id="cmsPinnedProductsList" style="display: flex; flex-direction: column; gap: 8px;">
-                  <!-- Injected via JavaScript -->
-                </div>
-              </div>
-
-              <div style="margin-top: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <div>
-                    <h3 style="font-size: 14.5px; font-weight: 700; margin: 0;"><i class="fas fa-check-circle" style="color: var(--adm-accent);"></i> Tích chọn thêm TV từ kho để ghim</h3>
-                    <small style="color: var(--adm-text-muted);">Bấm vào TV để bật/tắt ghim hiển thị lên trang chủ.</small>
-                  </div>
-                  <div class="search-input-wrap" style="width: 220px;">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Lọc TV..." oninput="filterFeaturedPicker(this.value)">
-                  </div>
-                </div>
-
-                <div class="featured-pick-grid" id="cmsFeaturedPickGrid">
-                  <!-- Dynamic product checkbox cards -->
-                </div>
-              </div>
-            </div>
-
-            <!-- ── SUB-PANEL 9: CTA BANNER ── -->
-            <div class="cms-panel" id="cms-panel-cta">
-              <div class="cms-card-box">
-                <div class="cms-card-box-title"><i class="fas fa-bullhorn"></i> Khối Banner Kêu Gọi Hành Động (CTA)</div>
-                <div class="form-group" style="margin-top: 12px;">
-                  <label class="form-label">Nhãn Badge</label>
-                  <input type="text" id="cmsCtaBadge" class="form-control" value="Tư vấn miễn phí">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Tiêu đề kêu gọi (Hỗ trợ xuống dòng)</label>
-                  <textarea id="cmsCtaTitle" class="form-control" rows="2" placeholder="Tìm chiếc TV phù hợp&#10;cho không gian của bạn?"></textarea>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Đoạn mô tả tư vấn</label>
-                  <textarea id="cmsCtaDesc" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Chữ nút gửi liên hệ</label>
-                    <input type="text" id="cmsCtaBtnText" class="form-control" value="Liên hệ TNP ngay">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Đường dẫn nút liên hệ</label>
-                    <input type="text" id="cmsCtaBtnLink" class="form-control" value="./lien-he.html">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Số điện thoại Hotline gọi ngay</label>
-                  <input type="text" id="cmsCtaPhone" class="form-control" value="028 22 422 822">
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
@@ -1101,36 +604,42 @@
       <section class="tab-panel" id="tab-settings">
         <div class="admin-card">
           <div class="card-header">
-            <h2 class="card-title"><i class="fas fa-cogs"></i> Thông tin doanh nghiệp & Hotline TNP Care</h2>
+            <h2 class="card-title"><i class="fas fa-server" style="color: var(--adm-primary);"></i> Trạng thái Hệ thống &amp; Cơ sở Dữ liệu</h2>
           </div>
           <div class="card-body">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Tên doanh nghiệp</label>
-                <input type="text" class="form-control" value="CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ TRÚC NGUYÊN PHÁT" readonly>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px;">
+              <div style="background: var(--adm-bg-main); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--adm-border);">
+                <div style="font-size: 12px; color: var(--adm-text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Cơ sở dữ liệu đám mây</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--adm-text-primary);">
+                  <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span>
+                  MongoDB Atlas
+                </div>
+                <div style="font-size: 12.5px; color: var(--adm-text-secondary); margin-top: 4px;">Dữ liệu lưu trữ độc lập, an toàn vĩnh viễn</div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Tên thương hiệu</label>
-                <input type="text" class="form-control" value="TNP CARE" readonly>
+
+              <div style="background: var(--adm-bg-main); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--adm-border);">
+                <div style="font-size: 12px; color: var(--adm-text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Cơ chế bảo mật</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--adm-text-primary);">
+                  <i class="fas fa-shield-alt" style="color: #6366f1;"></i>
+                  Phân quyền RBAC &amp; Băm SHA-256
+                </div>
+                <div style="font-size: 12.5px; color: var(--adm-text-secondary); margin-top: 4px;">Phân quyền 4 cấp độ, mã hóa mật khẩu an toàn</div>
+              </div>
+
+              <div style="background: var(--adm-bg-main); padding: 14px 16px; border-radius: var(--radius-md); border: 1px solid var(--adm-border);">
+                <div style="font-size: 12px; color: var(--adm-text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 6px;">Nền tảng vận hành</div>
+                <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--adm-text-primary);">
+                  <i class="fas fa-cloud" style="color: #0284c7;"></i>
+                  Vercel Serverless / Node.js
+                </div>
+                <div style="font-size: 12.5px; color: var(--adm-text-secondary); margin-top: 4px;">Tự động co giãn tải, CDN toàn cầu tốc độ cao</div>
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Hotline tổng đài bảo hành</label>
-                <input type="text" class="form-control" value="028 22 422 822">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Hotline tư vấn kinh doanh</label>
-                <input type="text" class="form-control" value="0913 692 161">
-              </div>
+
+            <div style="background: #f8fafc; border-left: 4px solid var(--adm-primary); padding: 12px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 13.5px; color: var(--adm-text-secondary);">
+              <i class="fas fa-info-circle" style="color: var(--adm-primary); margin-right: 6px;"></i>
+              <strong>Lưu ý:</strong> Khi bạn thay đổi máy chủ hoặc triển khai lên môi trường mới, toàn bộ dữ liệu (Sản phẩm TV, Trạm bảo hành, Khách liên hệ, Banners, Bài viết, Tài khoản) được tự động kết nối thông qua biến môi trường <code>MONGODB_URI</code> mà không hề bị mất mát.
             </div>
-            <div class="form-group">
-              <label class="form-label">Địa chỉ trụ sở chính</label>
-              <input type="text" class="form-control" value="Số 27, Đường 16, Phường Linh Chiểu, TP. Thủ Đức, TP. Hồ Chí Minh">
-            </div>
-            <button class="btn btn-primary" onclick="showToast('Đã lưu cấu hình cài đặt!', 'success')">
-              <i class="fas fa-save"></i> Lưu thông tin
-            </button>
           </div>
         </div>
 
@@ -1483,118 +992,6 @@
 </div>
 
 <!-- ══════════════════════════════════════════
-     MODAL: THÊM / SỬA KHỐI BỐ CỤC (LAYOUT SECTION)
-     ══════════════════════════════════════════ -->
-<div class="admin-modal" id="modalLayoutSection">
-  <div class="modal-dialog" style="max-width: 520px;">
-    <div class="modal-header">
-      <h3 class="modal-title" id="modalLayoutTitle"><i class="fas fa-layer-group"></i> Thêm / Sửa Khối Bố Cục</h3>
-      <button class="modal-close" onclick="closeLayoutModal()">&times;</button>
-    </div>
-    <form onsubmit="saveLayoutSectionForm(event)">
-      <div class="modal-body">
-        <input type="hidden" id="layoutSecIndex">
-        <div class="form-group">
-          <label class="form-label">Mã định danh (Section ID) *</label>
-          <input type="text" id="layoutSecId" class="form-control" placeholder="VD: custom-reviews, video-showcase..." required>
-          <small style="color: #64748b;">Mã viết liền không dấu, dùng gạch nối để gắn thẻ trên trang chủ.</small>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tên hiển thị khối *</label>
-          <input type="text" id="layoutSecName" class="form-control" placeholder="VD: Đánh giá của khách hàng" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mô tả ngắn chức năng</label>
-          <textarea id="layoutSecDesc" class="form-control" rows="2" placeholder="VD: Khối phản hồi 5 sao và đánh giá trải nghiệm của người dùng..."></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Trạng thái ban đầu</label>
-          <select id="layoutSecEnabled" class="form-control">
-            <option value="true">Bật (Hiển thị ngay trên trang chủ)</option>
-            <option value="false">Tắt (Tạm ẩn)</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeLayoutModal()">Hủy</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu khối bố cục</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     MODAL: THÊM / SỬA THƯƠNG HIỆU ĐỐI TÁC (BRAND)
-     ══════════════════════════════════════════ -->
-<div class="admin-modal" id="modalBrand">
-  <div class="modal-dialog" style="max-width: 480px;">
-    <div class="modal-header">
-      <h3 class="modal-title" id="modalBrandTitle"><i class="fas fa-handshake"></i> Chỉnh Sửa Thương Hiệu Đối Tác</h3>
-      <button class="modal-close" onclick="closeBrandModal()">&times;</button>
-    </div>
-    <form onsubmit="saveBrandModalForm(event)">
-      <div class="modal-body">
-        <input type="hidden" id="brandIndex">
-        <div class="form-group">
-          <label class="form-label">Tên thương hiệu đối tác *</label>
-          <input type="text" id="brandModalName" class="form-control" placeholder="VD: Sony, Sharp, TCL..." required>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Màu chấm tín hiệu LED</label>
-            <select id="brandModalColor" class="form-control">
-              <option value="blue">Xanh dương (Blue)</option>
-              <option value="red">Đỏ (Red)</option>
-              <option value="green">Xanh lá (Green)</option>
-              <option value="amber">Vàng hổ phách (Amber)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Đường dẫn liên kết (Link)</label>
-            <input type="text" id="brandModalLink" class="form-control" placeholder="./san-pham.html hoặc URL">
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeBrandModal()">Hủy</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu thương hiệu</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     MODAL: THÊM / SỬA DÒNG TV TIÊU BIỂU (MODEL TAG)
-     ══════════════════════════════════════════ -->
-<div class="admin-modal" id="modalTvModel">
-  <div class="modal-dialog" style="max-width: 480px;">
-    <div class="modal-header">
-      <h3 class="modal-title" id="modalTvModelTitle"><i class="fas fa-tv"></i> Thêm / Sửa Model TV Tiêu Biểu</h3>
-      <button class="modal-close" onclick="closeTvModelModal()">&times;</button>
-    </div>
-    <form onsubmit="saveTvModelForm(event)">
-      <div class="modal-body">
-        <input type="hidden" id="tvModelBrandKey">
-        <input type="hidden" id="tvModelIndex">
-        <div class="form-group">
-          <label class="form-label">Tên hiển thị Model TV *</label>
-          <input type="text" id="tvModelName" class="form-control" placeholder="VD: HXY 100&quot; S950 hoặc HIKERS Mini LED 75&quot;" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mã sản phẩm liên kết (Product ID)</label>
-          <input type="text" id="tvModelProductId" class="form-control" placeholder="VD: hxy-tv-s950, hikers-dong-s700...">
-          <small style="color: #64748b;">Khi khách bấm vào tag này ở trang chủ, pop-up chi tiết TV sẽ tự động hiển thị.</small>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeTvModelModal()">Hủy</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu Model Tag</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
      MODAL: THÊM / SỬA TÀI KHOẢN (USER)
      ══════════════════════════════════════════ -->
 <div class="admin-modal" id="modalUser">
@@ -1705,30 +1102,6 @@
         <button type="submit" class="btn btn-primary" id="btnSaveChangePassword"><i class="fas fa-check"></i> Cập nhật mật khẩu</button>
       </div>
     </form>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     MODAL: TÌM KIẾM NHANH HỆ THỐNG (CTRL + K)
-     ══════════════════════════════════════════ -->
-<div class="admin-modal" id="quickSearchModal" onclick="handleQuickSearchBackdropClick(event)">
-  <div class="modal-dialog quicksearch-dialog">
-    <div class="quicksearch-input-wrap">
-      <i class="fas fa-search quicksearch-icon"></i>
-      <input type="text" id="quickSearchInput" class="quicksearch-input" placeholder="Tìm nhanh model TV, trạm bảo hành, bài viết, chức năng... (Esc để đóng)" autocomplete="off" oninput="handleQuickSearchInput(this.value)">
-      <span class="quicksearch-esc" onclick="closeQuickSearchModal()">ESC</span>
-    </div>
-    <div class="quicksearch-results" id="quickSearchResults">
-      <div class="quicksearch-empty">
-        <i class="fas fa-keyboard" style="font-size: 24px; color: var(--adm-text-muted); margin-bottom: 8px; display: block;"></i>
-        Gõ tên sản phẩm, mã model, tỉnh thành hoặc tên chức năng để nhảy nhanh...
-      </div>
-    </div>
-    <div class="quicksearch-footer">
-      <span><kbd>↑</kbd> <kbd>↓</kbd> Di chuyển</span>
-      <span><kbd>Enter</kbd> Mở</span>
-      <span><kbd>Esc</kbd> Đóng</span>
-    </div>
   </div>
 </div>
 
