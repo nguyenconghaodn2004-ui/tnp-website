@@ -901,6 +901,15 @@
           <!-- Rendered dynamically by JavaScript -->
         </div>
 
+        <!-- Nút Xem Thêm / Thu Gọn Trạm Bảo Hành (Tránh kéo dài trang) -->
+        <div id="station-load-more-wrapper" style="text-align: center; margin-top: 32px; display: none;">
+          <button id="station-load-more-btn" type="button" onclick="toggleStationsExpand()" class="btn btn-outline" style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 32px; border-radius: 12px; background: #ffffff; border: 2px solid var(--tnp-blue); color: var(--tnp-blue); font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 8px rgba(26,58,107,0.08); transition: all 0.2s;">
+            <i class="fas fa-chevron-down" id="load-more-icon"></i>
+            <span id="load-more-text">Xem Thêm Trạm Bảo Hành</span>
+          </button>
+          <div id="station-counter-text" style="font-size: 13px; color: var(--text-muted); margin-top: 10px; font-weight: 500;"></div>
+        </div>
+
         <!-- Trạng thái không tìm thấy -->
         <div id="no-stations-found" style="display: none; padding: 48px 20px; text-align: center;">
           <div style="width: 56px; height: 56px; border-radius: 50%; background: #eff6ff; color: var(--tnp-blue); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 12px;">
@@ -1162,8 +1171,21 @@
       });
     }
 
+    const INITIAL_DISPLAY_COUNT = 6;
+    let isStationExpanded = false;
+
+    function toggleStationsExpand() {
+      isStationExpanded = !isStationExpanded;
+      renderStations();
+      if (!isStationExpanded) {
+        const anchor = document.getElementById('tra-cuu-tram');
+        if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
     function filterByRegion(region, btnElement) {
       currentRegion = region;
+      isStationExpanded = false;
       document.querySelectorAll('.region-btn').forEach(btn => {
         btn.style.background = 'none';
         btn.style.color = 'var(--text-secondary)';
@@ -1181,6 +1203,7 @@
         searchInput.value = '';
         currentKeyword = '';
       }
+      isStationExpanded = false;
       const clearBtn = document.getElementById('clear-search-btn');
       if (clearBtn) clearBtn.style.display = 'none';
       renderStations();
@@ -1190,6 +1213,7 @@
       currentRegion = 'all';
       currentProvince = '';
       currentKeyword = '';
+      isStationExpanded = false;
       
       const provSelect = document.getElementById('station-province-select');
       if (provSelect) provSelect.value = '';
@@ -1209,6 +1233,10 @@
       const container = document.getElementById('station-cards-container');
       const countEl = document.getElementById('station-count-display');
       const noFoundEl = document.getElementById('no-stations-found');
+      const loadMoreWrap = document.getElementById('station-load-more-wrapper');
+      const loadMoreText = document.getElementById('load-more-text');
+      const loadMoreIcon = document.getElementById('load-more-icon');
+      const counterText = document.getElementById('station-counter-text');
       if (!container) return;
 
       const filtered = stationData.filter(s => {
@@ -1231,12 +1259,33 @@
       if (filtered.length === 0) {
         container.innerHTML = '';
         if (noFoundEl) noFoundEl.style.display = 'block';
+        if (loadMoreWrap) loadMoreWrap.style.display = 'none';
         return;
       }
 
       if (noFoundEl) noFoundEl.style.display = 'none';
 
-      container.innerHTML = filtered.map(s => `
+      // Ẩn bớt danh sách dài: Chỉ hiển thị 6 trạm đầu tiên, có nút Xem Thêm
+      let displayedStations = filtered;
+      if (filtered.length > INITIAL_DISPLAY_COUNT) {
+        if (loadMoreWrap) loadMoreWrap.style.display = 'block';
+        if (!isStationExpanded) {
+          displayedStations = filtered.slice(0, INITIAL_DISPLAY_COUNT);
+          const remaining = filtered.length - INITIAL_DISPLAY_COUNT;
+          if (loadMoreText) loadMoreText.textContent = `Xem Thêm Trạm Bảo Hành (Còn ${remaining} trạm)`;
+          if (loadMoreIcon) loadMoreIcon.className = 'fas fa-chevron-down';
+          if (counterText) counterText.textContent = `Đang hiển thị ${INITIAL_DISPLAY_COUNT} / ${filtered.length} trạm kỹ thuật ủy quyền`;
+        } else {
+          displayedStations = filtered;
+          if (loadMoreText) loadMoreText.textContent = 'Thu Gọn Danh Sách Trạm';
+          if (loadMoreIcon) loadMoreIcon.className = 'fas fa-chevron-up';
+          if (counterText) counterText.textContent = `Đang hiển thị toàn bộ ${filtered.length} trạm kỹ thuật ủy quyền`;
+        }
+      } else {
+        if (loadMoreWrap) loadMoreWrap.style.display = 'none';
+      }
+
+      container.innerHTML = displayedStations.map(s => `
         <div style="background:#ffffff; border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(0,0,0,0.03); display:flex; flex-direction:column; justify-content:space-between; transition:all 0.2s ease;">
           <div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
