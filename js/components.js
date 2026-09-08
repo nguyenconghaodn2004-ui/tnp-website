@@ -33,6 +33,7 @@ const NAV_LINKS = [
   {
     href: './ho-tro.html', label: 'Hỗ trợ', key: 'ho-tro',
     dropdown: [
+      { href: './chinh-sach-bao-hanh-hxy.html', icon: 'fas fa-shield-halved', label: 'Chính sách bảo hành & đổi trả HXY' },
       { href: './ho-tro.html#faq', icon: 'fas fa-question-circle', label: 'Hỏi đáp FAQ' },
       { href: './ho-tro.html#bao-hanh', icon: 'fas fa-shield-alt', label: 'Chính sách bảo hành' },
     ]
