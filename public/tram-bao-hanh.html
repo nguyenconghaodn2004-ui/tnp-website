@@ -242,30 +242,74 @@
         </p>
       </div>
 
-      <!-- TAB SWITCHER NAV -->
+      <!-- TAB SWITCHER NAV - 2 PROMINENT INTERACTIVE CARDS -->
       <div class="portal-tab-switcher-wrapper">
+        <div class="tab-switcher-guide-bar">
+          <span class="guide-badge"><i class="fas fa-mouse-pointer"></i> CHỌN BẢNG PHÙ HỢP VỚI BẠN</span>
+          <span class="guide-hint">Bấm vào thẻ bên dưới để chuyển đổi giữa bảng Khách Hàng và bảng Hợp Tác Đối Tác</span>
+        </div>
+
         <div class="portal-tab-switcher" role="tablist">
           <!-- Button Tab 1: Khách hàng -->
-          <button type="button" class="portal-tab-btn active" id="tab-btn-customer" onclick="switchPortalTab('customer')" role="tab" aria-selected="true" aria-controls="portal-pane-customer">
-            <div class="tab-icon-box customer">
-              <i class="fas fa-tv"></i>
+          <button type="button" class="portal-tab-btn customer active" id="tab-btn-customer" onclick="switchPortalTab('customer')" role="tab" aria-selected="true" aria-controls="portal-pane-customer">
+            <div class="tab-btn-top-row">
+              <span class="tab-category-badge customer">
+                <i class="fas fa-user-check"></i> DÀNH CHO KHÁCH HÀNG
+              </span>
+              <span class="tab-status-pill active-pill">
+                <i class="fas fa-check-circle"></i> Đang hiển thị bảng này
+              </span>
+              <span class="tab-status-pill inactive-pill">
+                <i class="fas fa-hand-pointer"></i> Bấm để chọn bảng này
+              </span>
             </div>
-            <div class="tab-text-box">
-              <span class="tab-badge customer">DÀNH CHO KHÁCH HÀNG</span>
-              <strong class="tab-main-title">Yêu Cầu Dịch Vụ Bảo Hành &amp; Sửa Chữa</strong>
-              <span class="tab-sub-desc">Khách hàng cần bảo hành TV, sửa panel màn hình, kiểm tra tận nhà</span>
+            
+            <div class="tab-btn-main-content">
+              <div class="tab-icon-box customer">
+                <i class="fas fa-tv"></i>
+              </div>
+              <div class="tab-text-box">
+                <strong class="tab-main-title">Yêu Cầu Dịch Vụ Bảo Hành &amp; Sửa Chữa</strong>
+                <span class="tab-sub-desc">Khách hàng cần bảo hành TV, sửa panel màn hình, thay linh kiện, kiểm tra tận nơi</span>
+                <div class="tab-micro-perks">
+                  <span class="perk-tag customer"><i class="fas fa-bolt"></i> Xử lý 15–30 phút</span>
+                  <span class="perk-tag customer"><i class="fas fa-shield-alt"></i> Linh kiện chính hãng</span>
+                </div>
+              </div>
             </div>
           </button>
 
-          <!-- Button Tab 2: Đối tác kỹ thuật -->
-          <button type="button" class="portal-tab-btn" id="tab-btn-partner" onclick="switchPortalTab('partner')" role="tab" aria-selected="false" aria-controls="portal-pane-partner">
-            <div class="tab-icon-box partner">
-              <i class="fas fa-handshake"></i>
+          <!-- Button Tab 2: Đối tác kỹ thuật / Tuyển trạm -->
+          <button type="button" class="portal-tab-btn partner" id="tab-btn-partner" onclick="switchPortalTab('partner')" role="tab" aria-selected="false" aria-controls="portal-pane-partner">
+            <div class="tab-btn-top-row">
+              <div class="tab-badge-group">
+                <span class="tab-category-badge partner">
+                  <i class="fas fa-handshake"></i> DÀNH CHO ĐỐI TÁC
+                </span>
+                <span class="tab-hot-badge">
+                  <i class="fas fa-fire"></i> TUYỂN TRẠM TOÀN QUỐC
+                </span>
+              </div>
+              <span class="tab-status-pill active-pill">
+                <i class="fas fa-check-circle"></i> Đang hiển thị bảng này
+              </span>
+              <span class="tab-status-pill inactive-pill partner-cta">
+                <i class="fas fa-handshake"></i> Bấm để xem bảng hợp tác
+              </span>
             </div>
-            <div class="tab-text-box">
-              <span class="tab-badge partner">DÀNH CHO ĐỐI TÁC</span>
-              <strong class="tab-main-title">Đăng Ký Làm Trạm Bảo Hành Ủy Quyền</strong>
-              <span class="tab-sub-desc">Cửa hàng kỹ thuật, thợ điện tử gia nhập mạng lưới 80–100 trạm</span>
+
+            <div class="tab-btn-main-content">
+              <div class="tab-icon-box partner">
+                <i class="fas fa-store"></i>
+              </div>
+              <div class="tab-text-box">
+                <strong class="tab-main-title">Đăng Ký Làm Trạm Bảo Hành Ủy Quyền</strong>
+                <span class="tab-sub-desc">Cửa hàng kỹ thuật, thợ điện tử gia nhập mạng lưới 80–100 trạm trên 63 tỉnh thành</span>
+                <div class="tab-micro-perks">
+                  <span class="perk-tag partner"><i class="fas fa-chart-line"></i> Nguồn máy dồi dào</span>
+                  <span class="perk-tag partner"><i class="fas fa-box-open"></i> Cung cấp linh kiện sỉ</span>
+                </div>
+              </div>
             </div>
           </button>
         </div>
@@ -603,107 +647,328 @@
     }
 
     /* ══════════════════════════════════════════
-       PORTAL & TAB SWITCHER MODERN STYLES
+       PORTAL & TAB SWITCHER MODERN PROMINENT STYLES
        ══════════════════════════════════════════ */
     .portal-tab-switcher-wrapper {
-      max-width: 880px;
+      max-width: 980px;
       margin-inline: auto;
-      margin-bottom: 36px;
+      margin-bottom: 38px;
     }
+    .tab-switcher-guide-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 0 4px;
+    }
+    .guide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #93c5fd;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(59, 130, 246, 0.18);
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .guide-hint {
+      font-size: 13.5px;
+      color: #94a3b8;
+    }
+
     .portal-tab-switcher {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 8px;
-      border-radius: 18px;
-      backdrop-filter: blur(8px);
+      gap: 20px;
     }
+
     .portal-tab-btn {
+      position: relative;
       display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 20px;
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 14px;
-      color: #94a3b8;
+      flex-direction: column;
+      gap: 14px;
+      padding: 22px 24px;
+      border-radius: 20px;
       text-align: left;
       cursor: pointer;
-      transition: all 0.25s ease;
-      position: relative;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%;
+      border: 2px solid transparent;
+      outline: none;
     }
-    .portal-tab-btn:hover {
-      background: rgba(255, 255, 255, 0.06);
-      color: #e2e8f0;
+
+    /* Top Row in Button: Category Badge + Status Pill */
+    .tab-btn-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      flex-wrap: wrap;
     }
-    .portal-tab-btn.active {
-      background: #ffffff;
-      color: #0f172a;
-      border-color: #ffffff;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    .tab-badge-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-    .portal-tab-btn .tab-icon-box {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+    .tab-category-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+    .tab-hot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      color: #ffffff;
+      padding: 3px 9px;
+      border-radius: 999px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.45);
+      animation: pulseGlow 2.5s infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.03); opacity: 0.92; }
+    }
+
+    .tab-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+    }
+    .portal-tab-btn.active .active-pill {
+      display: inline-flex;
+    }
+    .portal-tab-btn.active .inactive-pill {
+      display: none !important;
+    }
+    .portal-tab-btn:not(.active) .active-pill {
+      display: none !important;
+    }
+    .portal-tab-btn:not(.active) .inactive-pill {
+      display: inline-flex;
+    }
+
+    /* Main Content in Button: Icon Box + Text */
+    .tab-btn-main-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      width: 100%;
+    }
+    .tab-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 22px;
       flex-shrink: 0;
       transition: all 0.25s ease;
     }
-    .portal-tab-btn .tab-icon-box.customer {
-      background: rgba(37, 99, 235, 0.15);
-      color: #3b82f6;
-      border: 1px solid rgba(59, 130, 246, 0.3);
+    .tab-text-box {
+      flex: 1;
+      min-width: 0;
     }
-    .portal-tab-btn.active .tab-icon-box.customer {
-      background: #2563eb;
-      color: #ffffff;
-      border-color: #2563eb;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
-    }
-    .portal-tab-btn .tab-icon-box.partner {
-      background: rgba(16, 185, 129, 0.15);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .portal-tab-btn.active .tab-icon-box.partner {
-      background: #059669;
-      color: #ffffff;
-      border-color: #059669;
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-    }
-    .tab-badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 3px;
-    }
-    .tab-badge.customer { color: #60a5fa; }
-    .portal-tab-btn.active .tab-badge.customer { color: #2563eb; }
-    .tab-badge.partner { color: #34d399; }
-    .portal-tab-btn.active .tab-badge.partner { color: #059669; }
     .tab-main-title {
       display: block;
-      font-size: 15.5px;
+      font-size: 17.5px;
       font-weight: 800;
-      line-height: 1.3;
-      margin-bottom: 3px;
+      line-height: 1.35;
+      margin-bottom: 5px;
+      transition: color 0.2s;
     }
     .tab-sub-desc {
       display: block;
-      font-size: 12.5px;
-      color: #64748b;
-      line-height: 1.4;
+      font-size: 13.5px;
+      line-height: 1.45;
+      margin-bottom: 8px;
+      transition: color 0.2s;
     }
-    .portal-tab-btn.active .tab-sub-desc {
+    .tab-micro-perks {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .perk-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* ── TAB 1: CUSTOMER BUTTON THEME ── */
+    .portal-tab-btn.customer:not(.active) {
+      background: #1e293b;
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    .portal-tab-btn.customer:not(.active):hover {
+      background: #24354c;
+      border-color: #3b82f6;
+      transform: translateY(-4px);
+      box-shadow: 0 16px 35px rgba(37, 99, 235, 0.25);
+    }
+    .portal-tab-btn.customer:not(.active) .tab-category-badge {
+      background: rgba(37, 99, 235, 0.2);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .portal-tab-btn.customer:not(.active) .inactive-pill {
+      background: rgba(59, 130, 246, 0.2);
+      color: #bfdbfe;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+    .portal-tab-btn.customer:not(.active) .tab-icon-box {
+      background: rgba(37, 99, 235, 0.2);
+      color: #60a5fa;
+      border: 1.5px solid rgba(59, 130, 246, 0.45);
+    }
+    .portal-tab-btn.customer:not(.active) .tab-main-title {
+      color: #ffffff;
+    }
+    .portal-tab-btn.customer:not(.active) .tab-sub-desc {
+      color: #cbd5e1;
+    }
+    .portal-tab-btn.customer:not(.active) .perk-tag {
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+    }
+
+    /* Customer Active State */
+    .portal-tab-btn.customer.active {
+      background: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 20px 40px rgba(37, 99, 235, 0.35), 0 0 0 4px rgba(59, 130, 246, 0.25);
+      transform: translateY(-2px);
+    }
+    .portal-tab-btn.customer.active .tab-category-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+    .portal-tab-btn.customer.active .active-pill {
+      background: #2563eb;
+      color: #ffffff;
+    }
+    .portal-tab-btn.customer.active .tab-icon-box {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+    }
+    .portal-tab-btn.customer.active .tab-main-title {
+      color: #0f172a;
+    }
+    .portal-tab-btn.customer.active .tab-sub-desc {
       color: #475569;
+    }
+    .portal-tab-btn.customer.active .perk-tag {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #dbeafe;
+    }
+
+    /* ── TAB 2: PARTNER BUTTON THEME (EXTRA PROMINENT) ── */
+    .portal-tab-btn.partner:not(.active) {
+      background: linear-gradient(145deg, #102922 0%, #17332b 100%);
+      border: 2px solid #10b981;
+      box-shadow: 0 10px 28px rgba(16, 185, 129, 0.25), 0 0 18px rgba(16, 185, 129, 0.15);
+    }
+    .portal-tab-btn.partner:not(.active):hover {
+      background: linear-gradient(145deg, #14362d 0%, #1e4238 100%);
+      border-color: #34d399;
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(16, 185, 129, 0.35);
+    }
+    .portal-tab-btn.partner:not(.active) .tab-category-badge {
+      background: rgba(16, 185, 129, 0.25);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+    }
+    .portal-tab-btn.partner:not(.active) .partner-cta {
+      background: #10b981;
+      color: #ffffff;
+      font-weight: 800;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5);
+    }
+    .portal-tab-btn.partner:not(.active) .tab-icon-box {
+      background: rgba(16, 185, 129, 0.25);
+      color: #34d399;
+      border: 1.5px solid #10b981;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.3);
+    }
+    .portal-tab-btn.partner:not(.active) .tab-main-title {
+      color: #ffffff;
+    }
+    .portal-tab-btn.partner:not(.active) .tab-sub-desc {
+      color: #a7f3d0;
+    }
+    .portal-tab-btn.partner:not(.active) .perk-tag {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Partner Active State */
+    .portal-tab-btn.partner.active {
+      background: #ffffff;
+      border-color: #059669;
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.35), 0 0 0 4px rgba(16, 185, 129, 0.25);
+      transform: translateY(-2px);
+    }
+    .portal-tab-btn.partner.active .tab-category-badge {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    .portal-tab-btn.partner.active .active-pill {
+      background: #059669;
+      color: #ffffff;
+    }
+    .portal-tab-btn.partner.active .tab-icon-box {
+      background: #059669;
+      color: #ffffff;
+      border-color: #059669;
+      box-shadow: 0 6px 18px rgba(5, 150, 105, 0.4);
+    }
+    .portal-tab-btn.partner.active .tab-main-title {
+      color: #0f172a;
+    }
+    .portal-tab-btn.partner.active .tab-sub-desc {
+      color: #334155;
+    }
+    .portal-tab-btn.partner.active .perk-tag {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #bbf7d0;
     }
 
     /* Portal Grid & Columns */
@@ -1049,9 +1314,30 @@
       }
       .portal-tab-switcher {
         grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .tab-switcher-guide-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
       }
     }
     @media (max-width: 600px) {
+      .portal-tab-btn {
+        padding: 18px 16px;
+      }
+      .tab-btn-main-content {
+        gap: 12px;
+      }
+      .tab-icon-box {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+        border-radius: 12px;
+      }
+      .tab-main-title {
+        font-size: 16px;
+      }
       .form-field-row {
         grid-template-columns: 1fr;
         gap: 12px;
