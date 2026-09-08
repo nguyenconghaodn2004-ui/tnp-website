@@ -16,9 +16,9 @@ const NAV_LINKS = [
     href: './tram-bao-hanh.html', label: 'Trạm bảo hành', key: 'tram-bao-hanh',
     dropdown: [
       { href: './tram-bao-hanh.html', icon: 'fas fa-map-marker-alt', label: 'Mạng lưới 80 – 100 Trạm' },
-      { href: './tram-bao-hanh.html#quy-trinh', icon: 'fas fa-cogs', label: 'Quy trình 6 bước dịch vụ' },
+      { href: './tram-bao-hanh.html#quy-trinh', icon: 'fas fa-cogs', label: 'Quy trình & Cam kết chuẩn' },
+      { href: './tram-bao-hanh.html#yeu-cau-dich-vu', icon: 'fas fa-tv', label: 'Yêu cầu dịch vụ bảo hành TV' },
       { href: './tram-bao-hanh.html#dang-ky-tram', icon: 'fas fa-handshake', label: 'Đăng ký làm trạm bảo hành' },
-      { href: './tram-bao-hanh.html#cam-ket', icon: 'fas fa-shield-alt', label: 'Cam kết chất lượng' },
     ]
   },
   {
