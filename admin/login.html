@@ -166,13 +166,21 @@
 </div>
 
 <script>
-  const ADMIN_SESSION_TTL_MS = 5 * 60 * 1000;
+  // Chỉ logout nếu admin rời đi quá 5 phút, không phải đang làm việc
+  const ADMIN_EXIT_GRACE_MS = 5 * 60 * 1000;
 
   function hasValidAdminSession() {
     try {
       const parsed = JSON.parse(localStorage.getItem('tnp_admin_auth') || 'null');
-      const expiresAt = Number(parsed?.expiresAt) || (new Date(parsed?.loginAt || 0).getTime() + ADMIN_SESSION_TTL_MS);
-      if (parsed?.token && Number.isFinite(expiresAt) && Date.now() < expiresAt) return true;
+      if (!parsed?.token) return false;
+      // Kiểm tra grace period: nếu có lưu thời điểm thoát, xem đã quá 5p chưa
+      const lastExitAt = Number(localStorage.getItem('tnp_admin_last_exit')) || 0;
+      if (lastExitAt && Date.now() - lastExitAt > ADMIN_EXIT_GRACE_MS) {
+        localStorage.removeItem('tnp_admin_auth');
+        localStorage.removeItem('tnp_admin_last_exit');
+        return false;
+      }
+      return true;
     } catch (e) {}
     localStorage.removeItem('tnp_admin_auth');
     return false;
