@@ -20,7 +20,7 @@ const STORAGE_PRODUCTS_KEY = 'tnp_admin_products_override';
 const STORAGE_STATIONS_KEY = 'tnp_admin_stations_override';
 const STORAGE_BANNERS_KEY = 'tnp_admin_banners_override';
 const STORAGE_ARTICLES_KEY = 'tnp_admin_articles_override';
-const ADMIN_SESSION_TTL_MS = 5 * 60 * 1000;
+const ADMIN_EXIT_GRACE_MS = 5 * 60 * 1000;
 
 // ══════════════════════════════════════════════
 //  AUTH GUARD & TOKEN REQUEST WRAPPER
@@ -30,12 +30,14 @@ function getStoredAdminAuth() {
     const authData = localStorage.getItem('tnp_admin_auth');
     if (!authData) return null;
     const auth = JSON.parse(authData);
-    const expiresAt = Number(auth?.expiresAt) || (new Date(auth?.loginAt || 0).getTime() + ADMIN_SESSION_TTL_MS);
-    if (!auth?.token || !Number.isFinite(expiresAt) || Date.now() >= expiresAt) {
+    const lastExitAt = Number(localStorage.getItem('tnp_admin_last_exit')) || 0;
+    if (!auth?.token || (lastExitAt && Date.now() - lastExitAt > ADMIN_EXIT_GRACE_MS)) {
       localStorage.removeItem('tnp_admin_auth');
+      localStorage.removeItem('tnp_admin_last_exit');
       return null;
     }
-    return { ...auth, expiresAt };
+    localStorage.removeItem('tnp_admin_last_exit');
+    return auth;
   } catch (e) {
     localStorage.removeItem('tnp_admin_auth');
     return null;
@@ -114,7 +116,7 @@ function handleAdminLogout() {
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   if (!checkAdminAuth()) return;
-  scheduleAdminSessionExpiry();
+  startSessionExpiryWatcher();
   initAdminTheme();
   initNavigation();
   initSidebarMobile();
@@ -127,7 +129,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) checkAdminAuth();
+  if (document.hidden) {
+    // Admin rời tab → lưu thời điểm thoát
+    localStorage.setItem('tnp_admin_last_exit', String(Date.now()));
+  } else {
+    // Admin quay lại tab → kiểm tra xem có thoát quá 5 phút không
+    checkAdminAuth();
+  }
+});
+
+// Chỉ lưu thời điểm thoát khi thực sự đóng tab/trình duyệt
+// (KHÔNG dùng beforeunload/pagehide vì chúng kích hoạt cả khi reload nội bộ)
+window.addEventListener('pagehide', (e) => {
+  // e.persisted = true nghĩa là trang vào bfcache (back/forward), không phải đóng thật
+  if (!e.persisted) {
+    localStorage.setItem('tnp_admin_last_exit', String(Date.now()));
+  }
 });
 
 // ── Navigation tabs ──
@@ -1443,14 +1460,37 @@ async function loadAnalyticsData() {
   }
 }
 
-function scheduleAdminSessionExpiry() {
-  const auth = getStoredAdminAuth();
-  if (!auth) return;
-  window.setTimeout(() => {
-    localStorage.removeItem('tnp_admin_auth');
-    alert('Phiên làm việc quản trị đã hết hạn sau 5 phút. Vui lòng đăng nhập lại!');
-    window.location.replace('./login.html');
-  }, Math.max(0, auth.expiresAt - Date.now()));
+// Kiểm tra phiên định kỳ mỗi 60 giây thay vì dùng setTimeout một lần
+// (tránh lỗi khi token cũ gần hết hạn khiến alert bắn sai thời điểm)
+function startSessionExpiryWatcher() {
+  const CHECK_INTERVAL_MS = 60 * 1000; // kiểm tra mỗi 1 phút
+  const WARN_BEFORE_MS = 5 * 60 * 1000; // cảnh báo trước 5 phút
+
+  setInterval(() => {
+    try {
+      const authData = localStorage.getItem('tnp_admin_auth');
+      if (!authData) return;
+      const auth = JSON.parse(authData);
+      if (!auth?.expiresAt) return;
+
+      const remaining = auth.expiresAt - Date.now();
+
+      if (remaining <= 0) {
+        // Phiên đã hết hạn
+        localStorage.removeItem('tnp_admin_auth');
+        localStorage.removeItem('tnp_admin_last_exit');
+        alert('Phiên làm việc quản trị đã hết hạn. Vui lòng đăng nhập lại!');
+        window.location.replace('./login.html');
+      } else if (remaining <= WARN_BEFORE_MS && !window._sessionWarnShown) {
+        // Còn dưới 5 phút → cảnh báo trước
+        window._sessionWarnShown = true;
+        const mins = Math.ceil(remaining / 60000);
+        alert(`Phiên làm việc sắp hết hạn sau khoảng ${mins} phút. Vui lòng lưu công việc và đăng nhập lại nếu cần.`);
+      }
+    } catch (e) {
+      // Bỏ qua lỗi parse
+    }
+  }, CHECK_INTERVAL_MS);
 }
 
 function renderAnalyticsUI(data) {
