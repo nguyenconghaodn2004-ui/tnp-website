@@ -166,17 +166,21 @@
 </div>
 
 <script>
+  const ADMIN_SESSION_TTL_MS = 5 * 60 * 1000;
+
+  function hasValidAdminSession() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem('tnp_admin_auth') || 'null');
+      const expiresAt = Number(parsed?.expiresAt) || (new Date(parsed?.loginAt || 0).getTime() + ADMIN_SESSION_TTL_MS);
+      if (parsed?.token && Number.isFinite(expiresAt) && Date.now() < expiresAt) return true;
+    } catch (e) {}
+    localStorage.removeItem('tnp_admin_auth');
+    return false;
+  }
+
   // Chuyển hướng ngay nếu đã đăng nhập từ trước
   (function checkAlreadyLoggedIn() {
-    const auth = localStorage.getItem('tnp_admin_auth');
-    if (auth) {
-      try {
-        const parsed = JSON.parse(auth);
-        if (parsed && parsed.token) {
-          window.location.href = './index.html';
-        }
-      } catch (e) {}
-    }
+    if (hasValidAdminSession()) window.location.href = './index.html';
   })();
 
   function togglePasswordVisibility() {
@@ -222,7 +226,8 @@
         localStorage.setItem('tnp_admin_auth', JSON.stringify({
           token: data.token,
           user: data.user,
-          loginAt: new Date().toISOString()
+          loginAt: new Date().toISOString(),
+          expiresAt: data.expiresAt
         }));
 
         btnSubmit.innerHTML = '<i class="fas fa-check"></i> Đăng nhập thành công!';

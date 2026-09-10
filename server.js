@@ -41,6 +41,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DOMAIN = process.env.DOMAIN || 'tnpcare.vn';
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const ADMIN_SESSION_TTL_MS = 5 * 60 * 1000;
+const ADMIN_SESSION_VERSION = '2';
+const ANALYTICS_RESET_VERSION = '2026-09-10';
 const DEFAULT_MONGO_URI = 'mongodb+srv://ruangonghuan2004_db_user:admintnp@cluster0.lez1zci.mongodb.net/tnp_db?retryWrites=true&w=majority&appName=Cluster0';
 const MONGODB_URI = process.env.DATABASE_URL || process.env.MONGODB_URI || DEFAULT_MONGO_URI;
 
@@ -191,13 +194,19 @@ if (!dbHomepage) {
 
 let dbContacts = readDbFile('contacts.json', []);
 
-let dbAnalytics = readDbFile('analytics.json', null);
-if (!dbAnalytics || typeof dbAnalytics !== 'object') {
-  dbAnalytics = {
+function createEmptyAnalytics() {
+  return {
+    id: 'analytics_data',
+    analyticsResetVersion: ANALYTICS_RESET_VERSION,
     totalVisits: 0,
     daily: {},
     recentVisits: []
   };
+}
+
+let dbAnalytics = readDbFile('analytics.json', null);
+if (!dbAnalytics || typeof dbAnalytics !== 'object') {
+  dbAnalytics = createEmptyAnalytics();
   writeDbFile('analytics.json', dbAnalytics);
 }
 
@@ -310,6 +319,15 @@ async function autoSeedMongoData() {
     if (!analyticsDoc && dbAnalytics) {
       await AnalyticsModel.create({ id: 'analytics_data', ...dbAnalytics });
       console.log('  🌱 Đã tự động nạp dữ liệu Thống kê vào MongoDB Atlas.');
+    } else if (analyticsDoc && analyticsDoc.analyticsResetVersion !== ANALYTICS_RESET_VERSION) {
+      dbAnalytics = createEmptyAnalytics();
+      await AnalyticsModel.updateOne(
+        { id: 'analytics_data' },
+        { $set: dbAnalytics },
+        { upsert: true }
+      );
+      writeDbFile('analytics.json', dbAnalytics);
+      console.log('  📊 Đã reset dữ liệu Thống kê theo yêu cầu.');
     } else if (analyticsDoc) {
       dbAnalytics = analyticsDoc.toObject ? analyticsDoc.toObject() : analyticsDoc;
       writeDbFile('analytics.json', dbAnalytics);
@@ -368,17 +386,19 @@ app.use('/api', async (req, res, next) => {
 const JWT_SECRET = process.env.JWT_SECRET || 'tnpcare_rbac_secret_key_2026_x99';
 
 function createAuthToken(user) {
+  const expiresAt = Date.now() + ADMIN_SESSION_TTL_MS;
   const payload = {
     id: user.id,
     username: user.username,
     fullName: user.fullName,
     email: user.email,
     role: user.role,
-    exp: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 ngày
+    sessionVersion: ADMIN_SESSION_VERSION,
+    exp: expiresAt
   };
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const signature = crypto.createHmac('sha256', JWT_SECRET).update(payloadB64).digest('base64url');
-  return `tnp_jwt_${payloadB64}.${signature}`;
+  return { token: `tnp_jwt_${payloadB64}.${signature}`, expiresAt };
 }
 
 function verifyTokenPayload(token) {
@@ -395,6 +415,7 @@ function verifyTokenPayload(token) {
   if (signature !== expectedSig) return null;
   try {
     const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+    if (payload.sessionVersion !== ADMIN_SESSION_VERSION) return null;
     if (payload.exp && Date.now() > payload.exp) return null; // Token hết hạn
     return payload;
   } catch (e) {
@@ -734,11 +755,12 @@ app.post('/api/admin/login', async (req, res) => {
     }
 
     // 4. Tạo JWT Token bảo mật kèm Role
-    const token = createAuthToken(user);
+    const authSession = createAuthToken(user);
 
     return res.json({
       success: true,
-      token,
+      token: authSession.token,
+      expiresAt: authSession.expiresAt,
       user: {
         id: user.id,
         username: user.username,
@@ -1404,7 +1426,7 @@ app.get('/api/admin/analytics', verifyAdminToken, async (req, res) => {
         },
         last7Days: last7Total,
         thisMonth: thisMonthTotal,
-        totalVisits: dbAnalytics.totalVisits || (last7Total * 4),
+        totalVisits: currentAnalytics.totalVisits || 0,
         history7Days,
         history30Days,
         devices,

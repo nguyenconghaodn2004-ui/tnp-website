@@ -20,19 +20,30 @@ const STORAGE_PRODUCTS_KEY = 'tnp_admin_products_override';
 const STORAGE_STATIONS_KEY = 'tnp_admin_stations_override';
 const STORAGE_BANNERS_KEY = 'tnp_admin_banners_override';
 const STORAGE_ARTICLES_KEY = 'tnp_admin_articles_override';
+const ADMIN_SESSION_TTL_MS = 5 * 60 * 1000;
 
 // ══════════════════════════════════════════════
 //  AUTH GUARD & TOKEN REQUEST WRAPPER
 // ══════════════════════════════════════════════
-function getAdminToken() {
+function getStoredAdminAuth() {
   try {
     const authData = localStorage.getItem('tnp_admin_auth');
-    if (!authData) return '';
+    if (!authData) return null;
     const auth = JSON.parse(authData);
-    return auth?.token || '';
+    const expiresAt = Number(auth?.expiresAt) || (new Date(auth?.loginAt || 0).getTime() + ADMIN_SESSION_TTL_MS);
+    if (!auth?.token || !Number.isFinite(expiresAt) || Date.now() >= expiresAt) {
+      localStorage.removeItem('tnp_admin_auth');
+      return null;
+    }
+    return { ...auth, expiresAt };
   } catch (e) {
-    return '';
+    localStorage.removeItem('tnp_admin_auth');
+    return null;
   }
+}
+
+function getAdminToken() {
+  return getStoredAdminAuth()?.token || '';
 }
 
 async function adminFetch(url, options = {}) {
@@ -52,17 +63,12 @@ async function adminFetch(url, options = {}) {
 }
 
 function checkAdminAuth() {
-  const authData = localStorage.getItem('tnp_admin_auth');
-  if (!authData) {
-    window.location.href = './login.html';
+  const auth = getStoredAdminAuth();
+  if (!auth) {
+    window.location.replace('./login.html');
     return false;
   }
   try {
-    const auth = JSON.parse(authData);
-    if (!auth || !auth.token) {
-      window.location.href = './login.html';
-      return false;
-    }
     // Update user display in sidebar
     if (auth.user) {
       const nameEl = document.getElementById('sidebarUserName');
@@ -108,6 +114,7 @@ function handleAdminLogout() {
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   if (!checkAdminAuth()) return;
+  scheduleAdminSessionExpiry();
   initAdminTheme();
   initNavigation();
   initSidebarMobile();
@@ -117,6 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
   loadAnalyticsData();
   checkSystemStatus();
   loadDashboardSummaryStats();
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) checkAdminAuth();
 });
 
 // ── Navigation tabs ──
@@ -1430,6 +1441,16 @@ async function loadAnalyticsData() {
       setTimeout(() => refreshIcon.classList.remove('fa-spin'), 500);
     }
   }
+}
+
+function scheduleAdminSessionExpiry() {
+  const auth = getStoredAdminAuth();
+  if (!auth) return;
+  window.setTimeout(() => {
+    localStorage.removeItem('tnp_admin_auth');
+    alert('Phiên làm việc quản trị đã hết hạn sau 5 phút. Vui lòng đăng nhập lại!');
+    window.location.replace('./login.html');
+  }, Math.max(0, auth.expiresAt - Date.now()));
 }
 
 function renderAnalyticsUI(data) {
