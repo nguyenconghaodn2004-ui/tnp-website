@@ -387,8 +387,16 @@ input, select, textarea {
 .top-bar-social a:hover { background: rgba(255,255,255,.25); }
 
 /* ════════════════════════════════════════
-   HEADER
+/* ════════════════════════════════════════
+   HEADER & TOPBAR CONTAINER
    ════════════════════════════════════════ */
+.top-bar .container,
+.site-header .container {
+  max-width: 1380px;
+  width: 100%;
+  padding-inline: var(--space-6);
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -409,23 +417,23 @@ input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
 }
 
 /* Logo */
 .site-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
   text-decoration: none;
 }
 .logo-img {
-  height: 40px;
+  height: 48px;
   width: auto;
 }
 .logo-tnp-img {
-  height: 40px;
+  height: 48px;
   width: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 5px rgba(0,0,0,.12));
@@ -433,17 +441,17 @@ input, select, textarea {
 }
 .logo-brands-divider {
   width: 1.5px;
-  height: 22px;
+  height: 26px;
   background: #cbd5e1;
   border-radius: 1px;
 }
 .logo-partners-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .logo-partner-img {
-  height: 32px;
+  height: 38px;
   width: auto;
   object-fit: contain;
   transition: transform var(--t-fast);
@@ -481,27 +489,28 @@ input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 6px;
   flex: 1;
 }
 .nav-item { position: relative; }
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 7px 10px;
-  font-size: 13px;
+  gap: 5px;
+  padding: 8px 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--gray-700);
   border-radius: var(--r-sm);
   white-space: nowrap;
   transition: color var(--t-fast), background var(--t-fast);
 }
-.nav-link i { font-size: 10px; opacity: .7; transition: transform var(--t-fast); }
+.nav-link i { font-size: 11px; opacity: .7; transition: transform var(--t-fast); }
 .nav-link:hover,
 .nav-link.active {
   color: var(--tnp-blue);
   background: var(--tnp-blue-pale);
+  font-weight: 700;
 }
 .nav-item:hover > .nav-link i { transform: rotate(180deg); }
 
@@ -511,7 +520,7 @@ input, select, textarea {
   top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%) translateY(-8px);
-  min-width: 210px;
+  min-width: 220px;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
@@ -554,11 +563,11 @@ input, select, textarea {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 .header-search-btn {
-  width: 36px; height: 36px;
+  width: 38px; height: 38px;
   background: var(--bg-muted);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
@@ -566,12 +575,23 @@ input, select, textarea {
   align-items: center;
   justify-content: center;
   color: var(--gray-600);
+  font-size: 14px;
   transition: all var(--t-fast);
 }
 .header-search-btn:hover {
   background: var(--tnp-blue-pale);
   color: var(--tnp-blue);
   border-color: var(--tnp-blue-light);
+}
+.header-hotline-btn {
+  white-space: nowrap;
+  padding: 8px 15px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: var(--r-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
 /* Hamburger */
@@ -4701,12 +4721,13 @@ select.form-control { cursor: pointer; }
 
 /* ── 1280px & Laptop Screen Responsive ── */
 @media (max-width: 1280px) {
-  /* Header tinh gọn trên laptop để luôn cân đối hai bên, tuyệt đối không tràn màn hình */
-  .logo-partner-img { height: 28px; }
-  .logo-tnp-img { height: 36px; }
-  .logo-brands-divider { height: 20px; }
-  .nav-link { padding: 6px 8px; font-size: 12.5px; }
-  .header-actions .btn { padding: 6px 10px !important; font-size: 12px !important; }
+  /* Header tinh gọn nhẹ trên laptop để luôn cân đối hai bên, tuyệt đối không tràn màn hình */
+  .logo-partner-img { height: 34px; }
+  .logo-tnp-img { height: 42px; }
+  .logo-brands-divider { height: 24px; }
+  .nav-link { padding: 7px 10px; font-size: 13.5px; }
+  .main-nav { gap: 4px; }
+  .header-hotline-btn { padding: 7px 12px !important; font-size: 12.5px !important; }
 
   .hero-title { font-size: 40px; }
   .hero-badge-1, .hero-badge-3 { display: none; }
@@ -4754,8 +4775,8 @@ select.form-control { cursor: pointer; }
   }
 }
 
-/* ── 1024px ── */
-@media (max-width: 1024px) {
+/* ── 1120px & Tablet ── */
+@media (max-width: 1120px) {
   .main-nav, .header-actions .btn { display: none; }
   .hamburger { display: flex; }
 

@@ -176,7 +176,7 @@ function renderHeader() {
       <button class="header-search-btn" id="search-btn" aria-label="Tìm kiếm sản phẩm">
         <i class="fas fa-search" aria-hidden="true"></i>
       </button>
-      <a href="tel:02822422822" class="btn btn-red btn-sm" style="white-space:nowrap;padding:6px 11px;font-size:12.5px;">
+      <a href="tel:02822422822" class="btn btn-red btn-sm header-hotline-btn">
         <i class="fas fa-phone-alt" aria-hidden="true"></i> 028 22 422 822
       </a>
       <button class="hamburger" id="hamburger" aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">
