@@ -33,7 +33,7 @@ const NAV_LINKS = [
   {
     href: './ho-tro.html', label: 'Hỗ trợ', key: 'ho-tro',
     dropdown: [
-      { href: './chinh-sach-bao-hanh-hxy.html', icon: 'fas fa-shield-halved', label: 'Chính sách bảo hành & đổi trả HXY' },
+      { href: './chinh-sach-bao-hanh-hxy.html', icon: 'fas fa-shield-halved', label: 'Chính sách bảo hành & đổi trả' },
       { href: './ho-tro.html#faq', icon: 'fas fa-question-circle', label: 'Hỏi đáp FAQ' },
       { href: './ho-tro.html#bao-hanh', icon: 'fas fa-shield-alt', label: 'Chính sách bảo hành' },
     ]
@@ -51,6 +51,7 @@ function getActivePage() {
   if (path.includes('san-pham')) return 'san-pham';
   if (path.includes('cong-nghe')) return 'cong-nghe';
   if (path.includes('gioi-thieu')) return 'gioi-thieu';
+  if (path.includes('chinh-sach-bao-hanh')) return 'ho-tro';
   if (path.includes('ho-tro')) return 'ho-tro';
   if (path.includes('lien-he')) return 'lien-he';
   return 'home';
@@ -175,7 +176,7 @@ function renderHeader() {
       <button class="header-search-btn" id="search-btn" aria-label="Tìm kiếm sản phẩm">
         <i class="fas fa-search" aria-hidden="true"></i>
       </button>
-      <a href="tel:02822422822" class="btn btn-red btn-sm" style="white-space:nowrap;padding:7px 12px;font-size:13px;">
+      <a href="tel:02822422822" class="btn btn-red btn-sm" style="white-space:nowrap;padding:6px 11px;font-size:12.5px;">
         <i class="fas fa-phone-alt" aria-hidden="true"></i> 028 22 422 822
       </a>
       <button class="hamburger" id="hamburger" aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">

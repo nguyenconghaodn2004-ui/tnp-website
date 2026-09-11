@@ -190,26 +190,6 @@
         "link": "./tv-hikers.html"
       },
       {
-        "name": "Midea",
-        "color": "blue",
-        "link": ""
-      },
-      {
-        "name": "Panasonic",
-        "color": "blue",
-        "link": ""
-      },
-      {
-        "name": "Daikin",
-        "color": "blue",
-        "link": ""
-      },
-      {
-        "name": "Toshiba",
-        "color": "blue",
-        "link": ""
-      },
-      {
         "name": "80-100 Trạm Toàn Quốc",
         "color": "red",
         "link": "./tram-bao-hanh.html"
