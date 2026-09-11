@@ -398,12 +398,9 @@ input, select, textarea {
 }
 
 .site-header {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  left: 0;
+  position: relative;
+  z-index: 100;
   width: 100%;
-  z-index: 1000;
   height: var(--header-h);
   background: rgba(255,255,255,.98);
   backdrop-filter: blur(12px);
@@ -412,7 +409,6 @@ input, select, textarea {
   transition: box-shadow var(--t-base), background var(--t-base);
 }
 .site-header.scrolled {
-  box-shadow: 0 4px 20px rgba(0,0,0,.08);
   border-bottom-color: rgba(0,0,0,.06);
   background: rgba(255,255,255,.98);
 }
