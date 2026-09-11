@@ -95,7 +95,7 @@ html {
   text-size-adjust: 100%;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -106,7 +106,7 @@ body {
   background: var(--bg-page);
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -398,19 +398,23 @@ input, select, textarea {
 }
 
 .site-header {
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
-  z-index: 900;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   height: var(--header-h);
   background: rgba(255,255,255,.98);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  transition: box-shadow var(--t-base);
+  transition: box-shadow var(--t-base), background var(--t-base);
 }
 .site-header.scrolled {
-  box-shadow: var(--shadow-md);
-  border-bottom-color: transparent;
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+  border-bottom-color: rgba(0,0,0,.06);
+  background: rgba(255,255,255,.98);
 }
 .header-inner {
   height: 100%;
@@ -4856,7 +4860,7 @@ select.form-control { cursor: pointer; }
   }
 
   html, body {
-    overflow-x: hidden !important;
+    overflow-x: clip !important;
     max-width: 100% !important;
     position: relative;
     overscroll-behavior-x: none;
