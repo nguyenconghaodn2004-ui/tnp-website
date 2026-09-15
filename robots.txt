@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin/
+Disallow: /data/users.json
+Disallow: /data/contacts.json
 
-Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: https://www.tnpcare.vn/sitemap.xml

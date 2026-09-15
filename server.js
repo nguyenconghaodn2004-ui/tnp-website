@@ -44,16 +44,62 @@ const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const ADMIN_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const ADMIN_SESSION_VERSION = '3';
 const ANALYTICS_RESET_VERSION = '2026-09-10';
-const DEFAULT_MONGO_URI = 'mongodb+srv://ruangonghuan2004_db_user:admintnp@cluster0.lez1zci.mongodb.net/tnp_db?retryWrites=true&w=majority&appName=Cluster0';
-const MONGODB_URI = process.env.DATABASE_URL || process.env.MONGODB_URI || DEFAULT_MONGO_URI;
+const MONGODB_URI = process.env.DATABASE_URL || process.env.MONGODB_URI || '';
+const ADMIN_INITIAL_PASSWORD = process.env.ADMIN_INITIAL_PASSWORD || '';
+const JWT_SECRET = process.env.JWT_SECRET || '';
 
-// Serve static files from the 'public' directory and fallback to root
+if (process.env.NODE_ENV === 'production') {
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is required in production.');
+  }
+  if (!MONGODB_URI) {
+    console.warn('DATABASE_URL is not set; server will use local JSON fallback.');
+  }
+}
+
+app.use(['/data/users.json', '/data/contacts.json'], (req, res) => {
+  res.status(404).send('Not found');
+});
+
+// Serve only public assets. Never expose project root files.
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname)));
 
 // Parse JSON and URL-encoded bodies (cho phép tải ảnh Base64 lên tới 25MB)
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ limit: '25mb', extended: true }));
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+const rateLimitBuckets = new Map();
+function rateLimit({ windowMs, max, keyPrefix }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+    const key = `${keyPrefix}:${ip}`;
+    const bucket = rateLimitBuckets.get(key) || { count: 0, resetAt: now + windowMs };
+    if (now > bucket.resetAt) {
+      bucket.count = 0;
+      bucket.resetAt = now + windowMs;
+    }
+    bucket.count += 1;
+    rateLimitBuckets.set(key, bucket);
+    if (bucket.count > max) {
+      return res.status(429).json({ success: false, message: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.' });
+    }
+    next();
+  };
+}
+
+const adminLoginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, keyPrefix: 'admin-login' });
+const contactLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 8, keyPrefix: 'contact' });
+const trackingLimiter = rateLimit({ windowMs: 60 * 1000, max: 60, keyPrefix: 'track' });
+const uploadLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 20, keyPrefix: 'upload' });
 
 // ══════════════════════════════════════════════
 //  1. CSDL DỰ PHÒNG CỤC BỘ (LOCAL JSON FALLBACK)
@@ -78,9 +124,10 @@ function writeDbFile(filename, data) {
     const filePath = path.join(DB_DIR, filename);
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 
-    // Đồng bộ sang public/data/ nếu có
+    // Đồng bộ sang public/data/ nếu có, ngoại trừ dữ liệu nhạy cảm
+    const sensitiveFiles = new Set(['users.json', 'contacts.json']);
     const pubPath = path.join(__dirname, 'public', 'data', filename);
-    if (fs.existsSync(path.dirname(pubPath))) {
+    if (!sensitiveFiles.has(filename) && fs.existsSync(path.dirname(pubPath))) {
       fs.writeFileSync(pubPath, JSON.stringify(data, null, 2), 'utf8');
     }
     return true;
@@ -113,21 +160,22 @@ function verifyPassword(password, storedHash) {
 // Khởi tạo danh sách tài khoản quản trị viên (CSDL JSON Dự phòng)
 let dbUsers = readDbFile('users.json', null);
 if (!dbUsers || !Array.isArray(dbUsers) || dbUsers.length === 0) {
-  dbUsers = [
-    {
+  dbUsers = [];
+  if (ADMIN_INITIAL_PASSWORD) {
+    dbUsers = [{
       id: 'usr_superadmin',
       username: 'admin',
       email: 'admin@tnpcare.vn',
       fullName: 'Quản Trị Viên Tối Cao',
-      passwordHash: hashPassword('tnpcare@2026'),
+      passwordHash: hashPassword(ADMIN_INITIAL_PASSWORD),
       role: 'superadmin',
       status: 'active',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       lastLogin: null
-    }
-  ];
-  writeDbFile('users.json', dbUsers);
+    }];
+    writeDbFile('users.json', dbUsers);
+  }
 }
 
 // Khởi tạo State ban đầu từ các file lưu trữ
@@ -383,8 +431,6 @@ app.use('/api', async (req, res, next) => {
 // ══════════════════════════════════════════════
 //  3. TOKEN XÁC THỰC & PHÂN QUYỀN RBAC MIDDLEWARE
 // ══════════════════════════════════════════════
-const JWT_SECRET = process.env.JWT_SECRET || 'tnpcare_rbac_secret_key_2026_x99';
-
 function createAuthToken(user) {
   const expiresAt = Date.now() + ADMIN_SESSION_TTL_MS;
   const payload = {
@@ -403,9 +449,6 @@ function createAuthToken(user) {
 
 function verifyTokenPayload(token) {
   if (!token) return null;
-  if (token === 'tnp_admin_dev_token') {
-    return { id: 'usr_superadmin', username: 'admin', fullName: 'Quản Trị Viên Tối Cao', role: 'superadmin' };
-  }
   if (!token.startsWith('tnp_jwt_')) return null;
   const raw = token.substring(8);
   const parts = raw.split('.');
@@ -666,7 +709,7 @@ app.post('/api/admin/stations', verifyAdminToken, requireRole(['station_manager'
 });
 
 // 4. API Đăng nhập quản trị viên (Xác thực Mật Khẩu Băm PBKDF2)
-app.post('/api/admin/login', async (req, res) => {
+app.post('/api/admin/login', adminLoginLimiter, async (req, res) => {
   try {
     const { username, password } = req.body || {};
     if (!username || !password) {
@@ -692,30 +735,6 @@ app.post('/api/admin/login', async (req, res) => {
         (u.username && u.username.toLowerCase() === cleanUsername) || 
         (u.email && u.email.toLowerCase() === cleanUsername)
       );
-    }
-
-    // Tự động khôi phục tài khoản superadmin nếu cơ sở dữ liệu trống
-    if (!user && (cleanUsername === 'admin' || cleanUsername === 'admin@tnpcare.vn')) {
-      const initialSuperAdmin = {
-        id: 'usr_superadmin',
-        username: 'admin',
-        email: 'admin@tnpcare.vn',
-        fullName: 'Quản Trị Viên Tối Cao',
-        passwordHash: hashPassword('tnpcare@2026'),
-        role: 'superadmin',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        lastLogin: null
-      };
-      if (verifyPassword(password, initialSuperAdmin.passwordHash)) {
-        user = initialSuperAdmin;
-        dbUsers.push(user);
-        writeDbFile('users.json', dbUsers);
-        if (isMongoConnected) {
-          UserModel.create(user).catch(() => {});
-        }
-      }
     }
 
     if (!user) {
@@ -1041,10 +1060,16 @@ app.delete('/api/admin/contacts/:id', verifyAdminToken, requireRole(['support'])
 });
 
 // Nhận form gửi liên hệ từ khách hàng
-app.post('/api/contact', async (req, res) => {
-  const { name, phone, product, message } = req.body;
+app.post('/api/contact', contactLimiter, async (req, res) => {
+  const name = String(req.body?.name || '').trim().slice(0, 120);
+  const phone = String(req.body?.phone || '').trim().slice(0, 30);
+  const product = String(req.body?.product || '').trim().slice(0, 160);
+  const message = String(req.body?.message || '').trim().slice(0, 1000);
   if (!name || !phone) {
     return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ họ tên và số điện thoại.' });
+  }
+  if (!/^[0-9+\-\s().]{8,20}$/.test(phone)) {
+    return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ.' });
   }
 
   const newLead = {
@@ -1074,7 +1099,7 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // 6. API Upload ảnh (Base64)
-app.post('/api/admin/upload', verifyAdminToken, requireRole(['editor', 'station_manager']), (req, res) => {
+app.post('/api/admin/upload', uploadLimiter, verifyAdminToken, requireRole(['editor', 'station_manager']), (req, res) => {
   const { filename, dataUrl } = req.body;
   if (!dataUrl) {
     return res.status(400).json({ success: false, message: 'Không có dữ liệu ảnh tải lên.' });
@@ -1086,7 +1111,18 @@ app.post('/api/admin/upload', verifyAdminToken, requireRole(['editor', 'station_
       return res.status(400).json({ success: false, message: 'Định dạng dữ liệu ảnh không hợp lệ.' });
     }
 
-    const ext = matches[1].split('/')[1] || 'jpg';
+    const mimeType = matches[1].toLowerCase();
+    const allowedMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+    if (!allowedMimeTypes.has(mimeType)) {
+      return res.status(400).json({ success: false, message: 'Chỉ cho phép tải lên ảnh JPG, PNG, WebP hoặc GIF.' });
+    }
+
+    const buffer = Buffer.from(matches[2], 'base64');
+    if (buffer.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ success: false, message: 'Ảnh tải lên không được vượt quá 5MB.' });
+    }
+
+    const ext = mimeType.split('/')[1] || 'jpg';
     const cleanExt = ext === 'jpeg' ? 'jpg' : ext;
     const cleanName = (filename ? filename.replace(/[^a-zA-Z0-9_\-\.]/g, '') : 'img')
       .replace(/\.[^/.]+$/, '');
@@ -1097,7 +1133,6 @@ app.post('/api/admin/upload', verifyAdminToken, requireRole(['editor', 'station_
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    const buffer = Buffer.from(matches[2], 'base64');
     const targetPath = path.join(uploadDir, generatedFilename);
     fs.writeFileSync(targetPath, buffer);
 
@@ -1202,7 +1237,7 @@ app.delete('/api/admin/articles/:id', verifyAdminToken, requireRole(['editor']),
 // ══════════════════════════════════════════════
 
 // Endpoint public nhận ping tự động từ các trang web
-app.post('/api/track-visit', async (req, res) => {
+app.post('/api/track-visit', trackingLimiter, async (req, res) => {
   try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress || '127.0.0.1';
     const { path: rawPath, title, referrer, screenWidth } = req.body || {};

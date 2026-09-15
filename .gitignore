@@ -1,4 +1,11 @@
-﻿node_modules
+node_modules
 .env
 .env.local
 .DS_Store
+uploads/
+public/uploads/
+data/users.json
+data/contacts.json
+public/data/users.json
+public/data/contacts.json
+*.backup.json
