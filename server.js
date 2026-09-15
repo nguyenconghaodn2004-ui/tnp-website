@@ -50,7 +50,7 @@ const JWT_SECRET = process.env.JWT_SECRET || '';
 
 if (process.env.NODE_ENV === 'production') {
   if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET is required in production.');
+    console.warn('JWT_SECRET is not set; admin login is disabled until it is configured.');
   }
   if (!MONGODB_URI) {
     console.warn('DATABASE_URL is not set; server will use local JSON fallback.');
@@ -432,6 +432,9 @@ app.use('/api', async (req, res, next) => {
 //  3. TOKEN XÁC THỰC & PHÂN QUYỀN RBAC MIDDLEWARE
 // ══════════════════════════════════════════════
 function createAuthToken(user) {
+  if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET is required for admin authentication.');
+  }
   const expiresAt = Date.now() + ADMIN_SESSION_TTL_MS;
   const payload = {
     id: user.id,
@@ -449,6 +452,7 @@ function createAuthToken(user) {
 
 function verifyTokenPayload(token) {
   if (!token) return null;
+  if (!JWT_SECRET) return null;
   if (!token.startsWith('tnp_jwt_')) return null;
   const raw = token.substring(8);
   const parts = raw.split('.');
