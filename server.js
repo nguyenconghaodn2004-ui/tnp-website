@@ -520,8 +520,6 @@ app.get('/api/status', (req, res) => {
     server: 'TNP Care API Server',
     database: isMongoConnected ? 'mongodb_atlas' : 'local_json',
     connected: isMongoConnected,
-    hasDatabaseUrl: Boolean(MONGODB_URI),
-    mongoError: isMongoConnected ? null : lastMongoError,
     timestamp: new Date().toISOString()
   });
 });
@@ -584,7 +582,7 @@ app.get('/api/banners', async (req, res) => {
   res.json({ success: true, data: dbBanners.filter(b => b.active !== false), source: 'local' });
 });
 
-app.get('/api/admin/banners', async (req, res) => {
+app.get('/api/admin/banners', verifyAdminToken, async (req, res) => {
   try {
     if (isMongoConnected) {
       const banners = await BannerModel.find().sort({ order: 1 }).lean();
