@@ -4310,6 +4310,172 @@ input, select, textarea {
 .form-control::placeholder { color: var(--gray-400); }
 textarea.form-control { resize: vertical; min-height: 110px; }
 select.form-control { cursor: pointer; }
+.native-product-select-source {
+  display: none;
+}
+.product-picker-trigger {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px var(--space-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-page);
+  color: var(--text-muted);
+  font-family: var(--font);
+  font-size: 14.5px;
+  line-height: 1.35;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  cursor: pointer;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), color var(--t-fast);
+}
+.product-picker-trigger.has-value {
+  color: var(--text-primary);
+}
+.product-picker-trigger:focus {
+  border-color: var(--tnp-blue);
+  box-shadow: 0 0 0 3px rgba(26,58,107,.08);
+  outline: none;
+}
+.product-picker-trigger span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.product-picker-trigger i {
+  color: var(--gray-500);
+  flex-shrink: 0;
+}
+.product-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, .48);
+}
+.product-picker-backdrop.open {
+  display: flex;
+}
+.product-picker-open {
+  overflow: hidden;
+}
+.product-picker-sheet {
+  width: min(520px, 100%);
+  max-height: min(720px, 86vh);
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: var(--shadow-xl);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.product-picker-head {
+  padding: 18px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.product-picker-head h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.product-picker-close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.product-picker-search {
+  margin: 14px 16px 10px;
+  padding: 0 12px;
+  min-height: 42px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-page);
+}
+.product-picker-search i {
+  color: var(--gray-500);
+}
+.product-picker-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.product-picker-list {
+  padding: 0 16px 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.product-picker-group + .product-picker-group {
+  margin-top: 14px;
+}
+.product-picker-group-title {
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.product-picker-option {
+  width: 100%;
+  min-height: 54px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+.product-picker-option + .product-picker-option {
+  margin-top: 8px;
+}
+.product-picker-option-name {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+.product-picker-option-code {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--tnp-blue-pale);
+  color: var(--tnp-blue);
+  font-size: 11px;
+  font-weight: 800;
+}
+.product-picker-empty {
+  padding: 24px 8px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 .form-error {
   font-size: 12px;
@@ -5989,6 +6155,48 @@ select.form-control { cursor: pointer; }
   .form-group { margin-bottom: 12px; }
   .form-label { font-size: 12.5px; margin-bottom: 4px; }
   .form-control { padding: 9px 12px; font-size: 13px; border-radius: 6px; }
+  .product-picker-trigger {
+    min-height: 42px;
+    padding: 9px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+  .product-picker-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .product-picker-sheet {
+    width: 100%;
+    max-height: 78vh;
+    border-radius: 16px 16px 0 0;
+  }
+  .product-picker-head {
+    padding: 14px 14px 10px;
+  }
+  .product-picker-head h3 {
+    font-size: 16px;
+  }
+  .product-picker-search {
+    margin: 10px 12px 8px;
+    min-height: 40px;
+  }
+  .product-picker-list {
+    padding: 0 12px 14px;
+  }
+  .product-picker-option {
+    min-height: 48px;
+    padding: 10px;
+    border-radius: 8px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .product-picker-option-name {
+    font-size: 13.5px;
+  }
+  .product-picker-option-code {
+    font-size: 10.5px;
+  }
   button[type="submit"].btn { width: 100%; padding: 10px 16px; font-size: 13px; }
 
   /* Floating Buttons on mobile: neat, compact, cannot push layout */

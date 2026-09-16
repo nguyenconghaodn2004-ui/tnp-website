@@ -139,7 +139,7 @@
 
             <div class="form-group">
               <label for="contact-product" class="form-label">Sản phẩm hoặc nhu cầu quan tâm</label>
-              <select id="contact-product" name="product" class="form-control">
+              <select id="contact-product-source" class="form-control native-product-select-source" aria-hidden="true" tabindex="-1">
                 <option value="">-- Chọn model hoặc phân khúc cần tư vấn --</option>
                 <optgroup label="TV HXY Series">
                   <option value="HXY-32G1">Smart TV HXY 32 inch HD</option>
@@ -161,6 +161,12 @@
                 <option value="dai-ly">Tư vấn chính sách đại lý / công trình</option>
                 <option value="khac">Cần tư vấn chọn kích thước phù hợp phòng</option>
               </select>
+              <input type="hidden" id="contact-product" name="product" value="">
+              <button type="button" class="product-picker-trigger" id="contact-product-trigger"
+                      aria-haspopup="dialog" aria-expanded="false" aria-controls="contact-product-picker">
+                <span id="contact-product-label">Chọn model hoặc phân khúc cần tư vấn</span>
+                <i class="fas fa-chevron-down" aria-hidden="true"></i>
+              </button>
             </div>
 
             <div class="form-group">
@@ -179,6 +185,22 @@
     </div>
   </section>
 </main>
+
+<div class="product-picker-backdrop" id="contact-product-picker" aria-hidden="true">
+  <div class="product-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="product-picker-title">
+    <div class="product-picker-head">
+      <h3 id="product-picker-title">Chọn dòng TV cần tư vấn</h3>
+      <button type="button" class="product-picker-close" id="product-picker-close" aria-label="Đóng">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="product-picker-search">
+      <i class="fas fa-search" aria-hidden="true"></i>
+      <input type="search" id="product-picker-search" placeholder="Tìm HXY, HIKERS, 55 inch...">
+    </div>
+    <div class="product-picker-list" id="product-picker-list"></div>
+  </div>
+</div>
 
 <!-- MODALS + FLOAT (injected by components.js) -->
 <div id="modals-placeholder"></div>

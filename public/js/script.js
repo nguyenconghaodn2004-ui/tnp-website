@@ -842,6 +842,7 @@ const TNP = {
     this.setupProductModal();
     this.setupCompare();
     this.setupFAQ();
+    this.setupContactProductPicker();
     this.setupContactForm();
     this.setupScrollReveal();
     this.setupBackToTop();
@@ -1642,15 +1643,7 @@ const TNP = {
     const contactSection = document.getElementById('contact') || document.getElementById('contact-form');
     if (contactSection) {
       contactSection.scrollIntoView({ behavior: 'smooth' });
-      const select = document.getElementById('contact-product');
-      if (select && productName) {
-        for (let opt of select.options) {
-          if (opt.text.toLowerCase().includes(productName.toLowerCase())) {
-            opt.selected = true;
-            break;
-          }
-        }
-      }
+      this.setContactProductValue(productName);
     } else {
       window.location.href = `./lien-he.html?product=${encodeURIComponent(productName || '')}`;
     }
@@ -2031,6 +2024,135 @@ const TNP = {
   // ──────────────────────────────────────────
   //  CONTACT FORM
   // ──────────────────────────────────────────
+  setupContactProductPicker() {
+    const source = document.getElementById('contact-product-source');
+    const input = document.getElementById('contact-product');
+    const trigger = document.getElementById('contact-product-trigger');
+    const label = document.getElementById('contact-product-label');
+    const picker = document.getElementById('contact-product-picker');
+    const list = document.getElementById('product-picker-list');
+    const search = document.getElementById('product-picker-search');
+    const closeBtn = document.getElementById('product-picker-close');
+    if (!source || !input || !trigger || !label || !picker || !list) return;
+
+    const groups = [];
+    Array.from(source.children).forEach(child => {
+      if (child.tagName === 'OPTGROUP') {
+        groups.push({
+          label: child.label,
+          options: Array.from(child.children).map(opt => ({
+            value: opt.value,
+            label: opt.textContent.trim()
+          }))
+        });
+      } else if (child.tagName === 'OPTION' && child.value) {
+        const last = groups[groups.length - 1];
+        if (last?.label === 'Nhu cầu khác') {
+          last.options.push({ value: child.value, label: child.textContent.trim() });
+        } else {
+          groups.push({
+            label: 'Nhu cầu khác',
+            options: [{ value: child.value, label: child.textContent.trim() }]
+          });
+        }
+      }
+    });
+
+    const render = (keyword = '') => {
+      const q = keyword.trim().toLowerCase();
+      const html = groups.map(group => {
+        const options = group.options.filter(opt => {
+          const haystack = `${opt.value} ${opt.label} ${group.label}`.toLowerCase();
+          return !q || haystack.includes(q);
+        });
+        if (!options.length) return '';
+        return `
+          <div class="product-picker-group">
+            <div class="product-picker-group-title">${group.label}</div>
+            ${options.map(opt => `
+              <button type="button" class="product-picker-option" data-value="${opt.value}">
+                <span class="product-picker-option-name">${opt.label}</span>
+                <span class="product-picker-option-code">${opt.value}</span>
+              </button>
+            `).join('')}
+          </div>
+        `;
+      }).join('');
+      list.innerHTML = html || '<div class="product-picker-empty">Không tìm thấy model phù hợp.</div>';
+    };
+
+    const open = () => {
+      render(search?.value || '');
+      picker.classList.add('open');
+      picker.setAttribute('aria-hidden', 'false');
+      trigger.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('product-picker-open');
+      setTimeout(() => search?.focus(), 80);
+    };
+
+    const close = () => {
+      picker.classList.remove('open');
+      picker.setAttribute('aria-hidden', 'true');
+      trigger.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('product-picker-open');
+      trigger.focus();
+    };
+
+    const selectProduct = (value) => {
+      const opt = Array.from(source.options).find(item => item.value === value);
+      source.value = value;
+      input.value = value;
+      label.textContent = opt ? opt.textContent.trim() : 'Chọn model hoặc phân khúc cần tư vấn';
+      trigger.classList.toggle('has-value', Boolean(value));
+      close();
+    };
+
+    trigger.addEventListener('click', open);
+    closeBtn?.addEventListener('click', close);
+    search?.addEventListener('input', () => render(search.value));
+    picker.addEventListener('click', (event) => {
+      if (event.target === picker) close();
+    });
+    list.addEventListener('click', (event) => {
+      const option = event.target.closest('.product-picker-option');
+      if (option) selectProduct(option.dataset.value || '');
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && picker.classList.contains('open')) close();
+    });
+
+    this.contactProductPicker = { source, input, label, trigger };
+    render();
+  },
+
+  setContactProductValue(productName) {
+    if (!productName) return;
+    const source = document.getElementById('contact-product-source');
+    const input = document.getElementById('contact-product');
+    const label = document.getElementById('contact-product-label');
+    const trigger = document.getElementById('contact-product-trigger');
+    if (!source || !input) return;
+
+    const match = Array.from(source.options).find(opt =>
+      opt.value.toLowerCase() === productName.toLowerCase() ||
+      opt.textContent.toLowerCase().includes(productName.toLowerCase())
+    );
+    const value = match ? match.value : productName;
+    source.value = match ? match.value : '';
+    input.value = value;
+    if (label) label.textContent = match ? match.textContent.trim() : productName;
+    if (trigger) trigger.classList.toggle('has-value', Boolean(value));
+  },
+
+  resetContactProductPicker() {
+    const picker = this.contactProductPicker;
+    if (!picker) return;
+    picker.source.value = '';
+    picker.input.value = '';
+    picker.label.textContent = 'Chọn model hoặc phân khúc cần tư vấn';
+    picker.trigger.classList.remove('has-value');
+  },
+
   setupContactForm() {
     const form = document.getElementById('contact-form');
     if (!form) return;
@@ -2040,16 +2162,7 @@ const TNP = {
     const urlParams = new URLSearchParams(window.location.search);
     const productParam = urlParams.get('product');
     if (productParam) {
-      const productSelect = document.getElementById('contact-product');
-      if (productSelect) {
-        // Try matching option by text
-        for (let opt of productSelect.options) {
-          if (opt.text.toLowerCase().includes(productParam.toLowerCase())) {
-            opt.selected = true;
-            break;
-          }
-        }
-      }
+      this.setContactProductValue(productParam);
     }
   },
 
@@ -2093,6 +2206,7 @@ const TNP = {
     .then(res => {
       if (res.success) {
         form.reset();
+        this.resetContactProductPicker();
         const successEl = document.getElementById('form-success');
         if (successEl) successEl.classList.add('show');
         setTimeout(() => successEl?.classList.remove('show'), 5000);
@@ -2103,6 +2217,7 @@ const TNP = {
     .catch(() => {
       // Fallback: show success anyway (demo mode)
       form.reset();
+      this.resetContactProductPicker();
       const successEl = document.getElementById('form-success');
       if (successEl) successEl.classList.add('show');
       setTimeout(() => successEl?.classList.remove('show'), 5000);
@@ -2117,8 +2232,7 @@ const TNP = {
     if (section) {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setTimeout(() => {
-        const productField = document.getElementById('contact-product');
-        if (productField && productName) productField.value = productName;
+        this.setContactProductValue(productName);
       }, 500);
     } else {
       window.location.href = `./lien-he.html?product=${encodeURIComponent(productName || '')}`;
