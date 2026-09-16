@@ -495,8 +495,13 @@
               <select id="contactStatusFilter" class="form-control" style="width: auto; padding: 6px 12px; font-size: 13px;" onchange="filterContactsByStatus(this.value)">
                 <option value="all">Tất cả trạng thái</option>
                 <option value="pending">Chưa xử lý (Mới)</option>
-                <option value="contacting">Đang tư vấn</option>
-                <option value="resolved">Đã hoàn tất</option>
+                <option value="called">Đã gọi</option>
+                <option value="no_answer">Không nghe máy</option>
+                <option value="consulted">Đã tư vấn</option>
+                <option value="follow_up">Hẹn gọi lại</option>
+                <option value="won">Đã chốt</option>
+                <option value="not_interested">Không có nhu cầu</option>
+                <option value="closed">Đã đóng</option>
               </select>
               <div class="search-input-wrap">
                 <i class="fas fa-search"></i>
@@ -828,7 +833,7 @@
      MODAL: XỬ LÝ LIÊN HỆ / TƯ VẤN (LEAD)
      ══════════════════════════════════════════ -->
 <div class="admin-modal" id="leadModal">
-  <div class="modal-dialog" style="max-width: 480px;">
+  <div class="modal-dialog" style="max-width: 760px;">
     <div class="modal-header">
       <h3 class="modal-title">Cập nhật yêu cầu tư vấn</h3>
       <button class="modal-close" onclick="closeLeadModal()"><i class="fas fa-times"></i></button>
@@ -836,31 +841,62 @@
     <form onsubmit="saveLeadStatus(event)">
       <div class="modal-body">
         <input type="hidden" id="leadId">
-        <div class="form-group">
-          <label class="form-label">Khách hàng</label>
-          <input type="text" id="leadCustomerName" class="form-control" readonly style="background: #f1f5f9;">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Số điện thoại</label>
-          <input type="text" id="leadCustomerPhone" class="form-control" readonly style="background: #f1f5f9;">
+        <div class="lead-detail-panel">
+          <div class="lead-detail-grid">
+            <div>
+              <span class="lead-detail-label">Khách hàng</span>
+              <strong id="leadCustomerNameText">-</strong>
+            </div>
+            <div>
+              <span class="lead-detail-label">Số điện thoại</span>
+              <strong id="leadCustomerPhoneText">-</strong>
+            </div>
+            <div>
+              <span class="lead-detail-label">Dòng TV quan tâm</span>
+              <strong id="leadProductText">-</strong>
+            </div>
+            <div>
+              <span class="lead-detail-label">Thời gian gửi</span>
+              <strong id="leadTimeText">-</strong>
+            </div>
+          </div>
+          <div class="lead-message-box" id="leadMessageText">-</div>
+          <div class="lead-quick-actions">
+            <a id="leadCallLink" href="#" class="btn btn-secondary btn-sm"><i class="fas fa-phone-alt"></i> Gọi ngay</a>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="copyLeadPhone()"><i class="fas fa-copy"></i> Copy SĐT</button>
+            <a id="leadZaloLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm"><i class="fas fa-comment-dots"></i> Mở Zalo</a>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="copyLeadMessage()"><i class="fas fa-clipboard"></i> Copy lời nhắn</button>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Trạng thái xử lý *</label>
           <select id="leadStatusSelect" class="form-control">
             <option value="pending">Chờ liên hệ</option>
-            <option value="in_progress">Đang gọi tư vấn</option>
-            <option value="completed">Đã hoàn tất / Đã chốt đơn</option>
-            <option value="cancelled">Hủy / Không liên lạc được</option>
+            <option value="called">Đã gọi</option>
+            <option value="no_answer">Không nghe máy</option>
+            <option value="consulted">Đã tư vấn</option>
+            <option value="follow_up">Hẹn gọi lại</option>
+            <option value="won">Đã chốt</option>
+            <option value="not_interested">Không có nhu cầu</option>
+            <option value="closed">Đã đóng</option>
           </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Ghi chú của nhân viên CSKH</label>
-          <textarea id="leadNotes" class="form-control" rows="3" placeholder="VD: Đã gọi khách lúc 10h, khách quan tâm mẫu HXY 55 inch..."></textarea>
+          <label class="form-label">Thời gian hẹn gọi lại</label>
+          <input type="datetime-local" id="leadFollowUpAt" class="form-control">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ghi chú xử lý nội bộ</label>
+          <textarea id="leadNotes" class="form-control" rows="4" placeholder="VD: Đã gọi khách lúc 10h, khách quan tâm mẫu HXY 55 inch, hẹn gọi lại buổi chiều..."></textarea>
+        </div>
+        <div class="lead-history-wrap">
+          <div class="lead-history-title"><i class="fas fa-clock-rotate-left"></i> Lịch sử xử lý</div>
+          <div id="leadActivityHistory" class="lead-history-list"></div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" onclick="closeLeadModal()">Đóng</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Cập nhật</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Lưu xử lý</button>
       </div>
     </form>
   </div>

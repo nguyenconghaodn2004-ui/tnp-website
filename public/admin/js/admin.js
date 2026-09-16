@@ -22,6 +22,59 @@ const STORAGE_BANNERS_KEY = 'tnp_admin_banners_override';
 const STORAGE_ARTICLES_KEY = 'tnp_admin_articles_override';
 const ADMIN_EXIT_GRACE_MS = 5 * 60 * 1000;
 
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+function getLeadStatusMeta(status) {
+  const map = {
+    pending: { label: 'Cho lien he', class: 'badge-warning', open: true },
+    called: { label: 'Da goi', class: 'badge-brand-hxy', open: true },
+    no_answer: { label: 'Khong nghe may', class: 'badge-warning', open: true },
+    consulted: { label: 'Da tu van', class: 'badge-brand-hxy', open: true },
+    follow_up: { label: 'Hen goi lai', class: 'badge-warning', open: true },
+    won: { label: 'Da chot', class: 'badge-success', open: false },
+    not_interested: { label: 'Khong co nhu cau', class: 'badge-secondary', open: false },
+    closed: { label: 'Da dong', class: 'badge-secondary', open: false },
+    in_progress: { label: 'Da tu van', class: 'badge-brand-hxy', open: true },
+    contacting: { label: 'Da tu van', class: 'badge-brand-hxy', open: true },
+    completed: { label: 'Da chot', class: 'badge-success', open: false },
+    resolved: { label: 'Da dong', class: 'badge-secondary', open: false },
+    cancelled: { label: 'Khong nghe may', class: 'badge-warning', open: true }
+  };
+  return map[status] || map.pending;
+}
+
+function getCurrentAdminLabel() {
+  try {
+    const auth = getStoredAdminAuth();
+    return auth?.user?.fullName || auth?.user?.username || auth?.user?.email || 'Admin';
+  } catch (e) {
+    return 'Admin';
+  }
+}
+
+function toDateTimeLocalValue(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function formatLeadDate(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString('vi-VN');
+}
+
 // ══════════════════════════════════════════════
 //  AUTH GUARD & TOKEN REQUEST WRAPPER
 // ══════════════════════════════════════════════
@@ -399,7 +452,7 @@ function renderStats() {
   if (prodEl) prodEl.textContent = productsList.length;
   if (statEl) statEl.textContent = serviceCentersList.length;
   if (contEl) {
-    const pending = contactsList.filter(c => c.status !== 'resolved').length;
+    const pending = contactsList.filter(c => getLeadStatusMeta(c.status).open).length;
     contEl.textContent = contactsList.length > 0 ? pending : 0;
   }
   if (userEl && typeof usersList !== 'undefined' && usersList.length > 0) {
@@ -413,7 +466,7 @@ function renderStats() {
   if (badgeProd) badgeProd.textContent = productsList.length;
   if (badgeStat) badgeStat.textContent = serviceCentersList.length;
   if (badgeCont && contactsList.length > 0) {
-    const pending = contactsList.filter(c => c.status !== 'resolved').length;
+    const pending = contactsList.filter(c => getLeadStatusMeta(c.status).open).length;
     badgeCont.textContent = pending > 0 ? pending : contactsList.length;
   }
 }
@@ -1004,7 +1057,14 @@ function filterContactsByStatus(status) {
     renderContactsTable(contactsList);
     return;
   }
-  const filtered = contactsList.filter(c => c.status === status);
+  const legacyGroups = {
+    consulted: ['consulted', 'in_progress', 'contacting'],
+    won: ['won', 'completed'],
+    closed: ['closed', 'resolved'],
+    no_answer: ['no_answer', 'cancelled']
+  };
+  const accepted = legacyGroups[status] || [status];
+  const filtered = contactsList.filter(c => accepted.includes(c.status));
   renderContactsTable(filtered);
 }
 
@@ -1014,18 +1074,17 @@ function exportContactsCSV() {
     return;
   }
   let csv = '\uFEFF'; // UTF-8 BOM cho Excel mở tiếng Việt không bị lỗi font
-  csv += 'STT,Họ và tên khách hàng,Số điện thoại,Dòng TV quan tâm,Nội dung lời nhắn,Thời gian gửi,Trạng thái,Ghi chú CSKH\n';
+  csv += 'STT,Họ và tên khách hàng,Số điện thoại,Dòng TV quan tâm,Nội dung lời nhắn,Thời gian gửi,Trạng thái,Ghi chú CSKH,Hẹn gọi lại\n';
   contactsList.forEach((c, idx) => {
     const name = `"${(c.name || '').replace(/"/g, '""')}"`;
     const phone = `"${(c.phone || '').replace(/"/g, '""')}"`;
     const product = `"${(c.product || '').replace(/"/g, '""')}"`;
     const message = `"${(c.message || '').replace(/"/g, '""')}"`;
     const time = `"${(c.time || '').replace(/"/g, '""')}"`;
-    let statusLabel = 'Chờ liên hệ';
-    if (c.status === 'in_progress' || c.status === 'contacting') statusLabel = 'Đang tư vấn';
-    else if (c.status === 'completed' || c.status === 'resolved') statusLabel = 'Đã hoàn tất';
+    const statusLabel = getLeadStatusMeta(c.status).label;
     const notes = `"${(c.notes || '').replace(/"/g, '""')}"`;
-    csv += `${idx + 1},${name},${phone},${product},${message},${time},"${statusLabel}",${notes}\n`;
+    const followUpAt = `"${formatLeadDate(c.followUpAt || '').replace(/"/g, '""')}"`;
+    csv += `${idx + 1},${name},${phone},${product},${message},${time},"${statusLabel}",${notes},${followUpAt}\n`;
   });
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1081,7 +1140,7 @@ function renderContactsTable(leads) {
   if (!tbody) return;
 
   const badgeContacts = document.getElementById('badgeContactsCount');
-  const pendingCount = leads.filter(l => l.status === 'pending').length;
+  const pendingCount = leads.filter(l => getLeadStatusMeta(l.status).open).length;
   if (badgeContacts) badgeContacts.textContent = pendingCount;
 
   if (leads.length === 0) {
@@ -1096,39 +1155,41 @@ function renderContactsTable(leads) {
     return;
   }
 
-  const statusMap = {
-    pending: { label: 'Chờ liên hệ', class: 'badge-warning' },
-    in_progress: { label: 'Đang tư vấn', class: 'badge-brand-hxy' },
-    contacting: { label: 'Đang tư vấn', class: 'badge-brand-hxy' },
-    completed: { label: 'Đã hoàn tất', class: 'badge-success' },
-    resolved: { label: 'Đã hoàn tất', class: 'badge-success' },
-    cancelled: { label: 'Đã hủy', class: 'badge-secondary' }
-  };
-
   tbody.innerHTML = leads.map((item, idx) => {
-    const st = statusMap[item.status] || statusMap.pending;
+    const st = getLeadStatusMeta(item.status);
+    const safeId = escapeHTML(item.id || '');
+    const safeName = escapeHTML(item.name || 'Khach hang');
+    const safePhone = escapeHTML(item.phone || '');
+    const safeProduct = escapeHTML(item.product || 'Tu van chung');
+    const safeMessage = escapeHTML(item.message || 'Khong co ghi chu');
+    const safeNotes = escapeHTML(item.notes || '');
+    const safeTime = escapeHTML(item.time || 'Vua xong');
+    const followUpLabel = item.followUpAt
+      ? `<div style="color:#b45309;font-size:11px;margin-top:4px;"><i class="fas fa-clock"></i> Hen: ${escapeHTML(formatLeadDate(item.followUpAt))}</div>`
+      : '';
     return `
       <tr>
         <td>${idx + 1}</td>
-        <td><strong>${item.name || 'Khách hàng'}</strong></td>
+        <td><strong>${safeName}</strong></td>
         <td>
-          <a href="tel:${item.phone}" style="color: var(--adm-accent); font-weight: 700; text-decoration: none;">
-            <i class="fas fa-phone-alt"></i> ${item.phone}
+          <a href="tel:${safePhone}" style="color: var(--adm-accent); font-weight: 700; text-decoration: none;">
+            <i class="fas fa-phone-alt"></i> ${safePhone}
           </a>
         </td>
-        <td><span class="badge badge-brand-hxy">${item.product || 'Tư vấn chung'}</span></td>
+        <td><span class="badge badge-brand-hxy">${safeProduct}</span></td>
         <td>
-          <small>${item.message || 'Không có ghi chú'}</small>
-          ${item.notes ? `<div style="color: #0284c7; font-size: 11px; margin-top: 2px;"><strong>CSKH:</strong> ${item.notes}</div>` : ''}
+          <small>${safeMessage}</small>
+          ${safeNotes ? `<div style="color: #0284c7; font-size: 11px; margin-top: 4px;"><strong>CSKH:</strong> ${safeNotes}</div>` : ''}
+          ${followUpLabel}
         </td>
-        <td><small style="color: #64748b;">${item.time || 'Vừa xong'}</small></td>
+        <td><small style="color: #64748b;">${safeTime}</small></td>
         <td><span class="badge ${st.class}">${st.label}</span></td>
         <td>
           <div class="action-btn-group">
-            <button class="btn btn-secondary btn-sm" onclick="openLeadModal('${item.id}')" title="Cập nhật trạng thái">
-              <i class="fas fa-edit"></i> Xử lý
+            <button class="btn btn-secondary btn-sm" onclick="openLeadModal('${safeId}')" title="Cap nhat xu ly">
+              <i class="fas fa-edit"></i> Xu ly
             </button>
-            <button class="btn-icon btn-icon-delete" onclick="deleteLead('${item.id}')" title="Xóa yêu cầu">
+            <button class="btn-icon btn-icon-delete" onclick="deleteLead('${safeId}')" title="Xoa yeu cau">
               <i class="fas fa-trash"></i>
             </button>
           </div>
@@ -1138,16 +1199,58 @@ function renderContactsTable(leads) {
   }).join('');
 }
 
+function getActiveLead() {
+  const id = document.getElementById('leadId')?.value;
+  return contactsList.find(c => c.id === id) || null;
+}
+
+function renderLeadHistory(lead) {
+  const el = document.getElementById('leadActivityHistory');
+  if (!el) return;
+  const history = Array.isArray(lead.activityHistory) ? lead.activityHistory : [];
+  if (history.length === 0) {
+    el.innerHTML = '<div style="color: var(--adm-text-muted); font-size: 13px; padding: 8px 0;">Chua co lich su xu ly.</div>';
+    return;
+  }
+  el.innerHTML = history.slice().reverse().map(item => {
+    const st = getLeadStatusMeta(item.status);
+    const note = escapeHTML(item.note || 'Khong co ghi chu');
+    const createdAt = escapeHTML(formatLeadDate(item.createdAt));
+    const createdBy = escapeHTML(item.createdBy || 'Admin');
+    return `
+      <div class="lead-history-item">
+        <div class="lead-history-meta">
+          <span class="badge ${st.class}">${st.label}</span>
+          <span>${createdAt}</span>
+          <span>${createdBy}</span>
+        </div>
+        <div class="lead-history-note">${note}</div>
+      </div>
+    `;
+  }).join('');
+}
+
 function openLeadModal(id) {
   const lead = contactsList.find(c => c.id === id);
   if (!lead) return;
 
+  const phone = String(lead.phone || '').trim();
   document.getElementById('leadId').value = lead.id;
-  document.getElementById('leadCustomerName').value = lead.name || '';
-  document.getElementById('leadCustomerPhone').value = lead.phone || '';
+  document.getElementById('leadCustomerNameText').textContent = lead.name || 'Khach hang';
+  document.getElementById('leadCustomerPhoneText').textContent = phone || '-';
+  document.getElementById('leadProductText').textContent = lead.product || 'Tu van chung';
+  document.getElementById('leadTimeText').textContent = lead.time || 'Vua xong';
+  document.getElementById('leadMessageText').textContent = lead.message || 'Khong co ghi chu';
   document.getElementById('leadStatusSelect').value = lead.status || 'pending';
+  document.getElementById('leadFollowUpAt').value = toDateTimeLocalValue(lead.followUpAt);
   document.getElementById('leadNotes').value = lead.notes || '';
 
+  const callLink = document.getElementById('leadCallLink');
+  if (callLink) callLink.href = phone ? `tel:${phone}` : '#';
+  const zaloLink = document.getElementById('leadZaloLink');
+  if (zaloLink) zaloLink.href = phone ? `https://zalo.me/${phone.replace(/[^0-9]/g, '')}` : '#';
+
+  renderLeadHistory(lead);
   document.getElementById('leadModal').classList.add('open');
 }
 
@@ -1155,29 +1258,58 @@ function closeLeadModal() {
   document.getElementById('leadModal').classList.remove('open');
 }
 
+async function copyLeadPhone() {
+  const lead = getActiveLead();
+  if (!lead?.phone) return;
+  await navigator.clipboard.writeText(String(lead.phone));
+  showToast('Da copy so dien thoai khach hang!', 'success');
+}
+
+async function copyLeadMessage() {
+  const lead = getActiveLead();
+  if (!lead) return;
+  const text = `Khach hang: ${lead.name || ''}\nSDT: ${lead.phone || ''}\nDong TV: ${lead.product || ''}\nNoi dung: ${lead.message || ''}`;
+  await navigator.clipboard.writeText(text.trim());
+  showToast('Da copy noi dung yeu cau!', 'success');
+}
+
 async function saveLeadStatus(e) {
   e.preventDefault();
   const id = document.getElementById('leadId').value;
   const status = document.getElementById('leadStatusSelect').value;
   const notes = document.getElementById('leadNotes').value.trim();
+  const followUpAt = document.getElementById('leadFollowUpAt').value;
+  const handledBy = getCurrentAdminLabel();
+  const handledAt = new Date().toISOString();
 
   const lead = contactsList.find(c => c.id === id);
   if (lead) {
     lead.status = status;
     lead.notes = notes;
+    lead.followUpAt = followUpAt;
+    lead.handledBy = handledBy;
+    lead.handledAt = handledAt;
+    lead.activityHistory = Array.isArray(lead.activityHistory) ? lead.activityHistory : [];
+    lead.activityHistory.push({
+      id: 'act-' + Date.now(),
+      status,
+      note: notes || 'Cap nhat trang thai xu ly',
+      createdAt: handledAt,
+      createdBy: handledBy
+    });
   }
 
   try {
     await adminFetch(`/api/admin/contacts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, notes })
+      body: JSON.stringify({ status, notes, followUpAt, handledBy, handledAt })
     });
   } catch (err) {}
 
   closeLeadModal();
   renderContactsTable(contactsList);
-  showToast('Đã cập nhật trạng thái tư vấn khách hàng!', 'success');
+  showToast('Da luu thong tin xu ly yeu cau tu van!', 'success');
 }
 
 async function deleteLead(id) {
@@ -2126,4 +2258,3 @@ function toggleModalPwdVisibility(inputId, iconId) {
     icon.classList.add('fa-eye');
   }
 }
-

@@ -1027,12 +1027,26 @@ app.get('/api/admin/contacts', verifyAdminToken, requireRole(['support']), async
 
 app.put('/api/admin/contacts/:id', verifyAdminToken, requireRole(['support']), async (req, res) => {
   const { id } = req.params;
-  const { status, notes } = req.body;
+  const { status, notes, followUpAt, handledBy, handledAt } = req.body || {};
+  const safeHandledAt = handledAt || new Date().toISOString();
+  const safeHandledBy = handledBy || req.adminUser?.fullName || req.adminUser?.username || 'Admin';
+  const activity = {
+    id: 'act-' + Date.now(),
+    status: status || 'pending',
+    note: notes || 'Cap nhat trang thai xu ly',
+    createdAt: safeHandledAt,
+    createdBy: safeHandledBy
+  };
 
   const lead = dbContacts.find(c => c.id === id);
   if (lead) {
     if (status) lead.status = status;
     if (notes !== undefined) lead.notes = notes;
+    if (followUpAt !== undefined) lead.followUpAt = followUpAt;
+    lead.handledBy = safeHandledBy;
+    lead.handledAt = safeHandledAt;
+    lead.activityHistory = Array.isArray(lead.activityHistory) ? lead.activityHistory : [];
+    lead.activityHistory.push(activity);
     writeDbFile('contacts.json', dbContacts);
   }
 
@@ -1041,7 +1055,13 @@ app.put('/api/admin/contacts/:id', verifyAdminToken, requireRole(['support']), a
       const updateData = {};
       if (status) updateData.status = status;
       if (notes !== undefined) updateData.notes = notes;
-      await ContactModel.findOneAndUpdate({ id }, { $set: updateData });
+      if (followUpAt !== undefined) updateData.followUpAt = followUpAt;
+      updateData.handledBy = safeHandledBy;
+      updateData.handledAt = safeHandledAt;
+      await ContactModel.findOneAndUpdate({ id }, {
+        $set: updateData,
+        $push: { activityHistory: activity }
+      });
     } catch (err) {
       console.warn('Lỗi cập nhật contact trên MongoDB:', err.message);
     }
@@ -1090,7 +1110,11 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
     message: message || '',
     time: new Date().toLocaleString('vi-VN'),
     status: 'pending',
-    notes: ''
+    notes: '',
+    followUpAt: '',
+    handledBy: '',
+    handledAt: '',
+    activityHistory: []
   };
 
   dbContacts.unshift(newLead);
