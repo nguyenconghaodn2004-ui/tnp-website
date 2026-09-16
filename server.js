@@ -57,16 +57,25 @@ if (process.env.NODE_ENV === 'production') {
   }
 }
 
-app.use(['/data/users.json', '/data/contacts.json'], (req, res) => {
+// Khóa tuyệt đối các file dữ liệu nhạy cảm nội bộ không cho phép truy cập trực tiếp từ trình duyệt
+app.use(['/data/users.json', '/data/contacts.json', '/data/analytics.json'], (req, res) => {
   res.status(404).send('Not found');
 });
 
 // Serve only public assets. Never expose project root files.
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Parse JSON and URL-encoded bodies (cho phép tải ảnh Base64 lên tới 25MB)
-app.use(express.json({ limit: '25mb' }));
-app.use(express.urlencoded({ limit: '25mb', extended: true }));
+// Parse JSON: giới hạn an toàn 2MB cho API thông thường; mở rộng 25MB riêng cho upload ảnh & restore DB
+const jsonParserDefault = express.json({ limit: '2mb' });
+const jsonParserLarge = express.json({ limit: '25mb' });
+
+app.use((req, res, next) => {
+  if (req.path === '/api/admin/upload' || req.path === '/api/admin/restore') {
+    return jsonParserLarge(req, res, next);
+  }
+  return jsonParserDefault(req, res, next);
+});
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -125,7 +134,7 @@ function writeDbFile(filename, data) {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
 
     // Đồng bộ sang public/data/ nếu có, ngoại trừ dữ liệu nhạy cảm
-    const sensitiveFiles = new Set(['users.json', 'contacts.json']);
+    const sensitiveFiles = new Set(['users.json', 'contacts.json', 'analytics.json']);
     const pubPath = path.join(__dirname, 'public', 'data', filename);
     if (!sensitiveFiles.has(filename) && fs.existsSync(path.dirname(pubPath))) {
       fs.writeFileSync(pubPath, JSON.stringify(data, null, 2), 'utf8');
@@ -465,7 +474,9 @@ function verifyTokenPayload(token) {
   if (parts.length !== 2) return null;
   const [payloadB64, signature] = parts;
   const expectedSig = crypto.createHmac('sha256', JWT_SECRET).update(payloadB64).digest('base64url');
-  if (signature !== expectedSig) return null;
+  const sigBuf = Buffer.from(signature);
+  const expSigBuf = Buffer.from(expectedSig);
+  if (sigBuf.length !== expSigBuf.length || !crypto.timingSafeEqual(sigBuf, expSigBuf)) return null;
   try {
     const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
     if (payload.sessionVersion !== ADMIN_SESSION_VERSION) return null;
@@ -1091,6 +1102,14 @@ app.delete('/api/admin/contacts/:id', verifyAdminToken, requireRole(['support'])
 
 // Nhận form gửi liên hệ từ khách hàng
 app.post('/api/contact', contactLimiter, async (req, res) => {
+  // Chống Spam tự động bằng kỹ thuật Honeypot ngầm
+  const honeypot = String(req.body?._hp_company_url || req.body?.website || '').trim();
+  if (honeypot) {
+    console.warn(`🛡️ [Honeypot Bot Blocked] IP ${req.headers['x-forwarded-for'] || req.socket.remoteAddress} đã bị chặn âm thầm (Honeypot: "${honeypot.slice(0, 50)}")`);
+    // Silent discard: Trả về thành công giả lập để bot không nghi ngờ đổi kịch bản spam
+    return res.json({ success: true, message: 'Cảm ơn bạn! TNP sẽ liên hệ trong thời gian sớm nhất.' });
+  }
+
   const name = String(req.body?.name || '').trim().slice(0, 120);
   const phone = String(req.body?.phone || '').trim().slice(0, 30);
   const product = String(req.body?.product || '').trim().slice(0, 160);
@@ -1599,6 +1618,11 @@ app.post('/api/admin/restore', verifyAdminToken, requireRole(['superadmin']), (r
 
 // Fallback: serve index.html for any unmatched routes (SPA support)
 app.get('*', (req, res) => {
+  // Trả về 404 cho các tệp tĩnh không tồn tại trong public (chống soft-404 cho assets và bảo vệ tệp ẩn/hệ thống)
+  const base = path.basename(req.path);
+  if (base.startsWith('.') || path.extname(req.path)) {
+    return res.status(404).send('Not found');
+  }
   if (req.path.startsWith('/admin')) {
     return res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
   }

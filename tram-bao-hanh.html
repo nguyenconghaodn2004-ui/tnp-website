@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mạng Lưới 80 – 100 Trạm Bảo Hành Toàn Quốc | Trúc Nguyên Phát – TNP Care</title>
+  <link rel="canonical" href="https://www.tnpcare.vn/tram-bao-hanh.html">
   <link rel="icon" href="/favicon-google.png" type="image/png" sizes="192x192">
   <link rel="shortcut icon" href="/favicon-google.png" type="image/png">
   <link rel="apple-touch-icon" href="/favicon-google.png">
@@ -387,6 +388,10 @@
             </div>
 
             <form id="customer-service-form" onsubmit="handleCustomerServiceSubmit(event)">
+              <!-- Honeypot anti-spam trap (ẩn với người dùng thật) -->
+              <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true" tabindex="-1">
+                <input type="text" id="cust-company-url" name="_hp_company_url" tabindex="-1" autocomplete="off">
+              </div>
               <div class="form-field-group">
                 <label class="field-label">Họ và tên Quý khách <span class="req">*</span></label>
                 <input type="text" id="cust-name" required placeholder="Ví dụ: Nguyễn Văn An" class="field-input">
@@ -1439,6 +1444,8 @@
       const issue = document.getElementById('cust-issue').value.trim();
       const message = document.getElementById('cust-message').value.trim();
 
+      const honeypot = document.getElementById('cust-company-url')?.value?.trim() || '';
+
       if (!name || !phone || !province || !issue) {
         alert('Vui lòng điền đầy đủ các thông tin bắt buộc có dấu (*)!');
         return;
@@ -1455,6 +1462,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            _hp_company_url: honeypot,
             name: name,
             phone: phone,
             product: `[Bảo Hành TV] ${issue} (${province})`,

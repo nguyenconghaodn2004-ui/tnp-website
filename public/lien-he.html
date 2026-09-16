@@ -117,6 +117,12 @@
           </div>
 
           <form id="contact-form" novalidate aria-label="Form tư vấn báo giá">
+            <!-- Honeypot anti-spam trap (ẩn hoàn toàn với người dùng thật) -->
+            <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true" tabindex="-1">
+              <label for="_hp_company_url">Do not fill this field</label>
+              <input type="text" name="_hp_company_url" id="_hp_company_url" tabindex="-1" autocomplete="off">
+            </div>
+
             <div class="form-row">
               <div class="form-group">
                 <label for="contact-name" class="form-label">

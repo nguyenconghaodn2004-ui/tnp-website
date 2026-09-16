@@ -4,5 +4,6 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /data/users.json
 Disallow: /data/contacts.json
+Disallow: /data/analytics.json
 
 Sitemap: https://www.tnpcare.vn/sitemap.xml

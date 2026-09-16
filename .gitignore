@@ -6,6 +6,9 @@ uploads/
 public/uploads/
 data/users.json
 data/contacts.json
+data/analytics.json
 public/data/users.json
 public/data/contacts.json
+public/data/analytics.json
 *.backup.json
+*backup*.json
