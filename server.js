@@ -393,23 +393,29 @@ async function autoSeedMongoData() {
 }
 
 let cachedMongoPromise = null;
+let lastMongoError = null;
 
 async function ensureMongoConnected() {
   if (isMongoConnected && mongoose.connection && mongoose.connection.readyState === 1) {
     return true;
   }
-  if (!MONGODB_URI) return false;
+  if (!MONGODB_URI) {
+    lastMongoError = 'DATABASE_URL is not configured.';
+    return false;
+  }
   if (!cachedMongoPromise) {
     cachedMongoPromise = mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 8000,
     }).then(async () => {
       isMongoConnected = true;
+      lastMongoError = null;
       console.log('  🟢 ĐÃ KẾT NỐI THÀNH CÔNG CLOUD DATABASE MONGODB ATLAS!');
       await autoSeedMongoData();
       return true;
     }).catch(err => {
       cachedMongoPromise = null;
       isMongoConnected = false;
+      lastMongoError = err.message;
       console.warn('  ⚠️ Không thể kết nối MongoDB Atlas:', err.message);
       return false;
     });
@@ -514,6 +520,8 @@ app.get('/api/status', (req, res) => {
     server: 'TNP Care API Server',
     database: isMongoConnected ? 'mongodb_atlas' : 'local_json',
     connected: isMongoConnected,
+    hasDatabaseUrl: Boolean(MONGODB_URI),
+    mongoError: isMongoConnected ? null : lastMongoError,
     timestamp: new Date().toISOString()
   });
 });
